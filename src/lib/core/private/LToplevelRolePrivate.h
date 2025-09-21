@@ -5,10 +5,9 @@
 
 using namespace Louvre;
 
-struct LToplevelRole::Params
-{
-    LResource *toplevel;
-    LSurface *surface;
+struct LToplevelRole::Params {
+  LResource *toplevel;
+  LSurface *surface;
 };
 
-#endif // LTOPLEVELROLEPRIVATE_H
+#endif  // LTOPLEVELROLEPRIVATE_H

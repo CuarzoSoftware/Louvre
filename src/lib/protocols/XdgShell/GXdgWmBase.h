@@ -3,28 +3,28 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::XdgShell::GXdgWmBase final : public LResource
-{
-public:
+class Louvre::Protocols::XdgShell::GXdgWmBase final : public LResource {
+ public:
+  /******************** REQUESTS ********************/
 
-    /******************** REQUESTS ********************/
+  static void destroy(wl_client *client, wl_resource *resource) noexcept;
+  static void create_positioner(wl_client *client, wl_resource *resource,
+                                UInt32 id) noexcept;
+  static void get_xdg_surface(wl_client *client, wl_resource *resource,
+                              UInt32 id, wl_resource *surface) noexcept;
+  static void pong(wl_client *client, wl_resource *resource, UInt32 serial);
 
-    static void destroy(wl_client *client, wl_resource *resource) noexcept;
-    static void create_positioner(wl_client *client, wl_resource *resource, UInt32 id) noexcept;
-    static void get_xdg_surface(wl_client *client, wl_resource *resource, UInt32 id, wl_resource *surface) noexcept;
-    static void pong(wl_client *client, wl_resource *resource, UInt32 serial);
+  /******************** EVENTS ********************/
 
-    /******************** EVENTS ********************/
+  // Since 1
+  void ping(UInt32 serial) noexcept;
 
-    // Since 1
-    void ping(UInt32 serial) noexcept;
-
-private:
-    friend class Louvre::Protocols::XdgShell::RXdgSurface;
-    LGLOBAL_INTERFACE
-    GXdgWmBase(wl_client *client, Int32 version, UInt32 id) noexcept;
-    ~GXdgWmBase() noexcept;
-    UInt32 m_xdgSurfacesCount { 0 };
+ private:
+  friend class Louvre::Protocols::XdgShell::RXdgSurface;
+  LGLOBAL_INTERFACE
+  GXdgWmBase(wl_client *client, Int32 version, UInt32 id) noexcept;
+  ~GXdgWmBase() noexcept;
+  UInt32 m_xdgSurfacesCount{0};
 };
 
-#endif // GXDGWMBASE_H
+#endif  // GXDGWMBASE_H

@@ -3,11 +3,12 @@
 #ifndef XDG_DECORATION_UNSTABLE_V1_SERVER_PROTOCOL_H
 #define XDG_DECORATION_UNSTABLE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -18,7 +19,8 @@ struct wl_resource;
  * @page page_xdg_decoration_unstable_v1 The xdg_decoration_unstable_v1 protocol
  * @section page_ifaces_xdg_decoration_unstable_v1 Interfaces
  * - @subpage page_iface_zxdg_decoration_manager_v1 - window decoration manager
- * - @subpage page_iface_zxdg_toplevel_decoration_v1 - decoration object for a toplevel surface
+ * - @subpage page_iface_zxdg_toplevel_decoration_v1 - decoration object for a
+ * toplevel surface
  * @section page_copyright_xdg_decoration_unstable_v1 Copyright
  * <pre>
  *
@@ -80,7 +82,8 @@ struct zxdg_toplevel_decoration_v1;
  * See @ref iface_zxdg_decoration_manager_v1.
  */
 /**
- * @defgroup iface_zxdg_decoration_manager_v1 The zxdg_decoration_manager_v1 interface
+ * @defgroup iface_zxdg_decoration_manager_v1 The zxdg_decoration_manager_v1
+ * interface
  *
  * This interface allows a compositor to announce support for server-side
  * decorations.
@@ -123,7 +126,8 @@ extern const struct wl_interface zxdg_decoration_manager_v1_interface;
  * See @ref iface_zxdg_toplevel_decoration_v1.
  */
 /**
- * @defgroup iface_zxdg_toplevel_decoration_v1 The zxdg_toplevel_decoration_v1 interface
+ * @defgroup iface_zxdg_toplevel_decoration_v1 The zxdg_toplevel_decoration_v1
+ * interface
  *
  * The decoration object allows the compositor to toggle server-side window
  * decorations for a toplevel surface. The client can request to switch to
@@ -140,32 +144,29 @@ extern const struct wl_interface zxdg_toplevel_decoration_v1_interface;
  * @struct zxdg_decoration_manager_v1_interface
  */
 struct zxdg_decoration_manager_v1_interface {
-	/**
-	 * destroy the decoration manager object
-	 *
-	 * Destroy the decoration manager. This doesn't destroy objects
-	 * created with the manager.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * create a new toplevel decoration object
-	 *
-	 * Create a new decoration object associated with the given
-	 * toplevel.
-	 *
-	 * Creating an xdg_toplevel_decoration from an xdg_toplevel which
-	 * has a buffer attached or committed is a client error, and any
-	 * attempts by a client to attach or manipulate a buffer prior to
-	 * the first xdg_toplevel_decoration.configure event must also be
-	 * treated as errors.
-	 */
-	void (*get_toplevel_decoration)(struct wl_client *client,
-					struct wl_resource *resource,
-					uint32_t id,
-					struct wl_resource *toplevel);
+  /**
+   * destroy the decoration manager object
+   *
+   * Destroy the decoration manager. This doesn't destroy objects
+   * created with the manager.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * create a new toplevel decoration object
+   *
+   * Create a new decoration object associated with the given
+   * toplevel.
+   *
+   * Creating an xdg_toplevel_decoration from an xdg_toplevel which
+   * has a buffer attached or committed is a client error, and any
+   * attempts by a client to attach or manipulate a buffer prior to
+   * the first xdg_toplevel_decoration.configure event must also be
+   * treated as errors.
+   */
+  void (*get_toplevel_decoration)(struct wl_client *client,
+                                  struct wl_resource *resource, uint32_t id,
+                                  struct wl_resource *toplevel);
 };
-
 
 /**
  * @ingroup iface_zxdg_decoration_manager_v1
@@ -179,18 +180,18 @@ struct zxdg_decoration_manager_v1_interface {
 #ifndef ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ENUM
 #define ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ENUM
 enum zxdg_toplevel_decoration_v1_error {
-	/**
-	 * xdg_toplevel has a buffer attached before configure
-	 */
-	ZXDG_TOPLEVEL_DECORATION_V1_ERROR_UNCONFIGURED_BUFFER = 0,
-	/**
-	 * xdg_toplevel already has a decoration object
-	 */
-	ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ALREADY_CONSTRUCTED = 1,
-	/**
-	 * xdg_toplevel destroyed before the decoration object
-	 */
-	ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ORPHANED = 2,
+  /**
+   * xdg_toplevel has a buffer attached before configure
+   */
+  ZXDG_TOPLEVEL_DECORATION_V1_ERROR_UNCONFIGURED_BUFFER = 0,
+  /**
+   * xdg_toplevel already has a decoration object
+   */
+  ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ALREADY_CONSTRUCTED = 1,
+  /**
+   * xdg_toplevel destroyed before the decoration object
+   */
+  ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ORPHANED = 2,
 };
 #endif /* ZXDG_TOPLEVEL_DECORATION_V1_ERROR_ENUM */
 
@@ -203,14 +204,14 @@ enum zxdg_toplevel_decoration_v1_error {
  * These values describe window decoration modes.
  */
 enum zxdg_toplevel_decoration_v1_mode {
-	/**
-	 * no server-side window decoration
-	 */
-	ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE = 1,
-	/**
-	 * server-side window decoration
-	 */
-	ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE = 2,
+  /**
+   * no server-side window decoration
+   */
+  ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE = 1,
+  /**
+   * server-side window decoration
+   */
+  ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE = 2,
 };
 #endif /* ZXDG_TOPLEVEL_DECORATION_V1_MODE_ENUM */
 
@@ -219,53 +220,50 @@ enum zxdg_toplevel_decoration_v1_mode {
  * @struct zxdg_toplevel_decoration_v1_interface
  */
 struct zxdg_toplevel_decoration_v1_interface {
-	/**
-	 * destroy the decoration object
-	 *
-	 * Switch back to a mode without any server-side decorations at
-	 * the next commit.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * set the decoration mode
-	 *
-	 * Set the toplevel surface decoration mode. This informs the
-	 * compositor that the client prefers the provided decoration mode.
-	 *
-	 * After requesting a decoration mode, the compositor will respond
-	 * by emitting an xdg_surface.configure event. The client should
-	 * then update its content, drawing it without decorations if the
-	 * received mode is server-side decorations. The client must also
-	 * acknowledge the configure when committing the new content (see
-	 * xdg_surface.ack_configure).
-	 *
-	 * The compositor can decide not to use the client's mode and
-	 * enforce a different mode instead.
-	 *
-	 * Clients whose decoration mode depend on the xdg_toplevel state
-	 * may send a set_mode request in response to an
-	 * xdg_surface.configure event and wait for the next
-	 * xdg_surface.configure event to prevent unwanted state. Such
-	 * clients are responsible for preventing configure loops and must
-	 * make sure not to send multiple successive set_mode requests with
-	 * the same decoration mode.
-	 * @param mode the decoration mode
-	 */
-	void (*set_mode)(struct wl_client *client,
-			 struct wl_resource *resource,
-			 uint32_t mode);
-	/**
-	 * unset the decoration mode
-	 *
-	 * Unset the toplevel surface decoration mode. This informs the
-	 * compositor that the client doesn't prefer a particular
-	 * decoration mode.
-	 *
-	 * This request has the same semantics as set_mode.
-	 */
-	void (*unset_mode)(struct wl_client *client,
-			   struct wl_resource *resource);
+  /**
+   * destroy the decoration object
+   *
+   * Switch back to a mode without any server-side decorations at
+   * the next commit.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * set the decoration mode
+   *
+   * Set the toplevel surface decoration mode. This informs the
+   * compositor that the client prefers the provided decoration mode.
+   *
+   * After requesting a decoration mode, the compositor will respond
+   * by emitting an xdg_surface.configure event. The client should
+   * then update its content, drawing it without decorations if the
+   * received mode is server-side decorations. The client must also
+   * acknowledge the configure when committing the new content (see
+   * xdg_surface.ack_configure).
+   *
+   * The compositor can decide not to use the client's mode and
+   * enforce a different mode instead.
+   *
+   * Clients whose decoration mode depend on the xdg_toplevel state
+   * may send a set_mode request in response to an
+   * xdg_surface.configure event and wait for the next
+   * xdg_surface.configure event to prevent unwanted state. Such
+   * clients are responsible for preventing configure loops and must
+   * make sure not to send multiple successive set_mode requests with
+   * the same decoration mode.
+   * @param mode the decoration mode
+   */
+  void (*set_mode)(struct wl_client *client, struct wl_resource *resource,
+                   uint32_t mode);
+  /**
+   * unset the decoration mode
+   *
+   * Unset the toplevel surface decoration mode. This informs the
+   * compositor that the client doesn't prefer a particular
+   * decoration mode.
+   *
+   * This request has the same semantics as set_mode.
+   */
+  void (*unset_mode)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZXDG_TOPLEVEL_DECORATION_V1_CONFIGURE 0
@@ -294,13 +292,13 @@ struct zxdg_toplevel_decoration_v1_interface {
  * @param resource_ The client's resource
  * @param mode the decoration mode
  */
-static inline void
-zxdg_toplevel_decoration_v1_send_configure(struct wl_resource *resource_, uint32_t mode)
-{
-	wl_resource_post_event(resource_, ZXDG_TOPLEVEL_DECORATION_V1_CONFIGURE, mode);
+static inline void zxdg_toplevel_decoration_v1_send_configure(
+    struct wl_resource *resource_, uint32_t mode) {
+  wl_resource_post_event(resource_, ZXDG_TOPLEVEL_DECORATION_V1_CONFIGURE,
+                         mode);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

@@ -3,11 +3,12 @@
 #ifndef TEARING_CONTROL_V1_SERVER_PROTOCOL_H
 #define TEARING_CONTROL_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -17,8 +18,10 @@ struct wl_resource;
 /**
  * @page page_tearing_control_v1 The tearing_control_v1 protocol
  * @section page_ifaces_tearing_control_v1 Interfaces
- * - @subpage page_iface_wp_tearing_control_manager_v1 - protocol for tearing control
- * - @subpage page_iface_wp_tearing_control_v1 - per-surface tearing control interface
+ * - @subpage page_iface_wp_tearing_control_manager_v1 - protocol for tearing
+ * control
+ * - @subpage page_iface_wp_tearing_control_v1 - per-surface tearing control
+ * interface
  * @section page_copyright_tearing_control_v1 Copyright
  * <pre>
  *
@@ -73,7 +76,8 @@ struct wp_tearing_control_v1;
  * See @ref iface_wp_tearing_control_manager_v1.
  */
 /**
- * @defgroup iface_wp_tearing_control_manager_v1 The wp_tearing_control_manager_v1 interface
+ * @defgroup iface_wp_tearing_control_manager_v1 The
+ * wp_tearing_control_manager_v1 interface
  *
  * For some use cases like games or drawing tablets it can make sense to
  * reduce latency by accepting tearing with the use of asynchronous page
@@ -122,10 +126,10 @@ extern const struct wl_interface wp_tearing_control_v1_interface;
 #ifndef WP_TEARING_CONTROL_MANAGER_V1_ERROR_ENUM
 #define WP_TEARING_CONTROL_MANAGER_V1_ERROR_ENUM
 enum wp_tearing_control_manager_v1_error {
-	/**
-	 * the surface already has a tearing object associated
-	 */
-	WP_TEARING_CONTROL_MANAGER_V1_ERROR_TEARING_CONTROL_EXISTS = 0,
+  /**
+   * the surface already has a tearing object associated
+   */
+  WP_TEARING_CONTROL_MANAGER_V1_ERROR_TEARING_CONTROL_EXISTS = 0,
 };
 #endif /* WP_TEARING_CONTROL_MANAGER_V1_ERROR_ENUM */
 
@@ -134,31 +138,28 @@ enum wp_tearing_control_manager_v1_error {
  * @struct wp_tearing_control_manager_v1_interface
  */
 struct wp_tearing_control_manager_v1_interface {
-	/**
-	 * destroy tearing control factory object
-	 *
-	 * Destroy this tearing control factory object. Other objects,
-	 * including wp_tearing_control_v1 objects created by this factory,
-	 * are not affected by this request.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * extend surface interface for tearing control
-	 *
-	 * Instantiate an interface extension for the given wl_surface to
-	 * request asynchronous page flips for presentation.
-	 *
-	 * If the given wl_surface already has a wp_tearing_control_v1
-	 * object associated, the tearing_control_exists protocol error is
-	 * raised.
-	 */
-	void (*get_tearing_control)(struct wl_client *client,
-				    struct wl_resource *resource,
-				    uint32_t id,
-				    struct wl_resource *surface);
+  /**
+   * destroy tearing control factory object
+   *
+   * Destroy this tearing control factory object. Other objects,
+   * including wp_tearing_control_v1 objects created by this factory,
+   * are not affected by this request.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * extend surface interface for tearing control
+   *
+   * Instantiate an interface extension for the given wl_surface to
+   * request asynchronous page flips for presentation.
+   *
+   * If the given wl_surface already has a wp_tearing_control_v1
+   * object associated, the tearing_control_exists protocol error is
+   * raised.
+   */
+  void (*get_tearing_control)(struct wl_client *client,
+                              struct wl_resource *resource, uint32_t id,
+                              struct wl_resource *surface);
 };
-
 
 /**
  * @ingroup iface_wp_tearing_control_manager_v1
@@ -179,22 +180,22 @@ struct wp_tearing_control_manager_v1_interface {
  * may be presented with tearing.
  */
 enum wp_tearing_control_v1_presentation_hint {
-	/**
-	 * tearing-free presentation
-	 *
-	 * The content of this surface is meant to be synchronized to the
-	 * vertical blanking period. This should not result in visible
-	 * tearing and may result in a delay before a surface commit is
-	 * presented.
-	 */
-	WP_TEARING_CONTROL_V1_PRESENTATION_HINT_VSYNC = 0,
-	/**
-	 * asynchronous presentation
-	 *
-	 * The content of this surface is meant to be presented with
-	 * minimal latency and tearing is acceptable.
-	 */
-	WP_TEARING_CONTROL_V1_PRESENTATION_HINT_ASYNC = 1,
+  /**
+   * tearing-free presentation
+   *
+   * The content of this surface is meant to be synchronized to the
+   * vertical blanking period. This should not result in visible
+   * tearing and may result in a delay before a surface commit is
+   * presented.
+   */
+  WP_TEARING_CONTROL_V1_PRESENTATION_HINT_VSYNC = 0,
+  /**
+   * asynchronous presentation
+   *
+   * The content of this surface is meant to be presented with
+   * minimal latency and tearing is acceptable.
+   */
+  WP_TEARING_CONTROL_V1_PRESENTATION_HINT_ASYNC = 1,
 };
 #endif /* WP_TEARING_CONTROL_V1_PRESENTATION_HINT_ENUM */
 
@@ -203,31 +204,28 @@ enum wp_tearing_control_v1_presentation_hint {
  * @struct wp_tearing_control_v1_interface
  */
 struct wp_tearing_control_v1_interface {
-	/**
-	 * set presentation hint
-	 *
-	 * Set the presentation hint for the associated wl_surface. This
-	 * state is double-buffered and is applied on the next
-	 * wl_surface.commit.
-	 *
-	 * The compositor is free to dynamically respect or ignore this
-	 * hint based on various conditions like hardware capabilities,
-	 * surface state and user preferences.
-	 */
-	void (*set_presentation_hint)(struct wl_client *client,
-				      struct wl_resource *resource,
-				      uint32_t hint);
-	/**
-	 * destroy tearing control object
-	 *
-	 * Destroy this surface tearing object and revert the
-	 * presentation hint to vsync. The change will be applied on the
-	 * next wl_surface.commit.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * set presentation hint
+   *
+   * Set the presentation hint for the associated wl_surface. This
+   * state is double-buffered and is applied on the next
+   * wl_surface.commit.
+   *
+   * The compositor is free to dynamically respect or ignore this
+   * hint based on various conditions like hardware capabilities,
+   * surface state and user preferences.
+   */
+  void (*set_presentation_hint)(struct wl_client *client,
+                                struct wl_resource *resource, uint32_t hint);
+  /**
+   * destroy tearing control object
+   *
+   * Destroy this surface tearing object and revert the
+   * presentation hint to vsync. The change will be applied on the
+   * next wl_surface.commit.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
-
 
 /**
  * @ingroup iface_wp_tearing_control_v1
@@ -238,7 +236,7 @@ struct wp_tearing_control_v1_interface {
  */
 #define WP_TEARING_CONTROL_V1_DESTROY_SINCE_VERSION 1
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

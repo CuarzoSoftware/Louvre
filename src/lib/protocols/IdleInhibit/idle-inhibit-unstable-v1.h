@@ -3,11 +3,12 @@
 #ifndef IDLE_INHIBIT_UNSTABLE_V1_SERVER_PROTOCOL_H
 #define IDLE_INHIBIT_UNSTABLE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -17,8 +18,10 @@ struct wl_resource;
 /**
  * @page page_idle_inhibit_unstable_v1 The idle_inhibit_unstable_v1 protocol
  * @section page_ifaces_idle_inhibit_unstable_v1 Interfaces
- * - @subpage page_iface_zwp_idle_inhibit_manager_v1 - control behavior when display idles
- * - @subpage page_iface_zwp_idle_inhibitor_v1 - context object for inhibiting idle behavior
+ * - @subpage page_iface_zwp_idle_inhibit_manager_v1 - control behavior when
+ * display idles
+ * - @subpage page_iface_zwp_idle_inhibitor_v1 - context object for inhibiting
+ * idle behavior
  * @section page_copyright_idle_inhibit_unstable_v1 Copyright
  * <pre>
  *
@@ -70,7 +73,8 @@ struct zwp_idle_inhibitor_v1;
  * See @ref iface_zwp_idle_inhibit_manager_v1.
  */
 /**
- * @defgroup iface_zwp_idle_inhibit_manager_v1 The zwp_idle_inhibit_manager_v1 interface
+ * @defgroup iface_zwp_idle_inhibit_manager_v1 The zwp_idle_inhibit_manager_v1
+ * interface
  *
  * This interface permits inhibiting the idle behavior such as screen
  * blanking, locking, and screensaving.  The client binds the idle manager
@@ -132,26 +136,23 @@ extern const struct wl_interface zwp_idle_inhibitor_v1_interface;
  * @struct zwp_idle_inhibit_manager_v1_interface
  */
 struct zwp_idle_inhibit_manager_v1_interface {
-	/**
-	 * destroy the idle inhibitor object
-	 *
-	 * Destroy the inhibit manager.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * create a new inhibitor object
-	 *
-	 * Create a new inhibitor object associated with the given
-	 * surface.
-	 * @param surface the surface that inhibits the idle behavior
-	 */
-	void (*create_inhibitor)(struct wl_client *client,
-				 struct wl_resource *resource,
-				 uint32_t id,
-				 struct wl_resource *surface);
+  /**
+   * destroy the idle inhibitor object
+   *
+   * Destroy the inhibit manager.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * create a new inhibitor object
+   *
+   * Create a new inhibitor object associated with the given
+   * surface.
+   * @param surface the surface that inhibits the idle behavior
+   */
+  void (*create_inhibitor)(struct wl_client *client,
+                           struct wl_resource *resource, uint32_t id,
+                           struct wl_resource *surface);
 };
-
 
 /**
  * @ingroup iface_zwp_idle_inhibit_manager_v1
@@ -167,22 +168,20 @@ struct zwp_idle_inhibit_manager_v1_interface {
  * @struct zwp_idle_inhibitor_v1_interface
  */
 struct zwp_idle_inhibitor_v1_interface {
-	/**
-	 * destroy the idle inhibitor object
-	 *
-	 * Remove the inhibitor effect from the associated wl_surface.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy the idle inhibitor object
+   *
+   * Remove the inhibitor effect from the associated wl_surface.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
-
 
 /**
  * @ingroup iface_zwp_idle_inhibitor_v1
  */
 #define ZWP_IDLE_INHIBITOR_V1_DESTROY_SINCE_VERSION 1
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

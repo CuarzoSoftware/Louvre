@@ -3,11 +3,12 @@
 #ifndef XDG_ACTIVATION_V1_SERVER_PROTOCOL_H
 #define XDG_ACTIVATION_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -151,49 +152,44 @@ extern const struct wl_interface xdg_activation_token_v1_interface;
  * @struct xdg_activation_v1_interface
  */
 struct xdg_activation_v1_interface {
-	/**
-	 * destroy the xdg_activation object
-	 *
-	 * Notify the compositor that the xdg_activation object will no
-	 * longer be used.
-	 *
-	 * The child objects created via this interface are unaffected and
-	 * should be destroyed separately.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * requests a token
-	 *
-	 * Creates an xdg_activation_token_v1 object that will provide
-	 * the initiating client with a unique token for this activation.
-	 * This token should be offered to the clients to be activated.
-	 */
-	void (*get_activation_token)(struct wl_client *client,
-				     struct wl_resource *resource,
-				     uint32_t id);
-	/**
-	 * notify new interaction being available
-	 *
-	 * Requests surface activation. It's up to the compositor to
-	 * display this information as desired, for example by placing the
-	 * surface above the rest.
-	 *
-	 * The compositor may know who requested this by checking the
-	 * activation token and might decide not to follow through with the
-	 * activation if it's considered unwanted.
-	 *
-	 * Compositors can ignore unknown activation tokens when an invalid
-	 * token is passed.
-	 * @param token the activation token of the initiating client
-	 * @param surface the wl_surface to activate
-	 */
-	void (*activate)(struct wl_client *client,
-			 struct wl_resource *resource,
-			 const char *token,
-			 struct wl_resource *surface);
+  /**
+   * destroy the xdg_activation object
+   *
+   * Notify the compositor that the xdg_activation object will no
+   * longer be used.
+   *
+   * The child objects created via this interface are unaffected and
+   * should be destroyed separately.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * requests a token
+   *
+   * Creates an xdg_activation_token_v1 object that will provide
+   * the initiating client with a unique token for this activation.
+   * This token should be offered to the clients to be activated.
+   */
+  void (*get_activation_token)(struct wl_client *client,
+                               struct wl_resource *resource, uint32_t id);
+  /**
+   * notify new interaction being available
+   *
+   * Requests surface activation. It's up to the compositor to
+   * display this information as desired, for example by placing the
+   * surface above the rest.
+   *
+   * The compositor may know who requested this by checking the
+   * activation token and might decide not to follow through with the
+   * activation if it's considered unwanted.
+   *
+   * Compositors can ignore unknown activation tokens when an invalid
+   * token is passed.
+   * @param token the activation token of the initiating client
+   * @param surface the wl_surface to activate
+   */
+  void (*activate)(struct wl_client *client, struct wl_resource *resource,
+                   const char *token, struct wl_resource *surface);
 };
-
 
 /**
  * @ingroup iface_xdg_activation_v1
@@ -211,10 +207,10 @@ struct xdg_activation_v1_interface {
 #ifndef XDG_ACTIVATION_TOKEN_V1_ERROR_ENUM
 #define XDG_ACTIVATION_TOKEN_V1_ERROR_ENUM
 enum xdg_activation_token_v1_error {
-	/**
-	 * The token has already been used previously
-	 */
-	XDG_ACTIVATION_TOKEN_V1_ERROR_ALREADY_USED = 0,
+  /**
+   * The token has already been used previously
+   */
+  XDG_ACTIVATION_TOKEN_V1_ERROR_ALREADY_USED = 0,
 };
 #endif /* XDG_ACTIVATION_TOKEN_V1_ERROR_ENUM */
 
@@ -223,72 +219,66 @@ enum xdg_activation_token_v1_error {
  * @struct xdg_activation_token_v1_interface
  */
 struct xdg_activation_token_v1_interface {
-	/**
-	 * specifies the seat and serial of the activating event
-	 *
-	 * Provides information about the seat and serial event that
-	 * requested the token.
-	 *
-	 * The serial can come from an input or focus event. For instance,
-	 * if a click triggers the launch of a third-party client, the
-	 * launcher client should send a set_serial request with the serial
-	 * and seat from the wl_pointer.button event.
-	 *
-	 * Some compositors might refuse to activate toplevels when the
-	 * token doesn't have a valid and recent enough event serial.
-	 *
-	 * Must be sent before commit. This information is optional.
-	 * @param serial the serial of the event that triggered the activation
-	 * @param seat the wl_seat of the event
-	 */
-	void (*set_serial)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   uint32_t serial,
-			   struct wl_resource *seat);
-	/**
-	 * specifies the application being activated
-	 *
-	 * The requesting client can specify an app_id to associate the
-	 * token being created with it.
-	 *
-	 * Must be sent before commit. This information is optional.
-	 * @param app_id the application id of the client being activated.
-	 */
-	void (*set_app_id)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   const char *app_id);
-	/**
-	 * specifies the surface requesting activation
-	 *
-	 * This request sets the surface requesting the activation. Note,
-	 * this is different from the surface that will be activated.
-	 *
-	 * Some compositors might refuse to activate toplevels when the
-	 * token doesn't have a requesting surface.
-	 *
-	 * Must be sent before commit. This information is optional.
-	 * @param surface the requesting surface
-	 */
-	void (*set_surface)(struct wl_client *client,
-			    struct wl_resource *resource,
-			    struct wl_resource *surface);
-	/**
-	 * issues the token request
-	 *
-	 * Requests an activation token based on the different parameters
-	 * that have been offered through set_serial, set_surface and
-	 * set_app_id.
-	 */
-	void (*commit)(struct wl_client *client,
-		       struct wl_resource *resource);
-	/**
-	 * destroy the xdg_activation_token_v1 object
-	 *
-	 * Notify the compositor that the xdg_activation_token_v1 object
-	 * will no longer be used. The received token stays valid.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * specifies the seat and serial of the activating event
+   *
+   * Provides information about the seat and serial event that
+   * requested the token.
+   *
+   * The serial can come from an input or focus event. For instance,
+   * if a click triggers the launch of a third-party client, the
+   * launcher client should send a set_serial request with the serial
+   * and seat from the wl_pointer.button event.
+   *
+   * Some compositors might refuse to activate toplevels when the
+   * token doesn't have a valid and recent enough event serial.
+   *
+   * Must be sent before commit. This information is optional.
+   * @param serial the serial of the event that triggered the activation
+   * @param seat the wl_seat of the event
+   */
+  void (*set_serial)(struct wl_client *client, struct wl_resource *resource,
+                     uint32_t serial, struct wl_resource *seat);
+  /**
+   * specifies the application being activated
+   *
+   * The requesting client can specify an app_id to associate the
+   * token being created with it.
+   *
+   * Must be sent before commit. This information is optional.
+   * @param app_id the application id of the client being activated.
+   */
+  void (*set_app_id)(struct wl_client *client, struct wl_resource *resource,
+                     const char *app_id);
+  /**
+   * specifies the surface requesting activation
+   *
+   * This request sets the surface requesting the activation. Note,
+   * this is different from the surface that will be activated.
+   *
+   * Some compositors might refuse to activate toplevels when the
+   * token doesn't have a requesting surface.
+   *
+   * Must be sent before commit. This information is optional.
+   * @param surface the requesting surface
+   */
+  void (*set_surface)(struct wl_client *client, struct wl_resource *resource,
+                      struct wl_resource *surface);
+  /**
+   * issues the token request
+   *
+   * Requests an activation token based on the different parameters
+   * that have been offered through set_serial, set_surface and
+   * set_app_id.
+   */
+  void (*commit)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * destroy the xdg_activation_token_v1 object
+   *
+   * Notify the compositor that the xdg_activation_token_v1 object
+   * will no longer be used. The received token stays valid.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define XDG_ACTIVATION_TOKEN_V1_DONE 0
@@ -325,13 +315,12 @@ struct xdg_activation_token_v1_interface {
  * @param resource_ The client's resource
  * @param token the exported activation token
  */
-static inline void
-xdg_activation_token_v1_send_done(struct wl_resource *resource_, const char *token)
-{
-	wl_resource_post_event(resource_, XDG_ACTIVATION_TOKEN_V1_DONE, token);
+static inline void xdg_activation_token_v1_send_done(
+    struct wl_resource *resource_, const char *token) {
+  wl_resource_post_event(resource_, XDG_ACTIVATION_TOKEN_V1_DONE, token);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

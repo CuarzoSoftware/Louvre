@@ -3,11 +3,12 @@
 #ifndef EXT_SESSION_LOCK_V1_SERVER_PROTOCOL_H
 #define EXT_SESSION_LOCK_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -43,8 +44,10 @@ struct wl_resource;
  *
  * @section page_ifaces_ext_session_lock_v1 Interfaces
  * - @subpage page_iface_ext_session_lock_manager_v1 - used to lock the session
- * - @subpage page_iface_ext_session_lock_v1 - manage lock state and create lock surfaces
- * - @subpage page_iface_ext_session_lock_surface_v1 - a surface displayed while the session is locked
+ * - @subpage page_iface_ext_session_lock_v1 - manage lock state and create lock
+ * surfaces
+ * - @subpage page_iface_ext_session_lock_surface_v1 - a surface displayed while
+ * the session is locked
  * @section page_copyright_ext_session_lock_v1 Copyright
  * <pre>
  *
@@ -86,7 +89,8 @@ struct wl_surface;
  * See @ref iface_ext_session_lock_manager_v1.
  */
 /**
- * @defgroup iface_ext_session_lock_manager_v1 The ext_session_lock_manager_v1 interface
+ * @defgroup iface_ext_session_lock_manager_v1 The ext_session_lock_manager_v1
+ * interface
  *
  * This interface is used to request that the session be locked.
  */
@@ -228,7 +232,8 @@ extern const struct wl_interface ext_session_lock_v1_interface;
  * See @ref iface_ext_session_lock_surface_v1.
  */
 /**
- * @defgroup iface_ext_session_lock_surface_v1 The ext_session_lock_surface_v1 interface
+ * @defgroup iface_ext_session_lock_surface_v1 The ext_session_lock_surface_v1
+ * interface
  *
  * The client may use lock surfaces to display a screensaver, render a
  * dialog to enter a password and unlock the session, or however else it
@@ -254,28 +259,25 @@ extern const struct wl_interface ext_session_lock_surface_v1_interface;
  * @struct ext_session_lock_manager_v1_interface
  */
 struct ext_session_lock_manager_v1_interface {
-	/**
-	 * destroy the session lock manager object
-	 *
-	 * This informs the compositor that the session lock manager
-	 * object will no longer be used. Existing objects created through
-	 * this interface remain valid.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * attempt to lock the session
-	 *
-	 * This request creates a session lock and asks the compositor to
-	 * lock the session. The compositor will send either the
-	 * ext_session_lock_v1.locked or ext_session_lock_v1.finished event
-	 * on the created object in response to this request.
-	 */
-	void (*lock)(struct wl_client *client,
-		     struct wl_resource *resource,
-		     uint32_t id);
+  /**
+   * destroy the session lock manager object
+   *
+   * This informs the compositor that the session lock manager
+   * object will no longer be used. Existing objects created through
+   * this interface remain valid.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * attempt to lock the session
+   *
+   * This request creates a session lock and asks the compositor to
+   * lock the session. The compositor will send either the
+   * ext_session_lock_v1.locked or ext_session_lock_v1.finished event
+   * on the created object in response to this request.
+   */
+  void (*lock)(struct wl_client *client, struct wl_resource *resource,
+               uint32_t id);
 };
-
 
 /**
  * @ingroup iface_ext_session_lock_manager_v1
@@ -289,26 +291,26 @@ struct ext_session_lock_manager_v1_interface {
 #ifndef EXT_SESSION_LOCK_V1_ERROR_ENUM
 #define EXT_SESSION_LOCK_V1_ERROR_ENUM
 enum ext_session_lock_v1_error {
-	/**
-	 * attempted to destroy session lock while locked
-	 */
-	EXT_SESSION_LOCK_V1_ERROR_INVALID_DESTROY = 0,
-	/**
-	 * unlock requested but locked event was never sent
-	 */
-	EXT_SESSION_LOCK_V1_ERROR_INVALID_UNLOCK = 1,
-	/**
-	 * given wl_surface already has a role
-	 */
-	EXT_SESSION_LOCK_V1_ERROR_ROLE = 2,
-	/**
-	 * given output already has a lock surface
-	 */
-	EXT_SESSION_LOCK_V1_ERROR_DUPLICATE_OUTPUT = 3,
-	/**
-	 * given wl_surface has a buffer attached or committed
-	 */
-	EXT_SESSION_LOCK_V1_ERROR_ALREADY_CONSTRUCTED = 4,
+  /**
+   * attempted to destroy session lock while locked
+   */
+  EXT_SESSION_LOCK_V1_ERROR_INVALID_DESTROY = 0,
+  /**
+   * unlock requested but locked event was never sent
+   */
+  EXT_SESSION_LOCK_V1_ERROR_INVALID_UNLOCK = 1,
+  /**
+   * given wl_surface already has a role
+   */
+  EXT_SESSION_LOCK_V1_ERROR_ROLE = 2,
+  /**
+   * given output already has a lock surface
+   */
+  EXT_SESSION_LOCK_V1_ERROR_DUPLICATE_OUTPUT = 3,
+  /**
+   * given wl_surface has a buffer attached or committed
+   */
+  EXT_SESSION_LOCK_V1_ERROR_ALREADY_CONSTRUCTED = 4,
 };
 #endif /* EXT_SESSION_LOCK_V1_ERROR_ENUM */
 
@@ -317,73 +319,71 @@ enum ext_session_lock_v1_error {
  * @struct ext_session_lock_v1_interface
  */
 struct ext_session_lock_v1_interface {
-	/**
-	 * destroy the session lock
-	 *
-	 * This informs the compositor that the lock object will no
-	 * longer be used. Existing objects created through this interface
-	 * remain valid.
-	 *
-	 * After this request is made, lock surfaces created through this
-	 * object should be destroyed by the client as they will no longer
-	 * be used by the compositor.
-	 *
-	 * It is a protocol error to make this request if the locked event
-	 * was sent, the unlock_and_destroy request must be used instead.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * create a lock surface for a given output
-	 *
-	 * The client is expected to create lock surfaces for all outputs
-	 * currently present and any new outputs as they are advertised.
-	 * These won't be displayed by the compositor unless the lock is
-	 * successful and the locked event is sent.
-	 *
-	 * Providing a wl_surface which already has a role or already has a
-	 * buffer attached or committed is a protocol error, as is
-	 * attaching/committing a buffer before the first
-	 * ext_session_lock_surface_v1.configure event.
-	 *
-	 * Attempting to create more than one lock surface for a given
-	 * output is a duplicate_output protocol error.
-	 */
-	void (*get_lock_surface)(struct wl_client *client,
-				 struct wl_resource *resource,
-				 uint32_t id,
-				 struct wl_resource *surface,
-				 struct wl_resource *output);
-	/**
-	 * unlock the session, destroying the object
-	 *
-	 * This request indicates that the session should be unlocked,
-	 * for example because the user has entered their password and it
-	 * has been verified by the client.
-	 *
-	 * This request also informs the compositor that the lock object
-	 * will no longer be used and should be destroyed. Existing objects
-	 * created through this interface remain valid.
-	 *
-	 * After this request is made, lock surfaces created through this
-	 * object should be destroyed by the client as they will no longer
-	 * be used by the compositor.
-	 *
-	 * It is a protocol error to make this request if the locked event
-	 * has not been sent. In that case, the lock object must be
-	 * destroyed using the destroy request.
-	 *
-	 * Note that a correct client that wishes to exit directly after
-	 * unlocking the session must use the wl_display.sync request to
-	 * ensure the server receives and processes the unlock_and_destroy
-	 * request. Otherwise there is no guarantee that the server has
-	 * unlocked the session due to the asynchronous nature of the
-	 * Wayland protocol. For example, the server might terminate the
-	 * client with a protocol error before it processes the
-	 * unlock_and_destroy request.
-	 */
-	void (*unlock_and_destroy)(struct wl_client *client,
-				   struct wl_resource *resource);
+  /**
+   * destroy the session lock
+   *
+   * This informs the compositor that the lock object will no
+   * longer be used. Existing objects created through this interface
+   * remain valid.
+   *
+   * After this request is made, lock surfaces created through this
+   * object should be destroyed by the client as they will no longer
+   * be used by the compositor.
+   *
+   * It is a protocol error to make this request if the locked event
+   * was sent, the unlock_and_destroy request must be used instead.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * create a lock surface for a given output
+   *
+   * The client is expected to create lock surfaces for all outputs
+   * currently present and any new outputs as they are advertised.
+   * These won't be displayed by the compositor unless the lock is
+   * successful and the locked event is sent.
+   *
+   * Providing a wl_surface which already has a role or already has a
+   * buffer attached or committed is a protocol error, as is
+   * attaching/committing a buffer before the first
+   * ext_session_lock_surface_v1.configure event.
+   *
+   * Attempting to create more than one lock surface for a given
+   * output is a duplicate_output protocol error.
+   */
+  void (*get_lock_surface)(struct wl_client *client,
+                           struct wl_resource *resource, uint32_t id,
+                           struct wl_resource *surface,
+                           struct wl_resource *output);
+  /**
+   * unlock the session, destroying the object
+   *
+   * This request indicates that the session should be unlocked,
+   * for example because the user has entered their password and it
+   * has been verified by the client.
+   *
+   * This request also informs the compositor that the lock object
+   * will no longer be used and should be destroyed. Existing objects
+   * created through this interface remain valid.
+   *
+   * After this request is made, lock surfaces created through this
+   * object should be destroyed by the client as they will no longer
+   * be used by the compositor.
+   *
+   * It is a protocol error to make this request if the locked event
+   * has not been sent. In that case, the lock object must be
+   * destroyed using the destroy request.
+   *
+   * Note that a correct client that wishes to exit directly after
+   * unlocking the session must use the wl_display.sync request to
+   * ensure the server receives and processes the unlock_and_destroy
+   * request. Otherwise there is no guarantee that the server has
+   * unlocked the session due to the asynchronous nature of the
+   * Wayland protocol. For example, the server might terminate the
+   * client with a protocol error before it processes the
+   * unlock_and_destroy request.
+   */
+  void (*unlock_and_destroy)(struct wl_client *client,
+                             struct wl_resource *resource);
 };
 
 #define EXT_SESSION_LOCK_V1_LOCKED 0
@@ -416,10 +416,9 @@ struct ext_session_lock_v1_interface {
  * Sends an locked event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_session_lock_v1_send_locked(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, EXT_SESSION_LOCK_V1_LOCKED);
+static inline void ext_session_lock_v1_send_locked(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, EXT_SESSION_LOCK_V1_LOCKED);
 }
 
 /**
@@ -427,31 +426,30 @@ ext_session_lock_v1_send_locked(struct wl_resource *resource_)
  * Sends an finished event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_session_lock_v1_send_finished(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, EXT_SESSION_LOCK_V1_FINISHED);
+static inline void ext_session_lock_v1_send_finished(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, EXT_SESSION_LOCK_V1_FINISHED);
 }
 
 #ifndef EXT_SESSION_LOCK_SURFACE_V1_ERROR_ENUM
 #define EXT_SESSION_LOCK_SURFACE_V1_ERROR_ENUM
 enum ext_session_lock_surface_v1_error {
-	/**
-	 * surface committed before first ack_configure request
-	 */
-	EXT_SESSION_LOCK_SURFACE_V1_ERROR_COMMIT_BEFORE_FIRST_ACK = 0,
-	/**
-	 * surface committed with a null buffer
-	 */
-	EXT_SESSION_LOCK_SURFACE_V1_ERROR_NULL_BUFFER = 1,
-	/**
-	 * failed to match ack'd width/height
-	 */
-	EXT_SESSION_LOCK_SURFACE_V1_ERROR_DIMENSIONS_MISMATCH = 2,
-	/**
-	 * serial provided in ack_configure is invalid
-	 */
-	EXT_SESSION_LOCK_SURFACE_V1_ERROR_INVALID_SERIAL = 3,
+  /**
+   * surface committed before first ack_configure request
+   */
+  EXT_SESSION_LOCK_SURFACE_V1_ERROR_COMMIT_BEFORE_FIRST_ACK = 0,
+  /**
+   * surface committed with a null buffer
+   */
+  EXT_SESSION_LOCK_SURFACE_V1_ERROR_NULL_BUFFER = 1,
+  /**
+   * failed to match ack'd width/height
+   */
+  EXT_SESSION_LOCK_SURFACE_V1_ERROR_DIMENSIONS_MISMATCH = 2,
+  /**
+   * serial provided in ack_configure is invalid
+   */
+  EXT_SESSION_LOCK_SURFACE_V1_ERROR_INVALID_SERIAL = 3,
 };
 #endif /* EXT_SESSION_LOCK_SURFACE_V1_ERROR_ENUM */
 
@@ -460,54 +458,52 @@ enum ext_session_lock_surface_v1_error {
  * @struct ext_session_lock_surface_v1_interface
  */
 struct ext_session_lock_surface_v1_interface {
-	/**
-	 * destroy the lock surface object
-	 *
-	 * This informs the compositor that the lock surface object will
-	 * no longer be used.
-	 *
-	 * It is recommended for a lock client to destroy lock surfaces if
-	 * their corresponding wl_output global is removed.
-	 *
-	 * If a lock surface on an active output is destroyed before the
-	 * ext_session_lock_v1.unlock_and_destroy event is sent, the
-	 * compositor must fall back to rendering a solid color.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * ack a configure event
-	 *
-	 * When a configure event is received, if a client commits the
-	 * surface in response to the configure event, then the client must
-	 * make an ack_configure request sometime before the commit
-	 * request, passing along the serial of the configure event.
-	 *
-	 * If the client receives multiple configure events before it can
-	 * respond to one, it only has to ack the last configure event.
-	 *
-	 * A client is not required to commit immediately after sending an
-	 * ack_configure request - it may even ack_configure several times
-	 * before its next surface commit.
-	 *
-	 * A client may send multiple ack_configure requests before
-	 * committing, but only the last request sent before a commit
-	 * indicates which configure event the client really is responding
-	 * to.
-	 *
-	 * Sending an ack_configure request consumes the configure event
-	 * referenced by the given serial, as well as all older configure
-	 * events sent on this object.
-	 *
-	 * It is a protocol error to issue multiple ack_configure requests
-	 * referencing the same configure event or to issue an
-	 * ack_configure request referencing a configure event older than
-	 * the last configure event acked for a given lock surface.
-	 * @param serial serial from the configure event
-	 */
-	void (*ack_configure)(struct wl_client *client,
-			      struct wl_resource *resource,
-			      uint32_t serial);
+  /**
+   * destroy the lock surface object
+   *
+   * This informs the compositor that the lock surface object will
+   * no longer be used.
+   *
+   * It is recommended for a lock client to destroy lock surfaces if
+   * their corresponding wl_output global is removed.
+   *
+   * If a lock surface on an active output is destroyed before the
+   * ext_session_lock_v1.unlock_and_destroy event is sent, the
+   * compositor must fall back to rendering a solid color.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * ack a configure event
+   *
+   * When a configure event is received, if a client commits the
+   * surface in response to the configure event, then the client must
+   * make an ack_configure request sometime before the commit
+   * request, passing along the serial of the configure event.
+   *
+   * If the client receives multiple configure events before it can
+   * respond to one, it only has to ack the last configure event.
+   *
+   * A client is not required to commit immediately after sending an
+   * ack_configure request - it may even ack_configure several times
+   * before its next surface commit.
+   *
+   * A client may send multiple ack_configure requests before
+   * committing, but only the last request sent before a commit
+   * indicates which configure event the client really is responding
+   * to.
+   *
+   * Sending an ack_configure request consumes the configure event
+   * referenced by the given serial, as well as all older configure
+   * events sent on this object.
+   *
+   * It is a protocol error to issue multiple ack_configure requests
+   * referencing the same configure event or to issue an
+   * ack_configure request referencing a configure event older than
+   * the last configure event acked for a given lock surface.
+   * @param serial serial from the configure event
+   */
+  void (*ack_configure)(struct wl_client *client, struct wl_resource *resource,
+                        uint32_t serial);
 };
 
 #define EXT_SESSION_LOCK_SURFACE_V1_CONFIGURE 0
@@ -532,13 +528,14 @@ struct ext_session_lock_surface_v1_interface {
  * @param resource_ The client's resource
  * @param serial serial for use in ack_configure
  */
-static inline void
-ext_session_lock_surface_v1_send_configure(struct wl_resource *resource_, uint32_t serial, uint32_t width, uint32_t height)
-{
-	wl_resource_post_event(resource_, EXT_SESSION_LOCK_SURFACE_V1_CONFIGURE, serial, width, height);
+static inline void ext_session_lock_surface_v1_send_configure(
+    struct wl_resource *resource_, uint32_t serial, uint32_t width,
+    uint32_t height) {
+  wl_resource_post_event(resource_, EXT_SESSION_LOCK_SURFACE_V1_CONFIGURE,
+                         serial, width, height);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

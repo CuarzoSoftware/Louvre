@@ -3,10 +3,9 @@
 using namespace Louvre;
 
 //! [pong]
-void LClient::pong(UInt32 serial)
-{
-    L_UNUSED(serial);
+void LClient::pong(UInt32 serial) {
+  L_UNUSED(serial);
 
-    /* No default implementation */
+  /* No default implementation */
 }
 //! [pong]

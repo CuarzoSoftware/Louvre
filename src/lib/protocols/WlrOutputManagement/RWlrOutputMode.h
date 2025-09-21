@@ -4,32 +4,28 @@
 #include <LResource.h>
 #include <LWeak.h>
 
-class Louvre::Protocols::WlrOutputManagement::RWlrOutputMode final : public LResource
-{
-public:
+class Louvre::Protocols::WlrOutputManagement::RWlrOutputMode final
+    : public LResource {
+ public:
+  LOutputMode *mode() const noexcept { return m_mode.get(); }
 
-    LOutputMode *mode() const noexcept
-    {
-        return m_mode.get();
-    }
+  /******************** REQUESTS ********************/
 
-    /******************** REQUESTS ********************/
+  static void release(wl_client *client, wl_resource *resource);
 
-    static void release(wl_client *client, wl_resource *resource);
+  /******************** EVENTS ********************/
 
-    /******************** EVENTS ********************/
+  void size(const LSize &size) noexcept;
+  void refresh(Int32 refresh) noexcept;
+  void preferred() noexcept;
+  void finished() noexcept;
 
-    void size(const LSize &size) noexcept;
-    void refresh(Int32 refresh) noexcept;
-    void preferred() noexcept;
-    void finished() noexcept;
-
-private:
-    friend class RWlrOutputHead;
-    RWlrOutputMode(RWlrOutputHead *wlrOutputHead, LOutputMode *mode) noexcept;
-    ~RWlrOutputMode() noexcept;
-    LWeak<RWlrOutputHead> m_wlrOutputHead;
-    LWeak<LOutputMode> m_mode;
+ private:
+  friend class RWlrOutputHead;
+  RWlrOutputMode(RWlrOutputHead *wlrOutputHead, LOutputMode *mode) noexcept;
+  ~RWlrOutputMode() noexcept;
+  LWeak<RWlrOutputHead> m_wlrOutputHead;
+  LWeak<LOutputMode> m_mode;
 };
 
-#endif // RWLROUTPUTMODE_H
+#endif  // RWLROUTPUTMODE_H

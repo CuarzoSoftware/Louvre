@@ -3,11 +3,12 @@
 #ifndef WAYLAND_SERVER_PROTOCOL_H
 #define WAYLAND_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -920,22 +921,22 @@ extern const struct wl_interface wl_subsurface_interface;
  * server request.
  */
 enum wl_display_error {
-	/**
-	 * server couldn't find object
-	 */
-	WL_DISPLAY_ERROR_INVALID_OBJECT = 0,
-	/**
-	 * method doesn't exist on the specified interface or malformed request
-	 */
-	WL_DISPLAY_ERROR_INVALID_METHOD = 1,
-	/**
-	 * server is out of memory
-	 */
-	WL_DISPLAY_ERROR_NO_MEMORY = 2,
-	/**
-	 * implementation error in compositor
-	 */
-	WL_DISPLAY_ERROR_IMPLEMENTATION = 3,
+  /**
+   * server couldn't find object
+   */
+  WL_DISPLAY_ERROR_INVALID_OBJECT = 0,
+  /**
+   * method doesn't exist on the specified interface or malformed request
+   */
+  WL_DISPLAY_ERROR_INVALID_METHOD = 1,
+  /**
+   * server is out of memory
+   */
+  WL_DISPLAY_ERROR_NO_MEMORY = 2,
+  /**
+   * implementation error in compositor
+   */
+  WL_DISPLAY_ERROR_IMPLEMENTATION = 3,
 };
 #endif /* WL_DISPLAY_ERROR_ENUM */
 
@@ -944,42 +945,40 @@ enum wl_display_error {
  * @struct wl_display_interface
  */
 struct wl_display_interface {
-	/**
-	 * asynchronous roundtrip
-	 *
-	 * The sync request asks the server to emit the 'done' event on
-	 * the returned wl_callback object. Since requests are handled
-	 * in-order and events are delivered in-order, this can be used as
-	 * a barrier to ensure all previous requests and the resulting
-	 * events have been handled.
-	 *
-	 * The object returned by this request will be destroyed by the
-	 * compositor after the callback is fired and as such the client
-	 * must not attempt to use it after that point.
-	 *
-	 * The callback_data passed in the callback is the event serial.
-	 * @param callback callback object for the sync request
-	 */
-	void (*sync)(struct wl_client *client,
-		     struct wl_resource *resource,
-		     uint32_t callback);
-	/**
-	 * get global registry object
-	 *
-	 * This request creates a registry object that allows the client
-	 * to list and bind the global objects available from the
-	 * compositor.
-	 *
-	 * It should be noted that the server side resources consumed in
-	 * response to a get_registry request can only be released when the
-	 * client disconnects, not when the client side proxy is destroyed.
-	 * Therefore, clients should invoke get_registry as infrequently as
-	 * possible to avoid wasting memory.
-	 * @param registry global registry object
-	 */
-	void (*get_registry)(struct wl_client *client,
-			     struct wl_resource *resource,
-			     uint32_t registry);
+  /**
+   * asynchronous roundtrip
+   *
+   * The sync request asks the server to emit the 'done' event on
+   * the returned wl_callback object. Since requests are handled
+   * in-order and events are delivered in-order, this can be used as
+   * a barrier to ensure all previous requests and the resulting
+   * events have been handled.
+   *
+   * The object returned by this request will be destroyed by the
+   * compositor after the callback is fired and as such the client
+   * must not attempt to use it after that point.
+   *
+   * The callback_data passed in the callback is the event serial.
+   * @param callback callback object for the sync request
+   */
+  void (*sync)(struct wl_client *client, struct wl_resource *resource,
+               uint32_t callback);
+  /**
+   * get global registry object
+   *
+   * This request creates a registry object that allows the client
+   * to list and bind the global objects available from the
+   * compositor.
+   *
+   * It should be noted that the server side resources consumed in
+   * response to a get_registry request can only be released when the
+   * client disconnects, not when the client side proxy is destroyed.
+   * Therefore, clients should invoke get_registry as infrequently as
+   * possible to avoid wasting memory.
+   * @param registry global registry object
+   */
+  void (*get_registry)(struct wl_client *client, struct wl_resource *resource,
+                       uint32_t registry);
 };
 
 #define WL_DISPLAY_ERROR 0
@@ -1008,20 +1007,19 @@ struct wl_display_interface {
  * @struct wl_registry_interface
  */
 struct wl_registry_interface {
-	/**
-	 * bind an object to the display
-	 *
-	 * Binds a new, client-created object to the server using the
-	 * specified name as the identifier.
-	 * @param name unique numeric name of the object
-	 * @param interface name of the objects interface
-	 * @param version version of the objects interface
-	 * @param id bounded object
-	 */
-	void (*bind)(struct wl_client *client,
-		     struct wl_resource *resource,
-		     uint32_t name,
-		     const char *interface, uint32_t version, uint32_t id);
+  /**
+   * bind an object to the display
+   *
+   * Binds a new, client-created object to the server using the
+   * specified name as the identifier.
+   * @param name unique numeric name of the object
+   * @param interface name of the objects interface
+   * @param version version of the objects interface
+   * @param id bounded object
+   */
+  void (*bind)(struct wl_client *client, struct wl_resource *resource,
+               uint32_t name, const char *interface, uint32_t version,
+               uint32_t id);
 };
 
 #define WL_REGISTRY_GLOBAL 0
@@ -1049,10 +1047,11 @@ struct wl_registry_interface {
  * @param interface interface implemented by the object
  * @param version interface version
  */
-static inline void
-wl_registry_send_global(struct wl_resource *resource_, uint32_t name, const char *interface, uint32_t version)
-{
-	wl_resource_post_event(resource_, WL_REGISTRY_GLOBAL, name, interface, version);
+static inline void wl_registry_send_global(struct wl_resource *resource_,
+                                           uint32_t name, const char *interface,
+                                           uint32_t version) {
+  wl_resource_post_event(resource_, WL_REGISTRY_GLOBAL, name, interface,
+                         version);
 }
 
 /**
@@ -1061,10 +1060,9 @@ wl_registry_send_global(struct wl_resource *resource_, uint32_t name, const char
  * @param resource_ The client's resource
  * @param name numeric name of the global object
  */
-static inline void
-wl_registry_send_global_remove(struct wl_resource *resource_, uint32_t name)
-{
-	wl_resource_post_event(resource_, WL_REGISTRY_GLOBAL_REMOVE, name);
+static inline void wl_registry_send_global_remove(struct wl_resource *resource_,
+                                                  uint32_t name) {
+  wl_resource_post_event(resource_, WL_REGISTRY_GLOBAL_REMOVE, name);
 }
 
 #define WL_CALLBACK_DONE 0
@@ -1074,17 +1072,15 @@ wl_registry_send_global_remove(struct wl_resource *resource_, uint32_t name)
  */
 #define WL_CALLBACK_DONE_SINCE_VERSION 1
 
-
 /**
  * @ingroup iface_wl_callback
  * Sends an done event to the client owning the resource.
  * @param resource_ The client's resource
  * @param callback_data request-specific data for the callback
  */
-static inline void
-wl_callback_send_done(struct wl_resource *resource_, uint32_t callback_data)
-{
-	wl_resource_post_event(resource_, WL_CALLBACK_DONE, callback_data);
+static inline void wl_callback_send_done(struct wl_resource *resource_,
+                                         uint32_t callback_data) {
+  wl_resource_post_event(resource_, WL_CALLBACK_DONE, callback_data);
 }
 
 /**
@@ -1092,26 +1088,23 @@ wl_callback_send_done(struct wl_resource *resource_, uint32_t callback_data)
  * @struct wl_compositor_interface
  */
 struct wl_compositor_interface {
-	/**
-	 * create new surface
-	 *
-	 * Ask the compositor to create a new surface.
-	 * @param id the new surface
-	 */
-	void (*create_surface)(struct wl_client *client,
-			       struct wl_resource *resource,
-			       uint32_t id);
-	/**
-	 * create new region
-	 *
-	 * Ask the compositor to create a new region.
-	 * @param id the new region
-	 */
-	void (*create_region)(struct wl_client *client,
-			      struct wl_resource *resource,
-			      uint32_t id);
+  /**
+   * create new surface
+   *
+   * Ask the compositor to create a new surface.
+   * @param id the new surface
+   */
+  void (*create_surface)(struct wl_client *client, struct wl_resource *resource,
+                         uint32_t id);
+  /**
+   * create new region
+   *
+   * Ask the compositor to create a new region.
+   * @param id the new region
+   */
+  void (*create_region)(struct wl_client *client, struct wl_resource *resource,
+                        uint32_t id);
 };
-
 
 /**
  * @ingroup iface_wl_compositor
@@ -1127,65 +1120,58 @@ struct wl_compositor_interface {
  * @struct wl_shm_pool_interface
  */
 struct wl_shm_pool_interface {
-	/**
-	 * create a buffer from the pool
-	 *
-	 * Create a wl_buffer object from the pool.
-	 *
-	 * The buffer is created offset bytes into the pool and has width
-	 * and height as specified. The stride argument specifies the
-	 * number of bytes from the beginning of one row to the beginning
-	 * of the next. The format is the pixel format of the buffer and
-	 * must be one of those advertised through the wl_shm.format event.
-	 *
-	 * A buffer will keep a reference to the pool it was created from
-	 * so it is valid to destroy the pool immediately after creating a
-	 * buffer from it.
-	 * @param id buffer to create
-	 * @param offset buffer byte offset within the pool
-	 * @param width buffer width, in pixels
-	 * @param height buffer height, in pixels
-	 * @param stride number of bytes from the beginning of one row to the beginning of the next row
-	 * @param format buffer pixel format
-	 */
-	void (*create_buffer)(struct wl_client *client,
-			      struct wl_resource *resource,
-			      uint32_t id,
-			      int32_t offset,
-			      int32_t width,
-			      int32_t height,
-			      int32_t stride,
-			      uint32_t format);
-	/**
-	 * destroy the pool
-	 *
-	 * Destroy the shared memory pool.
-	 *
-	 * The mmapped memory will be released when all buffers that have
-	 * been created from this pool are gone.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * change the size of the pool mapping
-	 *
-	 * This request will cause the server to remap the backing memory
-	 * for the pool from the file descriptor passed when the pool was
-	 * created, but using the new size. This request can only be used
-	 * to make the pool bigger.
-	 *
-	 * This request only changes the amount of bytes that are mmapped
-	 * by the server and does not touch the file corresponding to the
-	 * file descriptor passed at creation time. It is the client's
-	 * responsibility to ensure that the file is at least as big as the
-	 * new pool size.
-	 * @param size new size of the pool, in bytes
-	 */
-	void (*resize)(struct wl_client *client,
-		       struct wl_resource *resource,
-		       int32_t size);
+  /**
+   * create a buffer from the pool
+   *
+   * Create a wl_buffer object from the pool.
+   *
+   * The buffer is created offset bytes into the pool and has width
+   * and height as specified. The stride argument specifies the
+   * number of bytes from the beginning of one row to the beginning
+   * of the next. The format is the pixel format of the buffer and
+   * must be one of those advertised through the wl_shm.format event.
+   *
+   * A buffer will keep a reference to the pool it was created from
+   * so it is valid to destroy the pool immediately after creating a
+   * buffer from it.
+   * @param id buffer to create
+   * @param offset buffer byte offset within the pool
+   * @param width buffer width, in pixels
+   * @param height buffer height, in pixels
+   * @param stride number of bytes from the beginning of one row to the
+   * beginning of the next row
+   * @param format buffer pixel format
+   */
+  void (*create_buffer)(struct wl_client *client, struct wl_resource *resource,
+                        uint32_t id, int32_t offset, int32_t width,
+                        int32_t height, int32_t stride, uint32_t format);
+  /**
+   * destroy the pool
+   *
+   * Destroy the shared memory pool.
+   *
+   * The mmapped memory will be released when all buffers that have
+   * been created from this pool are gone.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * change the size of the pool mapping
+   *
+   * This request will cause the server to remap the backing memory
+   * for the pool from the file descriptor passed when the pool was
+   * created, but using the new size. This request can only be used
+   * to make the pool bigger.
+   *
+   * This request only changes the amount of bytes that are mmapped
+   * by the server and does not touch the file corresponding to the
+   * file descriptor passed at creation time. It is the client's
+   * responsibility to ensure that the file is at least as big as the
+   * new pool size.
+   * @param size new size of the pool, in bytes
+   */
+  void (*resize)(struct wl_client *client, struct wl_resource *resource,
+                 int32_t size);
 };
-
 
 /**
  * @ingroup iface_wl_shm_pool
@@ -1209,18 +1195,18 @@ struct wl_shm_pool_interface {
  * These errors can be emitted in response to wl_shm requests.
  */
 enum wl_shm_error {
-	/**
-	 * buffer format is not known
-	 */
-	WL_SHM_ERROR_INVALID_FORMAT = 0,
-	/**
-	 * invalid size or stride during pool or buffer creation
-	 */
-	WL_SHM_ERROR_INVALID_STRIDE = 1,
-	/**
-	 * mmapping the file descriptor failed
-	 */
-	WL_SHM_ERROR_INVALID_FD = 2,
+  /**
+   * buffer format is not known
+   */
+  WL_SHM_ERROR_INVALID_FORMAT = 0,
+  /**
+   * invalid size or stride during pool or buffer creation
+   */
+  WL_SHM_ERROR_INVALID_STRIDE = 1,
+  /**
+   * mmapping the file descriptor failed
+   */
+  WL_SHM_ERROR_INVALID_FD = 2,
 };
 #endif /* WL_SHM_ERROR_ENUM */
 
@@ -1244,462 +1230,468 @@ enum wl_shm_error {
  * extension, pre-multiplied alpha is used for pixel values.
  */
 enum wl_shm_format {
-	/**
-	 * 32-bit ARGB format, [31:0] A:R:G:B 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_ARGB8888 = 0,
-	/**
-	 * 32-bit RGB format, [31:0] x:R:G:B 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_XRGB8888 = 1,
-	/**
-	 * 8-bit color index format, [7:0] C
-	 */
-	WL_SHM_FORMAT_C8 = 0x20203843,
-	/**
-	 * 8-bit RGB format, [7:0] R:G:B 3:3:2
-	 */
-	WL_SHM_FORMAT_RGB332 = 0x38424752,
-	/**
-	 * 8-bit BGR format, [7:0] B:G:R 2:3:3
-	 */
-	WL_SHM_FORMAT_BGR233 = 0x38524742,
-	/**
-	 * 16-bit xRGB format, [15:0] x:R:G:B 4:4:4:4 little endian
-	 */
-	WL_SHM_FORMAT_XRGB4444 = 0x32315258,
-	/**
-	 * 16-bit xBGR format, [15:0] x:B:G:R 4:4:4:4 little endian
-	 */
-	WL_SHM_FORMAT_XBGR4444 = 0x32314258,
-	/**
-	 * 16-bit RGBx format, [15:0] R:G:B:x 4:4:4:4 little endian
-	 */
-	WL_SHM_FORMAT_RGBX4444 = 0x32315852,
-	/**
-	 * 16-bit BGRx format, [15:0] B:G:R:x 4:4:4:4 little endian
-	 */
-	WL_SHM_FORMAT_BGRX4444 = 0x32315842,
-	/**
-	 * 16-bit ARGB format, [15:0] A:R:G:B 4:4:4:4 little endian
-	 */
-	WL_SHM_FORMAT_ARGB4444 = 0x32315241,
-	/**
-	 * 16-bit ABGR format, [15:0] A:B:G:R 4:4:4:4 little endian
-	 */
-	WL_SHM_FORMAT_ABGR4444 = 0x32314241,
-	/**
-	 * 16-bit RBGA format, [15:0] R:G:B:A 4:4:4:4 little endian
-	 */
-	WL_SHM_FORMAT_RGBA4444 = 0x32314152,
-	/**
-	 * 16-bit BGRA format, [15:0] B:G:R:A 4:4:4:4 little endian
-	 */
-	WL_SHM_FORMAT_BGRA4444 = 0x32314142,
-	/**
-	 * 16-bit xRGB format, [15:0] x:R:G:B 1:5:5:5 little endian
-	 */
-	WL_SHM_FORMAT_XRGB1555 = 0x35315258,
-	/**
-	 * 16-bit xBGR 1555 format, [15:0] x:B:G:R 1:5:5:5 little endian
-	 */
-	WL_SHM_FORMAT_XBGR1555 = 0x35314258,
-	/**
-	 * 16-bit RGBx 5551 format, [15:0] R:G:B:x 5:5:5:1 little endian
-	 */
-	WL_SHM_FORMAT_RGBX5551 = 0x35315852,
-	/**
-	 * 16-bit BGRx 5551 format, [15:0] B:G:R:x 5:5:5:1 little endian
-	 */
-	WL_SHM_FORMAT_BGRX5551 = 0x35315842,
-	/**
-	 * 16-bit ARGB 1555 format, [15:0] A:R:G:B 1:5:5:5 little endian
-	 */
-	WL_SHM_FORMAT_ARGB1555 = 0x35315241,
-	/**
-	 * 16-bit ABGR 1555 format, [15:0] A:B:G:R 1:5:5:5 little endian
-	 */
-	WL_SHM_FORMAT_ABGR1555 = 0x35314241,
-	/**
-	 * 16-bit RGBA 5551 format, [15:0] R:G:B:A 5:5:5:1 little endian
-	 */
-	WL_SHM_FORMAT_RGBA5551 = 0x35314152,
-	/**
-	 * 16-bit BGRA 5551 format, [15:0] B:G:R:A 5:5:5:1 little endian
-	 */
-	WL_SHM_FORMAT_BGRA5551 = 0x35314142,
-	/**
-	 * 16-bit RGB 565 format, [15:0] R:G:B 5:6:5 little endian
-	 */
-	WL_SHM_FORMAT_RGB565 = 0x36314752,
-	/**
-	 * 16-bit BGR 565 format, [15:0] B:G:R 5:6:5 little endian
-	 */
-	WL_SHM_FORMAT_BGR565 = 0x36314742,
-	/**
-	 * 24-bit RGB format, [23:0] R:G:B little endian
-	 */
-	WL_SHM_FORMAT_RGB888 = 0x34324752,
-	/**
-	 * 24-bit BGR format, [23:0] B:G:R little endian
-	 */
-	WL_SHM_FORMAT_BGR888 = 0x34324742,
-	/**
-	 * 32-bit xBGR format, [31:0] x:B:G:R 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_XBGR8888 = 0x34324258,
-	/**
-	 * 32-bit RGBx format, [31:0] R:G:B:x 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_RGBX8888 = 0x34325852,
-	/**
-	 * 32-bit BGRx format, [31:0] B:G:R:x 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_BGRX8888 = 0x34325842,
-	/**
-	 * 32-bit ABGR format, [31:0] A:B:G:R 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_ABGR8888 = 0x34324241,
-	/**
-	 * 32-bit RGBA format, [31:0] R:G:B:A 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_RGBA8888 = 0x34324152,
-	/**
-	 * 32-bit BGRA format, [31:0] B:G:R:A 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_BGRA8888 = 0x34324142,
-	/**
-	 * 32-bit xRGB format, [31:0] x:R:G:B 2:10:10:10 little endian
-	 */
-	WL_SHM_FORMAT_XRGB2101010 = 0x30335258,
-	/**
-	 * 32-bit xBGR format, [31:0] x:B:G:R 2:10:10:10 little endian
-	 */
-	WL_SHM_FORMAT_XBGR2101010 = 0x30334258,
-	/**
-	 * 32-bit RGBx format, [31:0] R:G:B:x 10:10:10:2 little endian
-	 */
-	WL_SHM_FORMAT_RGBX1010102 = 0x30335852,
-	/**
-	 * 32-bit BGRx format, [31:0] B:G:R:x 10:10:10:2 little endian
-	 */
-	WL_SHM_FORMAT_BGRX1010102 = 0x30335842,
-	/**
-	 * 32-bit ARGB format, [31:0] A:R:G:B 2:10:10:10 little endian
-	 */
-	WL_SHM_FORMAT_ARGB2101010 = 0x30335241,
-	/**
-	 * 32-bit ABGR format, [31:0] A:B:G:R 2:10:10:10 little endian
-	 */
-	WL_SHM_FORMAT_ABGR2101010 = 0x30334241,
-	/**
-	 * 32-bit RGBA format, [31:0] R:G:B:A 10:10:10:2 little endian
-	 */
-	WL_SHM_FORMAT_RGBA1010102 = 0x30334152,
-	/**
-	 * 32-bit BGRA format, [31:0] B:G:R:A 10:10:10:2 little endian
-	 */
-	WL_SHM_FORMAT_BGRA1010102 = 0x30334142,
-	/**
-	 * packed YCbCr format, [31:0] Cr0:Y1:Cb0:Y0 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_YUYV = 0x56595559,
-	/**
-	 * packed YCbCr format, [31:0] Cb0:Y1:Cr0:Y0 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_YVYU = 0x55595659,
-	/**
-	 * packed YCbCr format, [31:0] Y1:Cr0:Y0:Cb0 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_UYVY = 0x59565955,
-	/**
-	 * packed YCbCr format, [31:0] Y1:Cb0:Y0:Cr0 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_VYUY = 0x59555956,
-	/**
-	 * packed AYCbCr format, [31:0] A:Y:Cb:Cr 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_AYUV = 0x56555941,
-	/**
-	 * 2 plane YCbCr Cr:Cb format, 2x2 subsampled Cr:Cb plane
-	 */
-	WL_SHM_FORMAT_NV12 = 0x3231564e,
-	/**
-	 * 2 plane YCbCr Cb:Cr format, 2x2 subsampled Cb:Cr plane
-	 */
-	WL_SHM_FORMAT_NV21 = 0x3132564e,
-	/**
-	 * 2 plane YCbCr Cr:Cb format, 2x1 subsampled Cr:Cb plane
-	 */
-	WL_SHM_FORMAT_NV16 = 0x3631564e,
-	/**
-	 * 2 plane YCbCr Cb:Cr format, 2x1 subsampled Cb:Cr plane
-	 */
-	WL_SHM_FORMAT_NV61 = 0x3136564e,
-	/**
-	 * 3 plane YCbCr format, 4x4 subsampled Cb (1) and Cr (2) planes
-	 */
-	WL_SHM_FORMAT_YUV410 = 0x39565559,
-	/**
-	 * 3 plane YCbCr format, 4x4 subsampled Cr (1) and Cb (2) planes
-	 */
-	WL_SHM_FORMAT_YVU410 = 0x39555659,
-	/**
-	 * 3 plane YCbCr format, 4x1 subsampled Cb (1) and Cr (2) planes
-	 */
-	WL_SHM_FORMAT_YUV411 = 0x31315559,
-	/**
-	 * 3 plane YCbCr format, 4x1 subsampled Cr (1) and Cb (2) planes
-	 */
-	WL_SHM_FORMAT_YVU411 = 0x31315659,
-	/**
-	 * 3 plane YCbCr format, 2x2 subsampled Cb (1) and Cr (2) planes
-	 */
-	WL_SHM_FORMAT_YUV420 = 0x32315559,
-	/**
-	 * 3 plane YCbCr format, 2x2 subsampled Cr (1) and Cb (2) planes
-	 */
-	WL_SHM_FORMAT_YVU420 = 0x32315659,
-	/**
-	 * 3 plane YCbCr format, 2x1 subsampled Cb (1) and Cr (2) planes
-	 */
-	WL_SHM_FORMAT_YUV422 = 0x36315559,
-	/**
-	 * 3 plane YCbCr format, 2x1 subsampled Cr (1) and Cb (2) planes
-	 */
-	WL_SHM_FORMAT_YVU422 = 0x36315659,
-	/**
-	 * 3 plane YCbCr format, non-subsampled Cb (1) and Cr (2) planes
-	 */
-	WL_SHM_FORMAT_YUV444 = 0x34325559,
-	/**
-	 * 3 plane YCbCr format, non-subsampled Cr (1) and Cb (2) planes
-	 */
-	WL_SHM_FORMAT_YVU444 = 0x34325659,
-	/**
-	 * [7:0] R
-	 */
-	WL_SHM_FORMAT_R8 = 0x20203852,
-	/**
-	 * [15:0] R little endian
-	 */
-	WL_SHM_FORMAT_R16 = 0x20363152,
-	/**
-	 * [15:0] R:G 8:8 little endian
-	 */
-	WL_SHM_FORMAT_RG88 = 0x38384752,
-	/**
-	 * [15:0] G:R 8:8 little endian
-	 */
-	WL_SHM_FORMAT_GR88 = 0x38385247,
-	/**
-	 * [31:0] R:G 16:16 little endian
-	 */
-	WL_SHM_FORMAT_RG1616 = 0x32334752,
-	/**
-	 * [31:0] G:R 16:16 little endian
-	 */
-	WL_SHM_FORMAT_GR1616 = 0x32335247,
-	/**
-	 * [63:0] x:R:G:B 16:16:16:16 little endian
-	 */
-	WL_SHM_FORMAT_XRGB16161616F = 0x48345258,
-	/**
-	 * [63:0] x:B:G:R 16:16:16:16 little endian
-	 */
-	WL_SHM_FORMAT_XBGR16161616F = 0x48344258,
-	/**
-	 * [63:0] A:R:G:B 16:16:16:16 little endian
-	 */
-	WL_SHM_FORMAT_ARGB16161616F = 0x48345241,
-	/**
-	 * [63:0] A:B:G:R 16:16:16:16 little endian
-	 */
-	WL_SHM_FORMAT_ABGR16161616F = 0x48344241,
-	/**
-	 * [31:0] X:Y:Cb:Cr 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_XYUV8888 = 0x56555958,
-	/**
-	 * [23:0] Cr:Cb:Y 8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_VUY888 = 0x34325556,
-	/**
-	 * Y followed by U then V, 10:10:10. Non-linear modifier only
-	 */
-	WL_SHM_FORMAT_VUY101010 = 0x30335556,
-	/**
-	 * [63:0] Cr0:0:Y1:0:Cb0:0:Y0:0 10:6:10:6:10:6:10:6 little endian per 2 Y pixels
-	 */
-	WL_SHM_FORMAT_Y210 = 0x30313259,
-	/**
-	 * [63:0] Cr0:0:Y1:0:Cb0:0:Y0:0 12:4:12:4:12:4:12:4 little endian per 2 Y pixels
-	 */
-	WL_SHM_FORMAT_Y212 = 0x32313259,
-	/**
-	 * [63:0] Cr0:Y1:Cb0:Y0 16:16:16:16 little endian per 2 Y pixels
-	 */
-	WL_SHM_FORMAT_Y216 = 0x36313259,
-	/**
-	 * [31:0] A:Cr:Y:Cb 2:10:10:10 little endian
-	 */
-	WL_SHM_FORMAT_Y410 = 0x30313459,
-	/**
-	 * [63:0] A:0:Cr:0:Y:0:Cb:0 12:4:12:4:12:4:12:4 little endian
-	 */
-	WL_SHM_FORMAT_Y412 = 0x32313459,
-	/**
-	 * [63:0] A:Cr:Y:Cb 16:16:16:16 little endian
-	 */
-	WL_SHM_FORMAT_Y416 = 0x36313459,
-	/**
-	 * [31:0] X:Cr:Y:Cb 2:10:10:10 little endian
-	 */
-	WL_SHM_FORMAT_XVYU2101010 = 0x30335658,
-	/**
-	 * [63:0] X:0:Cr:0:Y:0:Cb:0 12:4:12:4:12:4:12:4 little endian
-	 */
-	WL_SHM_FORMAT_XVYU12_16161616 = 0x36335658,
-	/**
-	 * [63:0] X:Cr:Y:Cb 16:16:16:16 little endian
-	 */
-	WL_SHM_FORMAT_XVYU16161616 = 0x38345658,
-	/**
-	 * [63:0]   A3:A2:Y3:0:Cr0:0:Y2:0:A1:A0:Y1:0:Cb0:0:Y0:0  1:1:8:2:8:2:8:2:1:1:8:2:8:2:8:2 little endian
-	 */
-	WL_SHM_FORMAT_Y0L0 = 0x304c3059,
-	/**
-	 * [63:0]   X3:X2:Y3:0:Cr0:0:Y2:0:X1:X0:Y1:0:Cb0:0:Y0:0  1:1:8:2:8:2:8:2:1:1:8:2:8:2:8:2 little endian
-	 */
-	WL_SHM_FORMAT_X0L0 = 0x304c3058,
-	/**
-	 * [63:0]   A3:A2:Y3:Cr0:Y2:A1:A0:Y1:Cb0:Y0  1:1:10:10:10:1:1:10:10:10 little endian
-	 */
-	WL_SHM_FORMAT_Y0L2 = 0x324c3059,
-	/**
-	 * [63:0]   X3:X2:Y3:Cr0:Y2:X1:X0:Y1:Cb0:Y0  1:1:10:10:10:1:1:10:10:10 little endian
-	 */
-	WL_SHM_FORMAT_X0L2 = 0x324c3058,
-	WL_SHM_FORMAT_YUV420_8BIT = 0x38305559,
-	WL_SHM_FORMAT_YUV420_10BIT = 0x30315559,
-	WL_SHM_FORMAT_XRGB8888_A8 = 0x38415258,
-	WL_SHM_FORMAT_XBGR8888_A8 = 0x38414258,
-	WL_SHM_FORMAT_RGBX8888_A8 = 0x38415852,
-	WL_SHM_FORMAT_BGRX8888_A8 = 0x38415842,
-	WL_SHM_FORMAT_RGB888_A8 = 0x38413852,
-	WL_SHM_FORMAT_BGR888_A8 = 0x38413842,
-	WL_SHM_FORMAT_RGB565_A8 = 0x38413552,
-	WL_SHM_FORMAT_BGR565_A8 = 0x38413542,
-	/**
-	 * non-subsampled Cr:Cb plane
-	 */
-	WL_SHM_FORMAT_NV24 = 0x3432564e,
-	/**
-	 * non-subsampled Cb:Cr plane
-	 */
-	WL_SHM_FORMAT_NV42 = 0x3234564e,
-	/**
-	 * 2x1 subsampled Cr:Cb plane, 10 bit per channel
-	 */
-	WL_SHM_FORMAT_P210 = 0x30313250,
-	/**
-	 * 2x2 subsampled Cr:Cb plane 10 bits per channel
-	 */
-	WL_SHM_FORMAT_P010 = 0x30313050,
-	/**
-	 * 2x2 subsampled Cr:Cb plane 12 bits per channel
-	 */
-	WL_SHM_FORMAT_P012 = 0x32313050,
-	/**
-	 * 2x2 subsampled Cr:Cb plane 16 bits per channel
-	 */
-	WL_SHM_FORMAT_P016 = 0x36313050,
-	/**
-	 * [63:0] A:x:B:x:G:x:R:x 10:6:10:6:10:6:10:6 little endian
-	 */
-	WL_SHM_FORMAT_AXBXGXRX106106106106 = 0x30314241,
-	/**
-	 * 2x2 subsampled Cr:Cb plane
-	 */
-	WL_SHM_FORMAT_NV15 = 0x3531564e,
-	WL_SHM_FORMAT_Q410 = 0x30313451,
-	WL_SHM_FORMAT_Q401 = 0x31303451,
-	/**
-	 * [63:0] x:R:G:B 16:16:16:16 little endian
-	 */
-	WL_SHM_FORMAT_XRGB16161616 = 0x38345258,
-	/**
-	 * [63:0] x:B:G:R 16:16:16:16 little endian
-	 */
-	WL_SHM_FORMAT_XBGR16161616 = 0x38344258,
-	/**
-	 * [63:0] A:R:G:B 16:16:16:16 little endian
-	 */
-	WL_SHM_FORMAT_ARGB16161616 = 0x38345241,
-	/**
-	 * [63:0] A:B:G:R 16:16:16:16 little endian
-	 */
-	WL_SHM_FORMAT_ABGR16161616 = 0x38344241,
-	/**
-	 * [7:0] C0:C1:C2:C3:C4:C5:C6:C7 1:1:1:1:1:1:1:1 eight pixels/byte
-	 */
-	WL_SHM_FORMAT_C1 = 0x20203143,
-	/**
-	 * [7:0] C0:C1:C2:C3 2:2:2:2 four pixels/byte
-	 */
-	WL_SHM_FORMAT_C2 = 0x20203243,
-	/**
-	 * [7:0] C0:C1 4:4 two pixels/byte
-	 */
-	WL_SHM_FORMAT_C4 = 0x20203443,
-	/**
-	 * [7:0] D0:D1:D2:D3:D4:D5:D6:D7 1:1:1:1:1:1:1:1 eight pixels/byte
-	 */
-	WL_SHM_FORMAT_D1 = 0x20203144,
-	/**
-	 * [7:0] D0:D1:D2:D3 2:2:2:2 four pixels/byte
-	 */
-	WL_SHM_FORMAT_D2 = 0x20203244,
-	/**
-	 * [7:0] D0:D1 4:4 two pixels/byte
-	 */
-	WL_SHM_FORMAT_D4 = 0x20203444,
-	/**
-	 * [7:0] D
-	 */
-	WL_SHM_FORMAT_D8 = 0x20203844,
-	/**
-	 * [7:0] R0:R1:R2:R3:R4:R5:R6:R7 1:1:1:1:1:1:1:1 eight pixels/byte
-	 */
-	WL_SHM_FORMAT_R1 = 0x20203152,
-	/**
-	 * [7:0] R0:R1:R2:R3 2:2:2:2 four pixels/byte
-	 */
-	WL_SHM_FORMAT_R2 = 0x20203252,
-	/**
-	 * [7:0] R0:R1 4:4 two pixels/byte
-	 */
-	WL_SHM_FORMAT_R4 = 0x20203452,
-	/**
-	 * [15:0] x:R 6:10 little endian
-	 */
-	WL_SHM_FORMAT_R10 = 0x20303152,
-	/**
-	 * [15:0] x:R 4:12 little endian
-	 */
-	WL_SHM_FORMAT_R12 = 0x20323152,
-	/**
-	 * [31:0] A:Cr:Cb:Y 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_AVUY8888 = 0x59555641,
-	/**
-	 * [31:0] X:Cr:Cb:Y 8:8:8:8 little endian
-	 */
-	WL_SHM_FORMAT_XVUY8888 = 0x59555658,
-	/**
-	 * 2x2 subsampled Cr:Cb plane 10 bits per channel packed
-	 */
-	WL_SHM_FORMAT_P030 = 0x30333050,
+  /**
+   * 32-bit ARGB format, [31:0] A:R:G:B 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_ARGB8888 = 0,
+  /**
+   * 32-bit RGB format, [31:0] x:R:G:B 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_XRGB8888 = 1,
+  /**
+   * 8-bit color index format, [7:0] C
+   */
+  WL_SHM_FORMAT_C8 = 0x20203843,
+  /**
+   * 8-bit RGB format, [7:0] R:G:B 3:3:2
+   */
+  WL_SHM_FORMAT_RGB332 = 0x38424752,
+  /**
+   * 8-bit BGR format, [7:0] B:G:R 2:3:3
+   */
+  WL_SHM_FORMAT_BGR233 = 0x38524742,
+  /**
+   * 16-bit xRGB format, [15:0] x:R:G:B 4:4:4:4 little endian
+   */
+  WL_SHM_FORMAT_XRGB4444 = 0x32315258,
+  /**
+   * 16-bit xBGR format, [15:0] x:B:G:R 4:4:4:4 little endian
+   */
+  WL_SHM_FORMAT_XBGR4444 = 0x32314258,
+  /**
+   * 16-bit RGBx format, [15:0] R:G:B:x 4:4:4:4 little endian
+   */
+  WL_SHM_FORMAT_RGBX4444 = 0x32315852,
+  /**
+   * 16-bit BGRx format, [15:0] B:G:R:x 4:4:4:4 little endian
+   */
+  WL_SHM_FORMAT_BGRX4444 = 0x32315842,
+  /**
+   * 16-bit ARGB format, [15:0] A:R:G:B 4:4:4:4 little endian
+   */
+  WL_SHM_FORMAT_ARGB4444 = 0x32315241,
+  /**
+   * 16-bit ABGR format, [15:0] A:B:G:R 4:4:4:4 little endian
+   */
+  WL_SHM_FORMAT_ABGR4444 = 0x32314241,
+  /**
+   * 16-bit RBGA format, [15:0] R:G:B:A 4:4:4:4 little endian
+   */
+  WL_SHM_FORMAT_RGBA4444 = 0x32314152,
+  /**
+   * 16-bit BGRA format, [15:0] B:G:R:A 4:4:4:4 little endian
+   */
+  WL_SHM_FORMAT_BGRA4444 = 0x32314142,
+  /**
+   * 16-bit xRGB format, [15:0] x:R:G:B 1:5:5:5 little endian
+   */
+  WL_SHM_FORMAT_XRGB1555 = 0x35315258,
+  /**
+   * 16-bit xBGR 1555 format, [15:0] x:B:G:R 1:5:5:5 little endian
+   */
+  WL_SHM_FORMAT_XBGR1555 = 0x35314258,
+  /**
+   * 16-bit RGBx 5551 format, [15:0] R:G:B:x 5:5:5:1 little endian
+   */
+  WL_SHM_FORMAT_RGBX5551 = 0x35315852,
+  /**
+   * 16-bit BGRx 5551 format, [15:0] B:G:R:x 5:5:5:1 little endian
+   */
+  WL_SHM_FORMAT_BGRX5551 = 0x35315842,
+  /**
+   * 16-bit ARGB 1555 format, [15:0] A:R:G:B 1:5:5:5 little endian
+   */
+  WL_SHM_FORMAT_ARGB1555 = 0x35315241,
+  /**
+   * 16-bit ABGR 1555 format, [15:0] A:B:G:R 1:5:5:5 little endian
+   */
+  WL_SHM_FORMAT_ABGR1555 = 0x35314241,
+  /**
+   * 16-bit RGBA 5551 format, [15:0] R:G:B:A 5:5:5:1 little endian
+   */
+  WL_SHM_FORMAT_RGBA5551 = 0x35314152,
+  /**
+   * 16-bit BGRA 5551 format, [15:0] B:G:R:A 5:5:5:1 little endian
+   */
+  WL_SHM_FORMAT_BGRA5551 = 0x35314142,
+  /**
+   * 16-bit RGB 565 format, [15:0] R:G:B 5:6:5 little endian
+   */
+  WL_SHM_FORMAT_RGB565 = 0x36314752,
+  /**
+   * 16-bit BGR 565 format, [15:0] B:G:R 5:6:5 little endian
+   */
+  WL_SHM_FORMAT_BGR565 = 0x36314742,
+  /**
+   * 24-bit RGB format, [23:0] R:G:B little endian
+   */
+  WL_SHM_FORMAT_RGB888 = 0x34324752,
+  /**
+   * 24-bit BGR format, [23:0] B:G:R little endian
+   */
+  WL_SHM_FORMAT_BGR888 = 0x34324742,
+  /**
+   * 32-bit xBGR format, [31:0] x:B:G:R 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_XBGR8888 = 0x34324258,
+  /**
+   * 32-bit RGBx format, [31:0] R:G:B:x 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_RGBX8888 = 0x34325852,
+  /**
+   * 32-bit BGRx format, [31:0] B:G:R:x 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_BGRX8888 = 0x34325842,
+  /**
+   * 32-bit ABGR format, [31:0] A:B:G:R 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_ABGR8888 = 0x34324241,
+  /**
+   * 32-bit RGBA format, [31:0] R:G:B:A 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_RGBA8888 = 0x34324152,
+  /**
+   * 32-bit BGRA format, [31:0] B:G:R:A 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_BGRA8888 = 0x34324142,
+  /**
+   * 32-bit xRGB format, [31:0] x:R:G:B 2:10:10:10 little endian
+   */
+  WL_SHM_FORMAT_XRGB2101010 = 0x30335258,
+  /**
+   * 32-bit xBGR format, [31:0] x:B:G:R 2:10:10:10 little endian
+   */
+  WL_SHM_FORMAT_XBGR2101010 = 0x30334258,
+  /**
+   * 32-bit RGBx format, [31:0] R:G:B:x 10:10:10:2 little endian
+   */
+  WL_SHM_FORMAT_RGBX1010102 = 0x30335852,
+  /**
+   * 32-bit BGRx format, [31:0] B:G:R:x 10:10:10:2 little endian
+   */
+  WL_SHM_FORMAT_BGRX1010102 = 0x30335842,
+  /**
+   * 32-bit ARGB format, [31:0] A:R:G:B 2:10:10:10 little endian
+   */
+  WL_SHM_FORMAT_ARGB2101010 = 0x30335241,
+  /**
+   * 32-bit ABGR format, [31:0] A:B:G:R 2:10:10:10 little endian
+   */
+  WL_SHM_FORMAT_ABGR2101010 = 0x30334241,
+  /**
+   * 32-bit RGBA format, [31:0] R:G:B:A 10:10:10:2 little endian
+   */
+  WL_SHM_FORMAT_RGBA1010102 = 0x30334152,
+  /**
+   * 32-bit BGRA format, [31:0] B:G:R:A 10:10:10:2 little endian
+   */
+  WL_SHM_FORMAT_BGRA1010102 = 0x30334142,
+  /**
+   * packed YCbCr format, [31:0] Cr0:Y1:Cb0:Y0 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_YUYV = 0x56595559,
+  /**
+   * packed YCbCr format, [31:0] Cb0:Y1:Cr0:Y0 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_YVYU = 0x55595659,
+  /**
+   * packed YCbCr format, [31:0] Y1:Cr0:Y0:Cb0 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_UYVY = 0x59565955,
+  /**
+   * packed YCbCr format, [31:0] Y1:Cb0:Y0:Cr0 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_VYUY = 0x59555956,
+  /**
+   * packed AYCbCr format, [31:0] A:Y:Cb:Cr 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_AYUV = 0x56555941,
+  /**
+   * 2 plane YCbCr Cr:Cb format, 2x2 subsampled Cr:Cb plane
+   */
+  WL_SHM_FORMAT_NV12 = 0x3231564e,
+  /**
+   * 2 plane YCbCr Cb:Cr format, 2x2 subsampled Cb:Cr plane
+   */
+  WL_SHM_FORMAT_NV21 = 0x3132564e,
+  /**
+   * 2 plane YCbCr Cr:Cb format, 2x1 subsampled Cr:Cb plane
+   */
+  WL_SHM_FORMAT_NV16 = 0x3631564e,
+  /**
+   * 2 plane YCbCr Cb:Cr format, 2x1 subsampled Cb:Cr plane
+   */
+  WL_SHM_FORMAT_NV61 = 0x3136564e,
+  /**
+   * 3 plane YCbCr format, 4x4 subsampled Cb (1) and Cr (2) planes
+   */
+  WL_SHM_FORMAT_YUV410 = 0x39565559,
+  /**
+   * 3 plane YCbCr format, 4x4 subsampled Cr (1) and Cb (2) planes
+   */
+  WL_SHM_FORMAT_YVU410 = 0x39555659,
+  /**
+   * 3 plane YCbCr format, 4x1 subsampled Cb (1) and Cr (2) planes
+   */
+  WL_SHM_FORMAT_YUV411 = 0x31315559,
+  /**
+   * 3 plane YCbCr format, 4x1 subsampled Cr (1) and Cb (2) planes
+   */
+  WL_SHM_FORMAT_YVU411 = 0x31315659,
+  /**
+   * 3 plane YCbCr format, 2x2 subsampled Cb (1) and Cr (2) planes
+   */
+  WL_SHM_FORMAT_YUV420 = 0x32315559,
+  /**
+   * 3 plane YCbCr format, 2x2 subsampled Cr (1) and Cb (2) planes
+   */
+  WL_SHM_FORMAT_YVU420 = 0x32315659,
+  /**
+   * 3 plane YCbCr format, 2x1 subsampled Cb (1) and Cr (2) planes
+   */
+  WL_SHM_FORMAT_YUV422 = 0x36315559,
+  /**
+   * 3 plane YCbCr format, 2x1 subsampled Cr (1) and Cb (2) planes
+   */
+  WL_SHM_FORMAT_YVU422 = 0x36315659,
+  /**
+   * 3 plane YCbCr format, non-subsampled Cb (1) and Cr (2) planes
+   */
+  WL_SHM_FORMAT_YUV444 = 0x34325559,
+  /**
+   * 3 plane YCbCr format, non-subsampled Cr (1) and Cb (2) planes
+   */
+  WL_SHM_FORMAT_YVU444 = 0x34325659,
+  /**
+   * [7:0] R
+   */
+  WL_SHM_FORMAT_R8 = 0x20203852,
+  /**
+   * [15:0] R little endian
+   */
+  WL_SHM_FORMAT_R16 = 0x20363152,
+  /**
+   * [15:0] R:G 8:8 little endian
+   */
+  WL_SHM_FORMAT_RG88 = 0x38384752,
+  /**
+   * [15:0] G:R 8:8 little endian
+   */
+  WL_SHM_FORMAT_GR88 = 0x38385247,
+  /**
+   * [31:0] R:G 16:16 little endian
+   */
+  WL_SHM_FORMAT_RG1616 = 0x32334752,
+  /**
+   * [31:0] G:R 16:16 little endian
+   */
+  WL_SHM_FORMAT_GR1616 = 0x32335247,
+  /**
+   * [63:0] x:R:G:B 16:16:16:16 little endian
+   */
+  WL_SHM_FORMAT_XRGB16161616F = 0x48345258,
+  /**
+   * [63:0] x:B:G:R 16:16:16:16 little endian
+   */
+  WL_SHM_FORMAT_XBGR16161616F = 0x48344258,
+  /**
+   * [63:0] A:R:G:B 16:16:16:16 little endian
+   */
+  WL_SHM_FORMAT_ARGB16161616F = 0x48345241,
+  /**
+   * [63:0] A:B:G:R 16:16:16:16 little endian
+   */
+  WL_SHM_FORMAT_ABGR16161616F = 0x48344241,
+  /**
+   * [31:0] X:Y:Cb:Cr 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_XYUV8888 = 0x56555958,
+  /**
+   * [23:0] Cr:Cb:Y 8:8:8 little endian
+   */
+  WL_SHM_FORMAT_VUY888 = 0x34325556,
+  /**
+   * Y followed by U then V, 10:10:10. Non-linear modifier only
+   */
+  WL_SHM_FORMAT_VUY101010 = 0x30335556,
+  /**
+   * [63:0] Cr0:0:Y1:0:Cb0:0:Y0:0 10:6:10:6:10:6:10:6 little endian per 2 Y
+   * pixels
+   */
+  WL_SHM_FORMAT_Y210 = 0x30313259,
+  /**
+   * [63:0] Cr0:0:Y1:0:Cb0:0:Y0:0 12:4:12:4:12:4:12:4 little endian per 2 Y
+   * pixels
+   */
+  WL_SHM_FORMAT_Y212 = 0x32313259,
+  /**
+   * [63:0] Cr0:Y1:Cb0:Y0 16:16:16:16 little endian per 2 Y pixels
+   */
+  WL_SHM_FORMAT_Y216 = 0x36313259,
+  /**
+   * [31:0] A:Cr:Y:Cb 2:10:10:10 little endian
+   */
+  WL_SHM_FORMAT_Y410 = 0x30313459,
+  /**
+   * [63:0] A:0:Cr:0:Y:0:Cb:0 12:4:12:4:12:4:12:4 little endian
+   */
+  WL_SHM_FORMAT_Y412 = 0x32313459,
+  /**
+   * [63:0] A:Cr:Y:Cb 16:16:16:16 little endian
+   */
+  WL_SHM_FORMAT_Y416 = 0x36313459,
+  /**
+   * [31:0] X:Cr:Y:Cb 2:10:10:10 little endian
+   */
+  WL_SHM_FORMAT_XVYU2101010 = 0x30335658,
+  /**
+   * [63:0] X:0:Cr:0:Y:0:Cb:0 12:4:12:4:12:4:12:4 little endian
+   */
+  WL_SHM_FORMAT_XVYU12_16161616 = 0x36335658,
+  /**
+   * [63:0] X:Cr:Y:Cb 16:16:16:16 little endian
+   */
+  WL_SHM_FORMAT_XVYU16161616 = 0x38345658,
+  /**
+   * [63:0]   A3:A2:Y3:0:Cr0:0:Y2:0:A1:A0:Y1:0:Cb0:0:Y0:0
+   * 1:1:8:2:8:2:8:2:1:1:8:2:8:2:8:2 little endian
+   */
+  WL_SHM_FORMAT_Y0L0 = 0x304c3059,
+  /**
+   * [63:0]   X3:X2:Y3:0:Cr0:0:Y2:0:X1:X0:Y1:0:Cb0:0:Y0:0
+   * 1:1:8:2:8:2:8:2:1:1:8:2:8:2:8:2 little endian
+   */
+  WL_SHM_FORMAT_X0L0 = 0x304c3058,
+  /**
+   * [63:0]   A3:A2:Y3:Cr0:Y2:A1:A0:Y1:Cb0:Y0  1:1:10:10:10:1:1:10:10:10 little
+   * endian
+   */
+  WL_SHM_FORMAT_Y0L2 = 0x324c3059,
+  /**
+   * [63:0]   X3:X2:Y3:Cr0:Y2:X1:X0:Y1:Cb0:Y0  1:1:10:10:10:1:1:10:10:10 little
+   * endian
+   */
+  WL_SHM_FORMAT_X0L2 = 0x324c3058,
+  WL_SHM_FORMAT_YUV420_8BIT = 0x38305559,
+  WL_SHM_FORMAT_YUV420_10BIT = 0x30315559,
+  WL_SHM_FORMAT_XRGB8888_A8 = 0x38415258,
+  WL_SHM_FORMAT_XBGR8888_A8 = 0x38414258,
+  WL_SHM_FORMAT_RGBX8888_A8 = 0x38415852,
+  WL_SHM_FORMAT_BGRX8888_A8 = 0x38415842,
+  WL_SHM_FORMAT_RGB888_A8 = 0x38413852,
+  WL_SHM_FORMAT_BGR888_A8 = 0x38413842,
+  WL_SHM_FORMAT_RGB565_A8 = 0x38413552,
+  WL_SHM_FORMAT_BGR565_A8 = 0x38413542,
+  /**
+   * non-subsampled Cr:Cb plane
+   */
+  WL_SHM_FORMAT_NV24 = 0x3432564e,
+  /**
+   * non-subsampled Cb:Cr plane
+   */
+  WL_SHM_FORMAT_NV42 = 0x3234564e,
+  /**
+   * 2x1 subsampled Cr:Cb plane, 10 bit per channel
+   */
+  WL_SHM_FORMAT_P210 = 0x30313250,
+  /**
+   * 2x2 subsampled Cr:Cb plane 10 bits per channel
+   */
+  WL_SHM_FORMAT_P010 = 0x30313050,
+  /**
+   * 2x2 subsampled Cr:Cb plane 12 bits per channel
+   */
+  WL_SHM_FORMAT_P012 = 0x32313050,
+  /**
+   * 2x2 subsampled Cr:Cb plane 16 bits per channel
+   */
+  WL_SHM_FORMAT_P016 = 0x36313050,
+  /**
+   * [63:0] A:x:B:x:G:x:R:x 10:6:10:6:10:6:10:6 little endian
+   */
+  WL_SHM_FORMAT_AXBXGXRX106106106106 = 0x30314241,
+  /**
+   * 2x2 subsampled Cr:Cb plane
+   */
+  WL_SHM_FORMAT_NV15 = 0x3531564e,
+  WL_SHM_FORMAT_Q410 = 0x30313451,
+  WL_SHM_FORMAT_Q401 = 0x31303451,
+  /**
+   * [63:0] x:R:G:B 16:16:16:16 little endian
+   */
+  WL_SHM_FORMAT_XRGB16161616 = 0x38345258,
+  /**
+   * [63:0] x:B:G:R 16:16:16:16 little endian
+   */
+  WL_SHM_FORMAT_XBGR16161616 = 0x38344258,
+  /**
+   * [63:0] A:R:G:B 16:16:16:16 little endian
+   */
+  WL_SHM_FORMAT_ARGB16161616 = 0x38345241,
+  /**
+   * [63:0] A:B:G:R 16:16:16:16 little endian
+   */
+  WL_SHM_FORMAT_ABGR16161616 = 0x38344241,
+  /**
+   * [7:0] C0:C1:C2:C3:C4:C5:C6:C7 1:1:1:1:1:1:1:1 eight pixels/byte
+   */
+  WL_SHM_FORMAT_C1 = 0x20203143,
+  /**
+   * [7:0] C0:C1:C2:C3 2:2:2:2 four pixels/byte
+   */
+  WL_SHM_FORMAT_C2 = 0x20203243,
+  /**
+   * [7:0] C0:C1 4:4 two pixels/byte
+   */
+  WL_SHM_FORMAT_C4 = 0x20203443,
+  /**
+   * [7:0] D0:D1:D2:D3:D4:D5:D6:D7 1:1:1:1:1:1:1:1 eight pixels/byte
+   */
+  WL_SHM_FORMAT_D1 = 0x20203144,
+  /**
+   * [7:0] D0:D1:D2:D3 2:2:2:2 four pixels/byte
+   */
+  WL_SHM_FORMAT_D2 = 0x20203244,
+  /**
+   * [7:0] D0:D1 4:4 two pixels/byte
+   */
+  WL_SHM_FORMAT_D4 = 0x20203444,
+  /**
+   * [7:0] D
+   */
+  WL_SHM_FORMAT_D8 = 0x20203844,
+  /**
+   * [7:0] R0:R1:R2:R3:R4:R5:R6:R7 1:1:1:1:1:1:1:1 eight pixels/byte
+   */
+  WL_SHM_FORMAT_R1 = 0x20203152,
+  /**
+   * [7:0] R0:R1:R2:R3 2:2:2:2 four pixels/byte
+   */
+  WL_SHM_FORMAT_R2 = 0x20203252,
+  /**
+   * [7:0] R0:R1 4:4 two pixels/byte
+   */
+  WL_SHM_FORMAT_R4 = 0x20203452,
+  /**
+   * [15:0] x:R 6:10 little endian
+   */
+  WL_SHM_FORMAT_R10 = 0x20303152,
+  /**
+   * [15:0] x:R 4:12 little endian
+   */
+  WL_SHM_FORMAT_R12 = 0x20323152,
+  /**
+   * [31:0] A:Cr:Cb:Y 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_AVUY8888 = 0x59555641,
+  /**
+   * [31:0] X:Cr:Cb:Y 8:8:8:8 little endian
+   */
+  WL_SHM_FORMAT_XVUY8888 = 0x59555658,
+  /**
+   * 2x2 subsampled Cr:Cb plane 10 bits per channel packed
+   */
+  WL_SHM_FORMAT_P030 = 0x30333050,
 };
 #endif /* WL_SHM_FORMAT_ENUM */
 
@@ -1708,23 +1700,20 @@ enum wl_shm_format {
  * @struct wl_shm_interface
  */
 struct wl_shm_interface {
-	/**
-	 * create a shm pool
-	 *
-	 * Create a new wl_shm_pool object.
-	 *
-	 * The pool can be used to create shared memory based buffer
-	 * objects. The server will mmap size bytes of the passed file
-	 * descriptor, to use as backing memory for the pool.
-	 * @param id pool to create
-	 * @param fd file descriptor for the pool
-	 * @param size pool size, in bytes
-	 */
-	void (*create_pool)(struct wl_client *client,
-			    struct wl_resource *resource,
-			    uint32_t id,
-			    int32_t fd,
-			    int32_t size);
+  /**
+   * create a shm pool
+   *
+   * Create a new wl_shm_pool object.
+   *
+   * The pool can be used to create shared memory based buffer
+   * objects. The server will mmap size bytes of the passed file
+   * descriptor, to use as backing memory for the pool.
+   * @param id pool to create
+   * @param fd file descriptor for the pool
+   * @param size pool size, in bytes
+   */
+  void (*create_pool)(struct wl_client *client, struct wl_resource *resource,
+                      uint32_t id, int32_t fd, int32_t size);
 };
 
 #define WL_SHM_FORMAT 0
@@ -1745,10 +1734,9 @@ struct wl_shm_interface {
  * @param resource_ The client's resource
  * @param format buffer pixel format
  */
-static inline void
-wl_shm_send_format(struct wl_resource *resource_, uint32_t format)
-{
-	wl_resource_post_event(resource_, WL_SHM_FORMAT, format);
+static inline void wl_shm_send_format(struct wl_resource *resource_,
+                                      uint32_t format) {
+  wl_resource_post_event(resource_, WL_SHM_FORMAT, format);
 }
 
 /**
@@ -1756,16 +1744,15 @@ wl_shm_send_format(struct wl_resource *resource_, uint32_t format)
  * @struct wl_buffer_interface
  */
 struct wl_buffer_interface {
-	/**
-	 * destroy a buffer
-	 *
-	 * Destroy a buffer. If and how you need to release the backing
-	 * storage is defined by the buffer factory interface.
-	 *
-	 * For possible side-effects to a surface, see wl_surface.attach.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy a buffer
+   *
+   * Destroy a buffer. If and how you need to release the backing
+   * storage is defined by the buffer factory interface.
+   *
+   * For possible side-effects to a surface, see wl_surface.attach.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WL_BUFFER_RELEASE 0
@@ -1785,31 +1772,29 @@ struct wl_buffer_interface {
  * Sends an release event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_buffer_send_release(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_BUFFER_RELEASE);
+static inline void wl_buffer_send_release(struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_BUFFER_RELEASE);
 }
 
 #ifndef WL_DATA_OFFER_ERROR_ENUM
 #define WL_DATA_OFFER_ERROR_ENUM
 enum wl_data_offer_error {
-	/**
-	 * finish request was called untimely
-	 */
-	WL_DATA_OFFER_ERROR_INVALID_FINISH = 0,
-	/**
-	 * action mask contains invalid values
-	 */
-	WL_DATA_OFFER_ERROR_INVALID_ACTION_MASK = 1,
-	/**
-	 * action argument has an invalid value
-	 */
-	WL_DATA_OFFER_ERROR_INVALID_ACTION = 2,
-	/**
-	 * offer doesn't accept this request
-	 */
-	WL_DATA_OFFER_ERROR_INVALID_OFFER = 3,
+  /**
+   * finish request was called untimely
+   */
+  WL_DATA_OFFER_ERROR_INVALID_FINISH = 0,
+  /**
+   * action mask contains invalid values
+   */
+  WL_DATA_OFFER_ERROR_INVALID_ACTION_MASK = 1,
+  /**
+   * action argument has an invalid value
+   */
+  WL_DATA_OFFER_ERROR_INVALID_ACTION = 2,
+  /**
+   * offer doesn't accept this request
+   */
+  WL_DATA_OFFER_ERROR_INVALID_OFFER = 3,
 };
 #endif /* WL_DATA_OFFER_ERROR_ENUM */
 
@@ -1818,126 +1803,118 @@ enum wl_data_offer_error {
  * @struct wl_data_offer_interface
  */
 struct wl_data_offer_interface {
-	/**
-	 * accept one of the offered mime types
-	 *
-	 * Indicate that the client can accept the given mime type, or
-	 * NULL for not accepted.
-	 *
-	 * For objects of version 2 or older, this request is used by the
-	 * client to give feedback whether the client can receive the given
-	 * mime type, or NULL if none is accepted; the feedback does not
-	 * determine whether the drag-and-drop operation succeeds or not.
-	 *
-	 * For objects of version 3 or newer, this request determines the
-	 * final result of the drag-and-drop operation. If the end result
-	 * is that no mime types were accepted, the drag-and-drop operation
-	 * will be cancelled and the corresponding drag source will receive
-	 * wl_data_source.cancelled. Clients may still use this event in
-	 * conjunction with wl_data_source.action for feedback.
-	 * @param serial serial number of the accept request
-	 * @param mime_type mime type accepted by the client
-	 */
-	void (*accept)(struct wl_client *client,
-		       struct wl_resource *resource,
-		       uint32_t serial,
-		       const char *mime_type);
-	/**
-	 * request that the data is transferred
-	 *
-	 * To transfer the offered data, the client issues this request
-	 * and indicates the mime type it wants to receive. The transfer
-	 * happens through the passed file descriptor (typically created
-	 * with the pipe system call). The source client writes the data in
-	 * the mime type representation requested and then closes the file
-	 * descriptor.
-	 *
-	 * The receiving client reads from the read end of the pipe until
-	 * EOF and then closes its end, at which point the transfer is
-	 * complete.
-	 *
-	 * This request may happen multiple times for different mime types,
-	 * both before and after wl_data_device.drop. Drag-and-drop
-	 * destination clients may preemptively fetch data or examine it
-	 * more closely to determine acceptance.
-	 * @param mime_type mime type desired by receiver
-	 * @param fd file descriptor for data transfer
-	 */
-	void (*receive)(struct wl_client *client,
-			struct wl_resource *resource,
-			const char *mime_type,
-			int32_t fd);
-	/**
-	 * destroy data offer
-	 *
-	 * Destroy the data offer.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * the offer will no longer be used
-	 *
-	 * Notifies the compositor that the drag destination successfully
-	 * finished the drag-and-drop operation.
-	 *
-	 * Upon receiving this request, the compositor will emit
-	 * wl_data_source.dnd_finished on the drag source client.
-	 *
-	 * It is a client error to perform other requests than
-	 * wl_data_offer.destroy after this one. It is also an error to
-	 * perform this request after a NULL mime type has been set in
-	 * wl_data_offer.accept or no action was received through
-	 * wl_data_offer.action.
-	 *
-	 * If wl_data_offer.finish request is received for a non drag and
-	 * drop operation, the invalid_finish protocol error is raised.
-	 * @since 3
-	 */
-	void (*finish)(struct wl_client *client,
-		       struct wl_resource *resource);
-	/**
-	 * set the available/preferred drag-and-drop actions
-	 *
-	 * Sets the actions that the destination side client supports for
-	 * this operation. This request may trigger the emission of
-	 * wl_data_source.action and wl_data_offer.action events if the
-	 * compositor needs to change the selected action.
-	 *
-	 * This request can be called multiple times throughout the
-	 * drag-and-drop operation, typically in response to
-	 * wl_data_device.enter or wl_data_device.motion events.
-	 *
-	 * This request determines the final result of the drag-and-drop
-	 * operation. If the end result is that no action is accepted, the
-	 * drag source will receive wl_data_source.cancelled.
-	 *
-	 * The dnd_actions argument must contain only values expressed in
-	 * the wl_data_device_manager.dnd_actions enum, and the
-	 * preferred_action argument must only contain one of those values
-	 * set, otherwise it will result in a protocol error.
-	 *
-	 * While managing an "ask" action, the destination drag-and-drop
-	 * client may perform further wl_data_offer.receive requests, and
-	 * is expected to perform one last wl_data_offer.set_actions
-	 * request with a preferred action other than "ask" (and optionally
-	 * wl_data_offer.accept) before requesting wl_data_offer.finish, in
-	 * order to convey the action selected by the user. If the
-	 * preferred action is not in the wl_data_offer.source_actions
-	 * mask, an error will be raised.
-	 *
-	 * If the "ask" action is dismissed (e.g. user cancellation), the
-	 * client is expected to perform wl_data_offer.destroy right away.
-	 *
-	 * This request can only be made on drag-and-drop offers, a
-	 * protocol error will be raised otherwise.
-	 * @param dnd_actions actions supported by the destination client
-	 * @param preferred_action action preferred by the destination client
-	 * @since 3
-	 */
-	void (*set_actions)(struct wl_client *client,
-			    struct wl_resource *resource,
-			    uint32_t dnd_actions,
-			    uint32_t preferred_action);
+  /**
+   * accept one of the offered mime types
+   *
+   * Indicate that the client can accept the given mime type, or
+   * NULL for not accepted.
+   *
+   * For objects of version 2 or older, this request is used by the
+   * client to give feedback whether the client can receive the given
+   * mime type, or NULL if none is accepted; the feedback does not
+   * determine whether the drag-and-drop operation succeeds or not.
+   *
+   * For objects of version 3 or newer, this request determines the
+   * final result of the drag-and-drop operation. If the end result
+   * is that no mime types were accepted, the drag-and-drop operation
+   * will be cancelled and the corresponding drag source will receive
+   * wl_data_source.cancelled. Clients may still use this event in
+   * conjunction with wl_data_source.action for feedback.
+   * @param serial serial number of the accept request
+   * @param mime_type mime type accepted by the client
+   */
+  void (*accept)(struct wl_client *client, struct wl_resource *resource,
+                 uint32_t serial, const char *mime_type);
+  /**
+   * request that the data is transferred
+   *
+   * To transfer the offered data, the client issues this request
+   * and indicates the mime type it wants to receive. The transfer
+   * happens through the passed file descriptor (typically created
+   * with the pipe system call). The source client writes the data in
+   * the mime type representation requested and then closes the file
+   * descriptor.
+   *
+   * The receiving client reads from the read end of the pipe until
+   * EOF and then closes its end, at which point the transfer is
+   * complete.
+   *
+   * This request may happen multiple times for different mime types,
+   * both before and after wl_data_device.drop. Drag-and-drop
+   * destination clients may preemptively fetch data or examine it
+   * more closely to determine acceptance.
+   * @param mime_type mime type desired by receiver
+   * @param fd file descriptor for data transfer
+   */
+  void (*receive)(struct wl_client *client, struct wl_resource *resource,
+                  const char *mime_type, int32_t fd);
+  /**
+   * destroy data offer
+   *
+   * Destroy the data offer.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * the offer will no longer be used
+   *
+   * Notifies the compositor that the drag destination successfully
+   * finished the drag-and-drop operation.
+   *
+   * Upon receiving this request, the compositor will emit
+   * wl_data_source.dnd_finished on the drag source client.
+   *
+   * It is a client error to perform other requests than
+   * wl_data_offer.destroy after this one. It is also an error to
+   * perform this request after a NULL mime type has been set in
+   * wl_data_offer.accept or no action was received through
+   * wl_data_offer.action.
+   *
+   * If wl_data_offer.finish request is received for a non drag and
+   * drop operation, the invalid_finish protocol error is raised.
+   * @since 3
+   */
+  void (*finish)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * set the available/preferred drag-and-drop actions
+   *
+   * Sets the actions that the destination side client supports for
+   * this operation. This request may trigger the emission of
+   * wl_data_source.action and wl_data_offer.action events if the
+   * compositor needs to change the selected action.
+   *
+   * This request can be called multiple times throughout the
+   * drag-and-drop operation, typically in response to
+   * wl_data_device.enter or wl_data_device.motion events.
+   *
+   * This request determines the final result of the drag-and-drop
+   * operation. If the end result is that no action is accepted, the
+   * drag source will receive wl_data_source.cancelled.
+   *
+   * The dnd_actions argument must contain only values expressed in
+   * the wl_data_device_manager.dnd_actions enum, and the
+   * preferred_action argument must only contain one of those values
+   * set, otherwise it will result in a protocol error.
+   *
+   * While managing an "ask" action, the destination drag-and-drop
+   * client may perform further wl_data_offer.receive requests, and
+   * is expected to perform one last wl_data_offer.set_actions
+   * request with a preferred action other than "ask" (and optionally
+   * wl_data_offer.accept) before requesting wl_data_offer.finish, in
+   * order to convey the action selected by the user. If the
+   * preferred action is not in the wl_data_offer.source_actions
+   * mask, an error will be raised.
+   *
+   * If the "ask" action is dismissed (e.g. user cancellation), the
+   * client is expected to perform wl_data_offer.destroy right away.
+   *
+   * This request can only be made on drag-and-drop offers, a
+   * protocol error will be raised otherwise.
+   * @param dnd_actions actions supported by the destination client
+   * @param preferred_action action preferred by the destination client
+   * @since 3
+   */
+  void (*set_actions)(struct wl_client *client, struct wl_resource *resource,
+                      uint32_t dnd_actions, uint32_t preferred_action);
 };
 
 #define WL_DATA_OFFER_OFFER 0
@@ -1984,10 +1961,9 @@ struct wl_data_offer_interface {
  * @param resource_ The client's resource
  * @param mime_type offered mime type
  */
-static inline void
-wl_data_offer_send_offer(struct wl_resource *resource_, const char *mime_type)
-{
-	wl_resource_post_event(resource_, WL_DATA_OFFER_OFFER, mime_type);
+static inline void wl_data_offer_send_offer(struct wl_resource *resource_,
+                                            const char *mime_type) {
+  wl_resource_post_event(resource_, WL_DATA_OFFER_OFFER, mime_type);
 }
 
 /**
@@ -1996,10 +1972,10 @@ wl_data_offer_send_offer(struct wl_resource *resource_, const char *mime_type)
  * @param resource_ The client's resource
  * @param source_actions actions offered by the data source
  */
-static inline void
-wl_data_offer_send_source_actions(struct wl_resource *resource_, uint32_t source_actions)
-{
-	wl_resource_post_event(resource_, WL_DATA_OFFER_SOURCE_ACTIONS, source_actions);
+static inline void wl_data_offer_send_source_actions(
+    struct wl_resource *resource_, uint32_t source_actions) {
+  wl_resource_post_event(resource_, WL_DATA_OFFER_SOURCE_ACTIONS,
+                         source_actions);
 }
 
 /**
@@ -2008,23 +1984,22 @@ wl_data_offer_send_source_actions(struct wl_resource *resource_, uint32_t source
  * @param resource_ The client's resource
  * @param dnd_action action selected by the compositor
  */
-static inline void
-wl_data_offer_send_action(struct wl_resource *resource_, uint32_t dnd_action)
-{
-	wl_resource_post_event(resource_, WL_DATA_OFFER_ACTION, dnd_action);
+static inline void wl_data_offer_send_action(struct wl_resource *resource_,
+                                             uint32_t dnd_action) {
+  wl_resource_post_event(resource_, WL_DATA_OFFER_ACTION, dnd_action);
 }
 
 #ifndef WL_DATA_SOURCE_ERROR_ENUM
 #define WL_DATA_SOURCE_ERROR_ENUM
 enum wl_data_source_error {
-	/**
-	 * action mask contains invalid values
-	 */
-	WL_DATA_SOURCE_ERROR_INVALID_ACTION_MASK = 0,
-	/**
-	 * source doesn't accept this request
-	 */
-	WL_DATA_SOURCE_ERROR_INVALID_SOURCE = 1,
+  /**
+   * action mask contains invalid values
+   */
+  WL_DATA_SOURCE_ERROR_INVALID_ACTION_MASK = 0,
+  /**
+   * source doesn't accept this request
+   */
+  WL_DATA_SOURCE_ERROR_INVALID_SOURCE = 1,
 };
 #endif /* WL_DATA_SOURCE_ERROR_ENUM */
 
@@ -2033,46 +2008,43 @@ enum wl_data_source_error {
  * @struct wl_data_source_interface
  */
 struct wl_data_source_interface {
-	/**
-	 * add an offered mime type
-	 *
-	 * This request adds a mime type to the set of mime types
-	 * advertised to targets. Can be called several times to offer
-	 * multiple types.
-	 * @param mime_type mime type offered by the data source
-	 */
-	void (*offer)(struct wl_client *client,
-		      struct wl_resource *resource,
-		      const char *mime_type);
-	/**
-	 * destroy the data source
-	 *
-	 * Destroy the data source.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * set the available drag-and-drop actions
-	 *
-	 * Sets the actions that the source side client supports for this
-	 * operation. This request may trigger wl_data_source.action and
-	 * wl_data_offer.action events if the compositor needs to change
-	 * the selected action.
-	 *
-	 * The dnd_actions argument must contain only values expressed in
-	 * the wl_data_device_manager.dnd_actions enum, otherwise it will
-	 * result in a protocol error.
-	 *
-	 * This request must be made once only, and can only be made on
-	 * sources used in drag-and-drop, so it must be performed before
-	 * wl_data_device.start_drag. Attempting to use the source other
-	 * than for drag-and-drop will raise a protocol error.
-	 * @param dnd_actions actions supported by the data source
-	 * @since 3
-	 */
-	void (*set_actions)(struct wl_client *client,
-			    struct wl_resource *resource,
-			    uint32_t dnd_actions);
+  /**
+   * add an offered mime type
+   *
+   * This request adds a mime type to the set of mime types
+   * advertised to targets. Can be called several times to offer
+   * multiple types.
+   * @param mime_type mime type offered by the data source
+   */
+  void (*offer)(struct wl_client *client, struct wl_resource *resource,
+                const char *mime_type);
+  /**
+   * destroy the data source
+   *
+   * Destroy the data source.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * set the available drag-and-drop actions
+   *
+   * Sets the actions that the source side client supports for this
+   * operation. This request may trigger wl_data_source.action and
+   * wl_data_offer.action events if the compositor needs to change
+   * the selected action.
+   *
+   * The dnd_actions argument must contain only values expressed in
+   * the wl_data_device_manager.dnd_actions enum, otherwise it will
+   * result in a protocol error.
+   *
+   * This request must be made once only, and can only be made on
+   * sources used in drag-and-drop, so it must be performed before
+   * wl_data_device.start_drag. Attempting to use the source other
+   * than for drag-and-drop will raise a protocol error.
+   * @param dnd_actions actions supported by the data source
+   * @since 3
+   */
+  void (*set_actions)(struct wl_client *client, struct wl_resource *resource,
+                      uint32_t dnd_actions);
 };
 
 #define WL_DATA_SOURCE_TARGET 0
@@ -2126,10 +2098,9 @@ struct wl_data_source_interface {
  * @param resource_ The client's resource
  * @param mime_type mime type accepted by the target
  */
-static inline void
-wl_data_source_send_target(struct wl_resource *resource_, const char *mime_type)
-{
-	wl_resource_post_event(resource_, WL_DATA_SOURCE_TARGET, mime_type);
+static inline void wl_data_source_send_target(struct wl_resource *resource_,
+                                              const char *mime_type) {
+  wl_resource_post_event(resource_, WL_DATA_SOURCE_TARGET, mime_type);
 }
 
 /**
@@ -2139,10 +2110,9 @@ wl_data_source_send_target(struct wl_resource *resource_, const char *mime_type)
  * @param mime_type mime type for the data
  * @param fd file descriptor for the data
  */
-static inline void
-wl_data_source_send_send(struct wl_resource *resource_, const char *mime_type, int32_t fd)
-{
-	wl_resource_post_event(resource_, WL_DATA_SOURCE_SEND, mime_type, fd);
+static inline void wl_data_source_send_send(struct wl_resource *resource_,
+                                            const char *mime_type, int32_t fd) {
+  wl_resource_post_event(resource_, WL_DATA_SOURCE_SEND, mime_type, fd);
 }
 
 /**
@@ -2150,10 +2120,9 @@ wl_data_source_send_send(struct wl_resource *resource_, const char *mime_type, i
  * Sends an cancelled event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_data_source_send_cancelled(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_DATA_SOURCE_CANCELLED);
+static inline void wl_data_source_send_cancelled(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_DATA_SOURCE_CANCELLED);
 }
 
 /**
@@ -2161,10 +2130,9 @@ wl_data_source_send_cancelled(struct wl_resource *resource_)
  * Sends an dnd_drop_performed event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_data_source_send_dnd_drop_performed(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_DATA_SOURCE_DND_DROP_PERFORMED);
+static inline void wl_data_source_send_dnd_drop_performed(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_DATA_SOURCE_DND_DROP_PERFORMED);
 }
 
 /**
@@ -2172,10 +2140,9 @@ wl_data_source_send_dnd_drop_performed(struct wl_resource *resource_)
  * Sends an dnd_finished event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_data_source_send_dnd_finished(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_DATA_SOURCE_DND_FINISHED);
+static inline void wl_data_source_send_dnd_finished(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_DATA_SOURCE_DND_FINISHED);
 }
 
 /**
@@ -2184,23 +2151,22 @@ wl_data_source_send_dnd_finished(struct wl_resource *resource_)
  * @param resource_ The client's resource
  * @param dnd_action action selected by the compositor
  */
-static inline void
-wl_data_source_send_action(struct wl_resource *resource_, uint32_t dnd_action)
-{
-	wl_resource_post_event(resource_, WL_DATA_SOURCE_ACTION, dnd_action);
+static inline void wl_data_source_send_action(struct wl_resource *resource_,
+                                              uint32_t dnd_action) {
+  wl_resource_post_event(resource_, WL_DATA_SOURCE_ACTION, dnd_action);
 }
 
 #ifndef WL_DATA_DEVICE_ERROR_ENUM
 #define WL_DATA_DEVICE_ERROR_ENUM
 enum wl_data_device_error {
-	/**
-	 * given wl_surface has another role
-	 */
-	WL_DATA_DEVICE_ERROR_ROLE = 0,
-	/**
-	 * source has already been used
-	 */
-	WL_DATA_DEVICE_ERROR_USED_SOURCE = 1,
+  /**
+   * given wl_surface has another role
+   */
+  WL_DATA_DEVICE_ERROR_ROLE = 0,
+  /**
+   * source has already been used
+   */
+  WL_DATA_DEVICE_ERROR_USED_SOURCE = 1,
 };
 #endif /* WL_DATA_DEVICE_ERROR_ENUM */
 
@@ -2209,75 +2175,69 @@ enum wl_data_device_error {
  * @struct wl_data_device_interface
  */
 struct wl_data_device_interface {
-	/**
-	 * start drag-and-drop operation
-	 *
-	 * This request asks the compositor to start a drag-and-drop
-	 * operation on behalf of the client.
-	 *
-	 * The source argument is the data source that provides the data
-	 * for the eventual data transfer. If source is NULL, enter, leave
-	 * and motion events are sent only to the client that initiated the
-	 * drag and the client is expected to handle the data passing
-	 * internally. If source is destroyed, the drag-and-drop session
-	 * will be cancelled.
-	 *
-	 * The origin surface is the surface where the drag originates and
-	 * the client must have an active implicit grab that matches the
-	 * serial.
-	 *
-	 * The icon surface is an optional (can be NULL) surface that
-	 * provides an icon to be moved around with the cursor. Initially,
-	 * the top-left corner of the icon surface is placed at the cursor
-	 * hotspot, but subsequent wl_surface.attach request can move the
-	 * relative position. Attach requests must be confirmed with
-	 * wl_surface.commit as usual. The icon surface is given the role
-	 * of a drag-and-drop icon. If the icon surface already has another
-	 * role, it raises a protocol error.
-	 *
-	 * The input region is ignored for wl_surfaces with the role of a
-	 * drag-and-drop icon.
-	 *
-	 * The given source may not be used in any further set_selection or
-	 * start_drag requests. Attempting to reuse a previously-used
-	 * source may send a used_source error.
-	 * @param source data source for the eventual transfer
-	 * @param origin surface where the drag originates
-	 * @param icon drag-and-drop icon surface
-	 * @param serial serial number of the implicit grab on the origin
-	 */
-	void (*start_drag)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   struct wl_resource *source,
-			   struct wl_resource *origin,
-			   struct wl_resource *icon,
-			   uint32_t serial);
-	/**
-	 * copy data to the selection
-	 *
-	 * This request asks the compositor to set the selection to the
-	 * data from the source on behalf of the client.
-	 *
-	 * To unset the selection, set the source to NULL.
-	 *
-	 * The given source may not be used in any further set_selection or
-	 * start_drag requests. Attempting to reuse a previously-used
-	 * source may send a used_source error.
-	 * @param source data source for the selection
-	 * @param serial serial number of the event that triggered this request
-	 */
-	void (*set_selection)(struct wl_client *client,
-			      struct wl_resource *resource,
-			      struct wl_resource *source,
-			      uint32_t serial);
-	/**
-	 * destroy data device
-	 *
-	 * This request destroys the data device.
-	 * @since 2
-	 */
-	void (*release)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * start drag-and-drop operation
+   *
+   * This request asks the compositor to start a drag-and-drop
+   * operation on behalf of the client.
+   *
+   * The source argument is the data source that provides the data
+   * for the eventual data transfer. If source is NULL, enter, leave
+   * and motion events are sent only to the client that initiated the
+   * drag and the client is expected to handle the data passing
+   * internally. If source is destroyed, the drag-and-drop session
+   * will be cancelled.
+   *
+   * The origin surface is the surface where the drag originates and
+   * the client must have an active implicit grab that matches the
+   * serial.
+   *
+   * The icon surface is an optional (can be NULL) surface that
+   * provides an icon to be moved around with the cursor. Initially,
+   * the top-left corner of the icon surface is placed at the cursor
+   * hotspot, but subsequent wl_surface.attach request can move the
+   * relative position. Attach requests must be confirmed with
+   * wl_surface.commit as usual. The icon surface is given the role
+   * of a drag-and-drop icon. If the icon surface already has another
+   * role, it raises a protocol error.
+   *
+   * The input region is ignored for wl_surfaces with the role of a
+   * drag-and-drop icon.
+   *
+   * The given source may not be used in any further set_selection or
+   * start_drag requests. Attempting to reuse a previously-used
+   * source may send a used_source error.
+   * @param source data source for the eventual transfer
+   * @param origin surface where the drag originates
+   * @param icon drag-and-drop icon surface
+   * @param serial serial number of the implicit grab on the origin
+   */
+  void (*start_drag)(struct wl_client *client, struct wl_resource *resource,
+                     struct wl_resource *source, struct wl_resource *origin,
+                     struct wl_resource *icon, uint32_t serial);
+  /**
+   * copy data to the selection
+   *
+   * This request asks the compositor to set the selection to the
+   * data from the source on behalf of the client.
+   *
+   * To unset the selection, set the source to NULL.
+   *
+   * The given source may not be used in any further set_selection or
+   * start_drag requests. Attempting to reuse a previously-used
+   * source may send a used_source error.
+   * @param source data source for the selection
+   * @param serial serial number of the event that triggered this request
+   */
+  void (*set_selection)(struct wl_client *client, struct wl_resource *resource,
+                        struct wl_resource *source, uint32_t serial);
+  /**
+   * destroy data device
+   *
+   * This request destroys the data device.
+   * @since 2
+   */
+  void (*release)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WL_DATA_DEVICE_DATA_OFFER 0
@@ -2331,10 +2291,9 @@ struct wl_data_device_interface {
  * @param resource_ The client's resource
  * @param id the new data_offer object
  */
-static inline void
-wl_data_device_send_data_offer(struct wl_resource *resource_, struct wl_resource *id)
-{
-	wl_resource_post_event(resource_, WL_DATA_DEVICE_DATA_OFFER, id);
+static inline void wl_data_device_send_data_offer(struct wl_resource *resource_,
+                                                  struct wl_resource *id) {
+  wl_resource_post_event(resource_, WL_DATA_DEVICE_DATA_OFFER, id);
 }
 
 /**
@@ -2347,10 +2306,13 @@ wl_data_device_send_data_offer(struct wl_resource *resource_, struct wl_resource
  * @param y surface-local y coordinate
  * @param id source data_offer object
  */
-static inline void
-wl_data_device_send_enter(struct wl_resource *resource_, uint32_t serial, struct wl_resource *surface, wl_fixed_t x, wl_fixed_t y, struct wl_resource *id)
-{
-	wl_resource_post_event(resource_, WL_DATA_DEVICE_ENTER, serial, surface, x, y, id);
+static inline void wl_data_device_send_enter(struct wl_resource *resource_,
+                                             uint32_t serial,
+                                             struct wl_resource *surface,
+                                             wl_fixed_t x, wl_fixed_t y,
+                                             struct wl_resource *id) {
+  wl_resource_post_event(resource_, WL_DATA_DEVICE_ENTER, serial, surface, x, y,
+                         id);
 }
 
 /**
@@ -2358,10 +2320,8 @@ wl_data_device_send_enter(struct wl_resource *resource_, uint32_t serial, struct
  * Sends an leave event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_data_device_send_leave(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_DATA_DEVICE_LEAVE);
+static inline void wl_data_device_send_leave(struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_DATA_DEVICE_LEAVE);
 }
 
 /**
@@ -2372,10 +2332,10 @@ wl_data_device_send_leave(struct wl_resource *resource_)
  * @param x surface-local x coordinate
  * @param y surface-local y coordinate
  */
-static inline void
-wl_data_device_send_motion(struct wl_resource *resource_, uint32_t time, wl_fixed_t x, wl_fixed_t y)
-{
-	wl_resource_post_event(resource_, WL_DATA_DEVICE_MOTION, time, x, y);
+static inline void wl_data_device_send_motion(struct wl_resource *resource_,
+                                              uint32_t time, wl_fixed_t x,
+                                              wl_fixed_t y) {
+  wl_resource_post_event(resource_, WL_DATA_DEVICE_MOTION, time, x, y);
 }
 
 /**
@@ -2383,10 +2343,8 @@ wl_data_device_send_motion(struct wl_resource *resource_, uint32_t time, wl_fixe
  * Sends an drop event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_data_device_send_drop(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_DATA_DEVICE_DROP);
+static inline void wl_data_device_send_drop(struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_DATA_DEVICE_DROP);
 }
 
 /**
@@ -2395,10 +2353,9 @@ wl_data_device_send_drop(struct wl_resource *resource_)
  * @param resource_ The client's resource
  * @param id selection data_offer object
  */
-static inline void
-wl_data_device_send_selection(struct wl_resource *resource_, struct wl_resource *id)
-{
-	wl_resource_post_event(resource_, WL_DATA_DEVICE_SELECTION, id);
+static inline void wl_data_device_send_selection(struct wl_resource *resource_,
+                                                 struct wl_resource *id) {
+  wl_resource_post_event(resource_, WL_DATA_DEVICE_SELECTION, id);
 }
 
 #ifndef WL_DATA_DEVICE_MANAGER_DND_ACTION_ENUM
@@ -2432,22 +2389,22 @@ wl_data_device_send_selection(struct wl_resource *resource_, struct wl_resource 
  * actions (e.g. "ask").
  */
 enum wl_data_device_manager_dnd_action {
-	/**
-	 * no action
-	 */
-	WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE = 0,
-	/**
-	 * copy action
-	 */
-	WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY = 1,
-	/**
-	 * move action
-	 */
-	WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE = 2,
-	/**
-	 * ask action
-	 */
-	WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK = 4,
+  /**
+   * no action
+   */
+  WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE = 0,
+  /**
+   * copy action
+   */
+  WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY = 1,
+  /**
+   * move action
+   */
+  WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE = 2,
+  /**
+   * ask action
+   */
+  WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK = 4,
 };
 #endif /* WL_DATA_DEVICE_MANAGER_DND_ACTION_ENUM */
 
@@ -2456,28 +2413,25 @@ enum wl_data_device_manager_dnd_action {
  * @struct wl_data_device_manager_interface
  */
 struct wl_data_device_manager_interface {
-	/**
-	 * create a new data source
-	 *
-	 * Create a new data source.
-	 * @param id data source to create
-	 */
-	void (*create_data_source)(struct wl_client *client,
-				   struct wl_resource *resource,
-				   uint32_t id);
-	/**
-	 * create a new data device
-	 *
-	 * Create a new data device for a given seat.
-	 * @param id data device to create
-	 * @param seat seat associated with the data device
-	 */
-	void (*get_data_device)(struct wl_client *client,
-				struct wl_resource *resource,
-				uint32_t id,
-				struct wl_resource *seat);
+  /**
+   * create a new data source
+   *
+   * Create a new data source.
+   * @param id data source to create
+   */
+  void (*create_data_source)(struct wl_client *client,
+                             struct wl_resource *resource, uint32_t id);
+  /**
+   * create a new data device
+   *
+   * Create a new data device for a given seat.
+   * @param id data device to create
+   * @param seat seat associated with the data device
+   */
+  void (*get_data_device)(struct wl_client *client,
+                          struct wl_resource *resource, uint32_t id,
+                          struct wl_resource *seat);
 };
-
 
 /**
  * @ingroup iface_wl_data_device_manager
@@ -2491,10 +2445,10 @@ struct wl_data_device_manager_interface {
 #ifndef WL_SHELL_ERROR_ENUM
 #define WL_SHELL_ERROR_ENUM
 enum wl_shell_error {
-	/**
-	 * given wl_surface has another role
-	 */
-	WL_SHELL_ERROR_ROLE = 0,
+  /**
+   * given wl_surface has another role
+   */
+  WL_SHELL_ERROR_ROLE = 0,
 };
 #endif /* WL_SHELL_ERROR_ENUM */
 
@@ -2503,23 +2457,21 @@ enum wl_shell_error {
  * @struct wl_shell_interface
  */
 struct wl_shell_interface {
-	/**
-	 * create a shell surface from a surface
-	 *
-	 * Create a shell surface for an existing surface. This gives the
-	 * wl_surface the role of a shell surface. If the wl_surface
-	 * already has another role, it raises a protocol error.
-	 *
-	 * Only one shell surface can be associated with a given surface.
-	 * @param id shell surface to create
-	 * @param surface surface to be given the shell surface role
-	 */
-	void (*get_shell_surface)(struct wl_client *client,
-				  struct wl_resource *resource,
-				  uint32_t id,
-				  struct wl_resource *surface);
+  /**
+   * create a shell surface from a surface
+   *
+   * Create a shell surface for an existing surface. This gives the
+   * wl_surface the role of a shell surface. If the wl_surface
+   * already has another role, it raises a protocol error.
+   *
+   * Only one shell surface can be associated with a given surface.
+   * @param id shell surface to create
+   * @param surface surface to be given the shell surface role
+   */
+  void (*get_shell_surface)(struct wl_client *client,
+                            struct wl_resource *resource, uint32_t id,
+                            struct wl_resource *surface);
 };
-
 
 /**
  * @ingroup iface_wl_shell
@@ -2538,42 +2490,42 @@ struct wl_shell_interface {
  * an appropriate cursor image.
  */
 enum wl_shell_surface_resize {
-	/**
-	 * no edge
-	 */
-	WL_SHELL_SURFACE_RESIZE_NONE = 0,
-	/**
-	 * top edge
-	 */
-	WL_SHELL_SURFACE_RESIZE_TOP = 1,
-	/**
-	 * bottom edge
-	 */
-	WL_SHELL_SURFACE_RESIZE_BOTTOM = 2,
-	/**
-	 * left edge
-	 */
-	WL_SHELL_SURFACE_RESIZE_LEFT = 4,
-	/**
-	 * top and left edges
-	 */
-	WL_SHELL_SURFACE_RESIZE_TOP_LEFT = 5,
-	/**
-	 * bottom and left edges
-	 */
-	WL_SHELL_SURFACE_RESIZE_BOTTOM_LEFT = 6,
-	/**
-	 * right edge
-	 */
-	WL_SHELL_SURFACE_RESIZE_RIGHT = 8,
-	/**
-	 * top and right edges
-	 */
-	WL_SHELL_SURFACE_RESIZE_TOP_RIGHT = 9,
-	/**
-	 * bottom and right edges
-	 */
-	WL_SHELL_SURFACE_RESIZE_BOTTOM_RIGHT = 10,
+  /**
+   * no edge
+   */
+  WL_SHELL_SURFACE_RESIZE_NONE = 0,
+  /**
+   * top edge
+   */
+  WL_SHELL_SURFACE_RESIZE_TOP = 1,
+  /**
+   * bottom edge
+   */
+  WL_SHELL_SURFACE_RESIZE_BOTTOM = 2,
+  /**
+   * left edge
+   */
+  WL_SHELL_SURFACE_RESIZE_LEFT = 4,
+  /**
+   * top and left edges
+   */
+  WL_SHELL_SURFACE_RESIZE_TOP_LEFT = 5,
+  /**
+   * bottom and left edges
+   */
+  WL_SHELL_SURFACE_RESIZE_BOTTOM_LEFT = 6,
+  /**
+   * right edge
+   */
+  WL_SHELL_SURFACE_RESIZE_RIGHT = 8,
+  /**
+   * top and right edges
+   */
+  WL_SHELL_SURFACE_RESIZE_TOP_RIGHT = 9,
+  /**
+   * bottom and right edges
+   */
+  WL_SHELL_SURFACE_RESIZE_BOTTOM_RIGHT = 10,
 };
 #endif /* WL_SHELL_SURFACE_RESIZE_ENUM */
 
@@ -2587,10 +2539,10 @@ enum wl_shell_surface_resize {
  * of transient surfaces. Used in the set_transient request.
  */
 enum wl_shell_surface_transient {
-	/**
-	 * do not set keyboard focus
-	 */
-	WL_SHELL_SURFACE_TRANSIENT_INACTIVE = 0x1,
+  /**
+   * do not set keyboard focus
+   */
+  WL_SHELL_SURFACE_TRANSIENT_INACTIVE = 0x1,
 };
 #endif /* WL_SHELL_SURFACE_TRANSIENT_ENUM */
 
@@ -2605,22 +2557,24 @@ enum wl_shell_surface_transient {
  * output. The compositor is free to ignore this parameter.
  */
 enum wl_shell_surface_fullscreen_method {
-	/**
-	 * no preference, apply default policy
-	 */
-	WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT = 0,
-	/**
-	 * scale, preserve the surface's aspect ratio and center on output
-	 */
-	WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE = 1,
-	/**
-	 * switch output mode to the smallest mode that can fit the surface, add black borders to compensate size mismatch
-	 */
-	WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER = 2,
-	/**
-	 * no upscaling, center on output and add black borders to compensate size mismatch
-	 */
-	WL_SHELL_SURFACE_FULLSCREEN_METHOD_FILL = 3,
+  /**
+   * no preference, apply default policy
+   */
+  WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT = 0,
+  /**
+   * scale, preserve the surface's aspect ratio and center on output
+   */
+  WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE = 1,
+  /**
+   * switch output mode to the smallest mode that can fit the surface, add black
+   * borders to compensate size mismatch
+   */
+  WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER = 2,
+  /**
+   * no upscaling, center on output and add black borders to compensate size
+   * mismatch
+   */
+  WL_SHELL_SURFACE_FULLSCREEN_METHOD_FILL = 3,
 };
 #endif /* WL_SHELL_SURFACE_FULLSCREEN_METHOD_ENUM */
 
@@ -2629,216 +2583,197 @@ enum wl_shell_surface_fullscreen_method {
  * @struct wl_shell_surface_interface
  */
 struct wl_shell_surface_interface {
-	/**
-	 * respond to a ping event
-	 *
-	 * A client must respond to a ping event with a pong request or
-	 * the client may be deemed unresponsive.
-	 * @param serial serial number of the ping event
-	 */
-	void (*pong)(struct wl_client *client,
-		     struct wl_resource *resource,
-		     uint32_t serial);
-	/**
-	 * start an interactive move
-	 *
-	 * Start a pointer-driven move of the surface.
-	 *
-	 * This request must be used in response to a button press event.
-	 * The server may ignore move requests depending on the state of
-	 * the surface (e.g. fullscreen or maximized).
-	 * @param seat seat whose pointer is used
-	 * @param serial serial number of the implicit grab on the pointer
-	 */
-	void (*move)(struct wl_client *client,
-		     struct wl_resource *resource,
-		     struct wl_resource *seat,
-		     uint32_t serial);
-	/**
-	 * start an interactive resize
-	 *
-	 * Start a pointer-driven resizing of the surface.
-	 *
-	 * This request must be used in response to a button press event.
-	 * The server may ignore resize requests depending on the state of
-	 * the surface (e.g. fullscreen or maximized).
-	 * @param seat seat whose pointer is used
-	 * @param serial serial number of the implicit grab on the pointer
-	 * @param edges which edge or corner is being dragged
-	 */
-	void (*resize)(struct wl_client *client,
-		       struct wl_resource *resource,
-		       struct wl_resource *seat,
-		       uint32_t serial,
-		       uint32_t edges);
-	/**
-	 * make the surface a toplevel surface
-	 *
-	 * Map the surface as a toplevel surface.
-	 *
-	 * A toplevel surface is not fullscreen, maximized or transient.
-	 */
-	void (*set_toplevel)(struct wl_client *client,
-			     struct wl_resource *resource);
-	/**
-	 * make the surface a transient surface
-	 *
-	 * Map the surface relative to an existing surface.
-	 *
-	 * The x and y arguments specify the location of the upper left
-	 * corner of the surface relative to the upper left corner of the
-	 * parent surface, in surface-local coordinates.
-	 *
-	 * The flags argument controls details of the transient behaviour.
-	 * @param parent parent surface
-	 * @param x surface-local x coordinate
-	 * @param y surface-local y coordinate
-	 * @param flags transient surface behavior
-	 */
-	void (*set_transient)(struct wl_client *client,
-			      struct wl_resource *resource,
-			      struct wl_resource *parent,
-			      int32_t x,
-			      int32_t y,
-			      uint32_t flags);
-	/**
-	 * make the surface a fullscreen surface
-	 *
-	 * Map the surface as a fullscreen surface.
-	 *
-	 * If an output parameter is given then the surface will be made
-	 * fullscreen on that output. If the client does not specify the
-	 * output then the compositor will apply its policy - usually
-	 * choosing the output on which the surface has the biggest surface
-	 * area.
-	 *
-	 * The client may specify a method to resolve a size conflict
-	 * between the output size and the surface size - this is provided
-	 * through the method parameter.
-	 *
-	 * The framerate parameter is used only when the method is set to
-	 * "driver", to indicate the preferred framerate. A value of 0
-	 * indicates that the client does not care about framerate. The
-	 * framerate is specified in mHz, that is framerate of 60000 is
-	 * 60Hz.
-	 *
-	 * A method of "scale" or "driver" implies a scaling operation of
-	 * the surface, either via a direct scaling operation or a change
-	 * of the output mode. This will override any kind of output
-	 * scaling, so that mapping a surface with a buffer size equal to
-	 * the mode can fill the screen independent of buffer_scale.
-	 *
-	 * A method of "fill" means we don't scale up the buffer, however
-	 * any output scale is applied. This means that you may run into an
-	 * edge case where the application maps a buffer with the same size
-	 * of the output mode but buffer_scale 1 (thus making a surface
-	 * larger than the output). In this case it is allowed to downscale
-	 * the results to fit the screen.
-	 *
-	 * The compositor must reply to this request with a configure event
-	 * with the dimensions for the output on which the surface will be
-	 * made fullscreen.
-	 * @param method method for resolving size conflict
-	 * @param framerate framerate in mHz
-	 * @param output output on which the surface is to be fullscreen
-	 */
-	void (*set_fullscreen)(struct wl_client *client,
-			       struct wl_resource *resource,
-			       uint32_t method,
-			       uint32_t framerate,
-			       struct wl_resource *output);
-	/**
-	 * make the surface a popup surface
-	 *
-	 * Map the surface as a popup.
-	 *
-	 * A popup surface is a transient surface with an added pointer
-	 * grab.
-	 *
-	 * An existing implicit grab will be changed to owner-events mode,
-	 * and the popup grab will continue after the implicit grab ends
-	 * (i.e. releasing the mouse button does not cause the popup to be
-	 * unmapped).
-	 *
-	 * The popup grab continues until the window is destroyed or a
-	 * mouse button is pressed in any other client's window. A click in
-	 * any of the client's surfaces is reported as normal, however,
-	 * clicks in other clients' surfaces will be discarded and trigger
-	 * the callback.
-	 *
-	 * The x and y arguments specify the location of the upper left
-	 * corner of the surface relative to the upper left corner of the
-	 * parent surface, in surface-local coordinates.
-	 * @param seat seat whose pointer is used
-	 * @param serial serial number of the implicit grab on the pointer
-	 * @param parent parent surface
-	 * @param x surface-local x coordinate
-	 * @param y surface-local y coordinate
-	 * @param flags transient surface behavior
-	 */
-	void (*set_popup)(struct wl_client *client,
-			  struct wl_resource *resource,
-			  struct wl_resource *seat,
-			  uint32_t serial,
-			  struct wl_resource *parent,
-			  int32_t x,
-			  int32_t y,
-			  uint32_t flags);
-	/**
-	 * make the surface a maximized surface
-	 *
-	 * Map the surface as a maximized surface.
-	 *
-	 * If an output parameter is given then the surface will be
-	 * maximized on that output. If the client does not specify the
-	 * output then the compositor will apply its policy - usually
-	 * choosing the output on which the surface has the biggest surface
-	 * area.
-	 *
-	 * The compositor will reply with a configure event telling the
-	 * expected new surface size. The operation is completed on the
-	 * next buffer attach to this surface.
-	 *
-	 * A maximized surface typically fills the entire output it is
-	 * bound to, except for desktop elements such as panels. This is
-	 * the main difference between a maximized shell surface and a
-	 * fullscreen shell surface.
-	 *
-	 * The details depend on the compositor implementation.
-	 * @param output output on which the surface is to be maximized
-	 */
-	void (*set_maximized)(struct wl_client *client,
-			      struct wl_resource *resource,
-			      struct wl_resource *output);
-	/**
-	 * set surface title
-	 *
-	 * Set a short title for the surface.
-	 *
-	 * This string may be used to identify the surface in a task bar,
-	 * window list, or other user interface elements provided by the
-	 * compositor.
-	 *
-	 * The string must be encoded in UTF-8.
-	 * @param title surface title
-	 */
-	void (*set_title)(struct wl_client *client,
-			  struct wl_resource *resource,
-			  const char *title);
-	/**
-	 * set surface class
-	 *
-	 * Set a class for the surface.
-	 *
-	 * The surface class identifies the general class of applications
-	 * to which the surface belongs. A common convention is to use the
-	 * file name (or the full path if it is a non-standard location) of
-	 * the application's .desktop file as the class.
-	 * @param class_ surface class
-	 */
-	void (*set_class)(struct wl_client *client,
-			  struct wl_resource *resource,
-			  const char *class_);
+  /**
+   * respond to a ping event
+   *
+   * A client must respond to a ping event with a pong request or
+   * the client may be deemed unresponsive.
+   * @param serial serial number of the ping event
+   */
+  void (*pong)(struct wl_client *client, struct wl_resource *resource,
+               uint32_t serial);
+  /**
+   * start an interactive move
+   *
+   * Start a pointer-driven move of the surface.
+   *
+   * This request must be used in response to a button press event.
+   * The server may ignore move requests depending on the state of
+   * the surface (e.g. fullscreen or maximized).
+   * @param seat seat whose pointer is used
+   * @param serial serial number of the implicit grab on the pointer
+   */
+  void (*move)(struct wl_client *client, struct wl_resource *resource,
+               struct wl_resource *seat, uint32_t serial);
+  /**
+   * start an interactive resize
+   *
+   * Start a pointer-driven resizing of the surface.
+   *
+   * This request must be used in response to a button press event.
+   * The server may ignore resize requests depending on the state of
+   * the surface (e.g. fullscreen or maximized).
+   * @param seat seat whose pointer is used
+   * @param serial serial number of the implicit grab on the pointer
+   * @param edges which edge or corner is being dragged
+   */
+  void (*resize)(struct wl_client *client, struct wl_resource *resource,
+                 struct wl_resource *seat, uint32_t serial, uint32_t edges);
+  /**
+   * make the surface a toplevel surface
+   *
+   * Map the surface as a toplevel surface.
+   *
+   * A toplevel surface is not fullscreen, maximized or transient.
+   */
+  void (*set_toplevel)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * make the surface a transient surface
+   *
+   * Map the surface relative to an existing surface.
+   *
+   * The x and y arguments specify the location of the upper left
+   * corner of the surface relative to the upper left corner of the
+   * parent surface, in surface-local coordinates.
+   *
+   * The flags argument controls details of the transient behaviour.
+   * @param parent parent surface
+   * @param x surface-local x coordinate
+   * @param y surface-local y coordinate
+   * @param flags transient surface behavior
+   */
+  void (*set_transient)(struct wl_client *client, struct wl_resource *resource,
+                        struct wl_resource *parent, int32_t x, int32_t y,
+                        uint32_t flags);
+  /**
+   * make the surface a fullscreen surface
+   *
+   * Map the surface as a fullscreen surface.
+   *
+   * If an output parameter is given then the surface will be made
+   * fullscreen on that output. If the client does not specify the
+   * output then the compositor will apply its policy - usually
+   * choosing the output on which the surface has the biggest surface
+   * area.
+   *
+   * The client may specify a method to resolve a size conflict
+   * between the output size and the surface size - this is provided
+   * through the method parameter.
+   *
+   * The framerate parameter is used only when the method is set to
+   * "driver", to indicate the preferred framerate. A value of 0
+   * indicates that the client does not care about framerate. The
+   * framerate is specified in mHz, that is framerate of 60000 is
+   * 60Hz.
+   *
+   * A method of "scale" or "driver" implies a scaling operation of
+   * the surface, either via a direct scaling operation or a change
+   * of the output mode. This will override any kind of output
+   * scaling, so that mapping a surface with a buffer size equal to
+   * the mode can fill the screen independent of buffer_scale.
+   *
+   * A method of "fill" means we don't scale up the buffer, however
+   * any output scale is applied. This means that you may run into an
+   * edge case where the application maps a buffer with the same size
+   * of the output mode but buffer_scale 1 (thus making a surface
+   * larger than the output). In this case it is allowed to downscale
+   * the results to fit the screen.
+   *
+   * The compositor must reply to this request with a configure event
+   * with the dimensions for the output on which the surface will be
+   * made fullscreen.
+   * @param method method for resolving size conflict
+   * @param framerate framerate in mHz
+   * @param output output on which the surface is to be fullscreen
+   */
+  void (*set_fullscreen)(struct wl_client *client, struct wl_resource *resource,
+                         uint32_t method, uint32_t framerate,
+                         struct wl_resource *output);
+  /**
+   * make the surface a popup surface
+   *
+   * Map the surface as a popup.
+   *
+   * A popup surface is a transient surface with an added pointer
+   * grab.
+   *
+   * An existing implicit grab will be changed to owner-events mode,
+   * and the popup grab will continue after the implicit grab ends
+   * (i.e. releasing the mouse button does not cause the popup to be
+   * unmapped).
+   *
+   * The popup grab continues until the window is destroyed or a
+   * mouse button is pressed in any other client's window. A click in
+   * any of the client's surfaces is reported as normal, however,
+   * clicks in other clients' surfaces will be discarded and trigger
+   * the callback.
+   *
+   * The x and y arguments specify the location of the upper left
+   * corner of the surface relative to the upper left corner of the
+   * parent surface, in surface-local coordinates.
+   * @param seat seat whose pointer is used
+   * @param serial serial number of the implicit grab on the pointer
+   * @param parent parent surface
+   * @param x surface-local x coordinate
+   * @param y surface-local y coordinate
+   * @param flags transient surface behavior
+   */
+  void (*set_popup)(struct wl_client *client, struct wl_resource *resource,
+                    struct wl_resource *seat, uint32_t serial,
+                    struct wl_resource *parent, int32_t x, int32_t y,
+                    uint32_t flags);
+  /**
+   * make the surface a maximized surface
+   *
+   * Map the surface as a maximized surface.
+   *
+   * If an output parameter is given then the surface will be
+   * maximized on that output. If the client does not specify the
+   * output then the compositor will apply its policy - usually
+   * choosing the output on which the surface has the biggest surface
+   * area.
+   *
+   * The compositor will reply with a configure event telling the
+   * expected new surface size. The operation is completed on the
+   * next buffer attach to this surface.
+   *
+   * A maximized surface typically fills the entire output it is
+   * bound to, except for desktop elements such as panels. This is
+   * the main difference between a maximized shell surface and a
+   * fullscreen shell surface.
+   *
+   * The details depend on the compositor implementation.
+   * @param output output on which the surface is to be maximized
+   */
+  void (*set_maximized)(struct wl_client *client, struct wl_resource *resource,
+                        struct wl_resource *output);
+  /**
+   * set surface title
+   *
+   * Set a short title for the surface.
+   *
+   * This string may be used to identify the surface in a task bar,
+   * window list, or other user interface elements provided by the
+   * compositor.
+   *
+   * The string must be encoded in UTF-8.
+   * @param title surface title
+   */
+  void (*set_title)(struct wl_client *client, struct wl_resource *resource,
+                    const char *title);
+  /**
+   * set surface class
+   *
+   * Set a class for the surface.
+   *
+   * The surface class identifies the general class of applications
+   * to which the surface belongs. A common convention is to use the
+   * file name (or the full path if it is a non-standard location) of
+   * the application's .desktop file as the class.
+   * @param class_ surface class
+   */
+  void (*set_class)(struct wl_client *client, struct wl_resource *resource,
+                    const char *class_);
 };
 
 #define WL_SHELL_SURFACE_PING 0
@@ -2905,10 +2840,9 @@ struct wl_shell_surface_interface {
  * @param resource_ The client's resource
  * @param serial serial number of the ping
  */
-static inline void
-wl_shell_surface_send_ping(struct wl_resource *resource_, uint32_t serial)
-{
-	wl_resource_post_event(resource_, WL_SHELL_SURFACE_PING, serial);
+static inline void wl_shell_surface_send_ping(struct wl_resource *resource_,
+                                              uint32_t serial) {
+  wl_resource_post_event(resource_, WL_SHELL_SURFACE_PING, serial);
 }
 
 /**
@@ -2919,10 +2853,11 @@ wl_shell_surface_send_ping(struct wl_resource *resource_, uint32_t serial)
  * @param width new width of the surface
  * @param height new height of the surface
  */
-static inline void
-wl_shell_surface_send_configure(struct wl_resource *resource_, uint32_t edges, int32_t width, int32_t height)
-{
-	wl_resource_post_event(resource_, WL_SHELL_SURFACE_CONFIGURE, edges, width, height);
+static inline void wl_shell_surface_send_configure(
+    struct wl_resource *resource_, uint32_t edges, int32_t width,
+    int32_t height) {
+  wl_resource_post_event(resource_, WL_SHELL_SURFACE_CONFIGURE, edges, width,
+                         height);
 }
 
 /**
@@ -2930,10 +2865,9 @@ wl_shell_surface_send_configure(struct wl_resource *resource_, uint32_t edges, i
  * Sends an popup_done event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_shell_surface_send_popup_done(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_SHELL_SURFACE_POPUP_DONE);
+static inline void wl_shell_surface_send_popup_done(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_SHELL_SURFACE_POPUP_DONE);
 }
 
 #ifndef WL_SURFACE_ERROR_ENUM
@@ -2945,26 +2879,26 @@ wl_shell_surface_send_popup_done(struct wl_resource *resource_)
  * These errors can be emitted in response to wl_surface requests.
  */
 enum wl_surface_error {
-	/**
-	 * buffer scale value is invalid
-	 */
-	WL_SURFACE_ERROR_INVALID_SCALE = 0,
-	/**
-	 * buffer transform value is invalid
-	 */
-	WL_SURFACE_ERROR_INVALID_TRANSFORM = 1,
-	/**
-	 * buffer size is invalid
-	 */
-	WL_SURFACE_ERROR_INVALID_SIZE = 2,
-	/**
-	 * buffer offset is invalid
-	 */
-	WL_SURFACE_ERROR_INVALID_OFFSET = 3,
-	/**
-	 * surface was destroyed before its role object
-	 */
-	WL_SURFACE_ERROR_DEFUNCT_ROLE_OBJECT = 4,
+  /**
+   * buffer scale value is invalid
+   */
+  WL_SURFACE_ERROR_INVALID_SCALE = 0,
+  /**
+   * buffer transform value is invalid
+   */
+  WL_SURFACE_ERROR_INVALID_TRANSFORM = 1,
+  /**
+   * buffer size is invalid
+   */
+  WL_SURFACE_ERROR_INVALID_SIZE = 2,
+  /**
+   * buffer offset is invalid
+   */
+  WL_SURFACE_ERROR_INVALID_OFFSET = 3,
+  /**
+   * surface was destroyed before its role object
+   */
+  WL_SURFACE_ERROR_DEFUNCT_ROLE_OBJECT = 4,
 };
 #endif /* WL_SURFACE_ERROR_ENUM */
 
@@ -2973,398 +2907,380 @@ enum wl_surface_error {
  * @struct wl_surface_interface
  */
 struct wl_surface_interface {
-	/**
-	 * delete surface
-	 *
-	 * Deletes the surface and invalidates its object ID.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * set the surface contents
-	 *
-	 * Set a buffer as the content of this surface.
-	 *
-	 * The new size of the surface is calculated based on the buffer
-	 * size transformed by the inverse buffer_transform and the inverse
-	 * buffer_scale. This means that at commit time the supplied buffer
-	 * size must be an integer multiple of the buffer_scale. If that's
-	 * not the case, an invalid_size error is sent.
-	 *
-	 * The x and y arguments specify the location of the new pending
-	 * buffer's upper left corner, relative to the current buffer's
-	 * upper left corner, in surface-local coordinates. In other words,
-	 * the x and y, combined with the new surface size define in which
-	 * directions the surface's size changes. Setting anything other
-	 * than 0 as x and y arguments is discouraged, and should instead
-	 * be replaced with using the separate wl_surface.offset request.
-	 *
-	 * When the bound wl_surface version is 5 or higher, passing any
-	 * non-zero x or y is a protocol violation, and will result in an
-	 * 'invalid_offset' error being raised. The x and y arguments are
-	 * ignored and do not change the pending state. To achieve
-	 * equivalent semantics, use wl_surface.offset.
-	 *
-	 * Surface contents are double-buffered state, see
-	 * wl_surface.commit.
-	 *
-	 * The initial surface contents are void; there is no content.
-	 * wl_surface.attach assigns the given wl_buffer as the pending
-	 * wl_buffer. wl_surface.commit makes the pending wl_buffer the new
-	 * surface contents, and the size of the surface becomes the size
-	 * calculated from the wl_buffer, as described above. After commit,
-	 * there is no pending buffer until the next attach.
-	 *
-	 * Committing a pending wl_buffer allows the compositor to read the
-	 * pixels in the wl_buffer. The compositor may access the pixels at
-	 * any time after the wl_surface.commit request. When the
-	 * compositor will not access the pixels anymore, it will send the
-	 * wl_buffer.release event. Only after receiving wl_buffer.release,
-	 * the client may reuse the wl_buffer. A wl_buffer that has been
-	 * attached and then replaced by another attach instead of
-	 * committed will not receive a release event, and is not used by
-	 * the compositor.
-	 *
-	 * If a pending wl_buffer has been committed to more than one
-	 * wl_surface, the delivery of wl_buffer.release events becomes
-	 * undefined. A well behaved client should not rely on
-	 * wl_buffer.release events in this case. Alternatively, a client
-	 * could create multiple wl_buffer objects from the same backing
-	 * storage or use wp_linux_buffer_release.
-	 *
-	 * Destroying the wl_buffer after wl_buffer.release does not change
-	 * the surface contents. Destroying the wl_buffer before
-	 * wl_buffer.release is allowed as long as the underlying buffer
-	 * storage isn't re-used (this can happen e.g. on client process
-	 * termination). However, if the client destroys the wl_buffer
-	 * before receiving the wl_buffer.release event and mutates the
-	 * underlying buffer storage, the surface contents become undefined
-	 * immediately.
-	 *
-	 * If wl_surface.attach is sent with a NULL wl_buffer, the
-	 * following wl_surface.commit will remove the surface content.
-	 * @param buffer buffer of surface contents
-	 * @param x surface-local x coordinate
-	 * @param y surface-local y coordinate
-	 */
-	void (*attach)(struct wl_client *client,
-		       struct wl_resource *resource,
-		       struct wl_resource *buffer,
-		       int32_t x,
-		       int32_t y);
-	/**
-	 * mark part of the surface damaged
-	 *
-	 * This request is used to describe the regions where the pending
-	 * buffer is different from the current surface contents, and where
-	 * the surface therefore needs to be repainted. The compositor
-	 * ignores the parts of the damage that fall outside of the
-	 * surface.
-	 *
-	 * Damage is double-buffered state, see wl_surface.commit.
-	 *
-	 * The damage rectangle is specified in surface-local coordinates,
-	 * where x and y specify the upper left corner of the damage
-	 * rectangle.
-	 *
-	 * The initial value for pending damage is empty: no damage.
-	 * wl_surface.damage adds pending damage: the new pending damage is
-	 * the union of old pending damage and the given rectangle.
-	 *
-	 * wl_surface.commit assigns pending damage as the current damage,
-	 * and clears pending damage. The server will clear the current
-	 * damage as it repaints the surface.
-	 *
-	 * Note! New clients should not use this request. Instead damage
-	 * can be posted with wl_surface.damage_buffer which uses buffer
-	 * coordinates instead of surface coordinates.
-	 * @param x surface-local x coordinate
-	 * @param y surface-local y coordinate
-	 * @param width width of damage rectangle
-	 * @param height height of damage rectangle
-	 */
-	void (*damage)(struct wl_client *client,
-		       struct wl_resource *resource,
-		       int32_t x,
-		       int32_t y,
-		       int32_t width,
-		       int32_t height);
-	/**
-	 * request a frame throttling hint
-	 *
-	 * Request a notification when it is a good time to start drawing
-	 * a new frame, by creating a frame callback. This is useful for
-	 * throttling redrawing operations, and driving animations.
-	 *
-	 * When a client is animating on a wl_surface, it can use the
-	 * 'frame' request to get notified when it is a good time to draw
-	 * and commit the next frame of animation. If the client commits an
-	 * update earlier than that, it is likely that some updates will
-	 * not make it to the display, and the client is wasting resources
-	 * by drawing too often.
-	 *
-	 * The frame request will take effect on the next
-	 * wl_surface.commit. The notification will only be posted for one
-	 * frame unless requested again. For a wl_surface, the
-	 * notifications are posted in the order the frame requests were
-	 * committed.
-	 *
-	 * The server must send the notifications so that a client will not
-	 * send excessive updates, while still allowing the highest
-	 * possible update rate for clients that wait for the reply before
-	 * drawing again. The server should give some time for the client
-	 * to draw and commit after sending the frame callback events to
-	 * let it hit the next output refresh.
-	 *
-	 * A server should avoid signaling the frame callbacks if the
-	 * surface is not visible in any way, e.g. the surface is
-	 * off-screen, or completely obscured by other opaque surfaces.
-	 *
-	 * The object returned by this request will be destroyed by the
-	 * compositor after the callback is fired and as such the client
-	 * must not attempt to use it after that point.
-	 *
-	 * The callback_data passed in the callback is the current time, in
-	 * milliseconds, with an undefined base.
-	 * @param callback callback object for the frame request
-	 */
-	void (*frame)(struct wl_client *client,
-		      struct wl_resource *resource,
-		      uint32_t callback);
-	/**
-	 * set opaque region
-	 *
-	 * This request sets the region of the surface that contains
-	 * opaque content.
-	 *
-	 * The opaque region is an optimization hint for the compositor
-	 * that lets it optimize the redrawing of content behind opaque
-	 * regions. Setting an opaque region is not required for correct
-	 * behaviour, but marking transparent content as opaque will result
-	 * in repaint artifacts.
-	 *
-	 * The opaque region is specified in surface-local coordinates.
-	 *
-	 * The compositor ignores the parts of the opaque region that fall
-	 * outside of the surface.
-	 *
-	 * Opaque region is double-buffered state, see wl_surface.commit.
-	 *
-	 * wl_surface.set_opaque_region changes the pending opaque region.
-	 * wl_surface.commit copies the pending region to the current
-	 * region. Otherwise, the pending and current regions are never
-	 * changed.
-	 *
-	 * The initial value for an opaque region is empty. Setting the
-	 * pending opaque region has copy semantics, and the wl_region
-	 * object can be destroyed immediately. A NULL wl_region causes the
-	 * pending opaque region to be set to empty.
-	 * @param region opaque region of the surface
-	 */
-	void (*set_opaque_region)(struct wl_client *client,
-				  struct wl_resource *resource,
-				  struct wl_resource *region);
-	/**
-	 * set input region
-	 *
-	 * This request sets the region of the surface that can receive
-	 * pointer and touch events.
-	 *
-	 * Input events happening outside of this region will try the next
-	 * surface in the server surface stack. The compositor ignores the
-	 * parts of the input region that fall outside of the surface.
-	 *
-	 * The input region is specified in surface-local coordinates.
-	 *
-	 * Input region is double-buffered state, see wl_surface.commit.
-	 *
-	 * wl_surface.set_input_region changes the pending input region.
-	 * wl_surface.commit copies the pending region to the current
-	 * region. Otherwise the pending and current regions are never
-	 * changed, except cursor and icon surfaces are special cases, see
-	 * wl_pointer.set_cursor and wl_data_device.start_drag.
-	 *
-	 * The initial value for an input region is infinite. That means
-	 * the whole surface will accept input. Setting the pending input
-	 * region has copy semantics, and the wl_region object can be
-	 * destroyed immediately. A NULL wl_region causes the input region
-	 * to be set to infinite.
-	 * @param region input region of the surface
-	 */
-	void (*set_input_region)(struct wl_client *client,
-				 struct wl_resource *resource,
-				 struct wl_resource *region);
-	/**
-	 * commit pending surface state
-	 *
-	 * Surface state (input, opaque, and damage regions, attached
-	 * buffers, etc.) is double-buffered. Protocol requests modify the
-	 * pending state, as opposed to the current state in use by the
-	 * compositor. A commit request atomically applies all pending
-	 * state, replacing the current state. After commit, the new
-	 * pending state is as documented for each related request.
-	 *
-	 * On commit, a pending wl_buffer is applied first, and all other
-	 * state second. This means that all coordinates in double-buffered
-	 * state are relative to the new wl_buffer coming into use, except
-	 * for wl_surface.attach itself. If there is no pending wl_buffer,
-	 * the coordinates are relative to the current surface contents.
-	 *
-	 * All requests that need a commit to become effective are
-	 * documented to affect double-buffered state.
-	 *
-	 * Other interfaces may add further double-buffered surface state.
-	 */
-	void (*commit)(struct wl_client *client,
-		       struct wl_resource *resource);
-	/**
-	 * sets the buffer transformation
-	 *
-	 * This request sets an optional transformation on how the
-	 * compositor interprets the contents of the buffer attached to the
-	 * surface. The accepted values for the transform parameter are the
-	 * values for wl_output.transform.
-	 *
-	 * Buffer transform is double-buffered state, see
-	 * wl_surface.commit.
-	 *
-	 * A newly created surface has its buffer transformation set to
-	 * normal.
-	 *
-	 * wl_surface.set_buffer_transform changes the pending buffer
-	 * transformation. wl_surface.commit copies the pending buffer
-	 * transformation to the current one. Otherwise, the pending and
-	 * current values are never changed.
-	 *
-	 * The purpose of this request is to allow clients to render
-	 * content according to the output transform, thus permitting the
-	 * compositor to use certain optimizations even if the display is
-	 * rotated. Using hardware overlays and scanning out a client
-	 * buffer for fullscreen surfaces are examples of such
-	 * optimizations. Those optimizations are highly dependent on the
-	 * compositor implementation, so the use of this request should be
-	 * considered on a case-by-case basis.
-	 *
-	 * Note that if the transform value includes 90 or 270 degree
-	 * rotation, the width of the buffer will become the surface height
-	 * and the height of the buffer will become the surface width.
-	 *
-	 * If transform is not one of the values from the
-	 * wl_output.transform enum the invalid_transform protocol error is
-	 * raised.
-	 * @param transform transform for interpreting buffer contents
-	 * @since 2
-	 */
-	void (*set_buffer_transform)(struct wl_client *client,
-				     struct wl_resource *resource,
-				     int32_t transform);
-	/**
-	 * sets the buffer scaling factor
-	 *
-	 * This request sets an optional scaling factor on how the
-	 * compositor interprets the contents of the buffer attached to the
-	 * window.
-	 *
-	 * Buffer scale is double-buffered state, see wl_surface.commit.
-	 *
-	 * A newly created surface has its buffer scale set to 1.
-	 *
-	 * wl_surface.set_buffer_scale changes the pending buffer scale.
-	 * wl_surface.commit copies the pending buffer scale to the current
-	 * one. Otherwise, the pending and current values are never
-	 * changed.
-	 *
-	 * The purpose of this request is to allow clients to supply higher
-	 * resolution buffer data for use on high resolution outputs. It is
-	 * intended that you pick the same buffer scale as the scale of the
-	 * output that the surface is displayed on. This means the
-	 * compositor can avoid scaling when rendering the surface on that
-	 * output.
-	 *
-	 * Note that if the scale is larger than 1, then you have to attach
-	 * a buffer that is larger (by a factor of scale in each dimension)
-	 * than the desired surface size.
-	 *
-	 * If scale is not positive the invalid_scale protocol error is
-	 * raised.
-	 * @param scale positive scale for interpreting buffer contents
-	 * @since 3
-	 */
-	void (*set_buffer_scale)(struct wl_client *client,
-				 struct wl_resource *resource,
-				 int32_t scale);
-	/**
-	 * mark part of the surface damaged using buffer coordinates
-	 *
-	 * This request is used to describe the regions where the pending
-	 * buffer is different from the current surface contents, and where
-	 * the surface therefore needs to be repainted. The compositor
-	 * ignores the parts of the damage that fall outside of the
-	 * surface.
-	 *
-	 * Damage is double-buffered state, see wl_surface.commit.
-	 *
-	 * The damage rectangle is specified in buffer coordinates, where x
-	 * and y specify the upper left corner of the damage rectangle.
-	 *
-	 * The initial value for pending damage is empty: no damage.
-	 * wl_surface.damage_buffer adds pending damage: the new pending
-	 * damage is the union of old pending damage and the given
-	 * rectangle.
-	 *
-	 * wl_surface.commit assigns pending damage as the current damage,
-	 * and clears pending damage. The server will clear the current
-	 * damage as it repaints the surface.
-	 *
-	 * This request differs from wl_surface.damage in only one way - it
-	 * takes damage in buffer coordinates instead of surface-local
-	 * coordinates. While this generally is more intuitive than surface
-	 * coordinates, it is especially desirable when using wp_viewport
-	 * or when a drawing library (like EGL) is unaware of buffer scale
-	 * and buffer transform.
-	 *
-	 * Note: Because buffer transformation changes and damage requests
-	 * may be interleaved in the protocol stream, it is impossible to
-	 * determine the actual mapping between surface and buffer damage
-	 * until wl_surface.commit time. Therefore, compositors wishing to
-	 * take both kinds of damage into account will have to accumulate
-	 * damage from the two requests separately and only transform from
-	 * one to the other after receiving the wl_surface.commit.
-	 * @param x buffer-local x coordinate
-	 * @param y buffer-local y coordinate
-	 * @param width width of damage rectangle
-	 * @param height height of damage rectangle
-	 * @since 4
-	 */
-	void (*damage_buffer)(struct wl_client *client,
-			      struct wl_resource *resource,
-			      int32_t x,
-			      int32_t y,
-			      int32_t width,
-			      int32_t height);
-	/**
-	 * set the surface contents offset
-	 *
-	 * The x and y arguments specify the location of the new pending
-	 * buffer's upper left corner, relative to the current buffer's
-	 * upper left corner, in surface-local coordinates. In other words,
-	 * the x and y, combined with the new surface size define in which
-	 * directions the surface's size changes.
-	 *
-	 * Surface location offset is double-buffered state, see
-	 * wl_surface.commit.
-	 *
-	 * This request is semantically equivalent to and the replaces the
-	 * x and y arguments in the wl_surface.attach request in wl_surface
-	 * versions prior to 5. See wl_surface.attach for details.
-	 * @param x surface-local x coordinate
-	 * @param y surface-local y coordinate
-	 * @since 5
-	 */
-	void (*offset)(struct wl_client *client,
-		       struct wl_resource *resource,
-		       int32_t x,
-		       int32_t y);
+  /**
+   * delete surface
+   *
+   * Deletes the surface and invalidates its object ID.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * set the surface contents
+   *
+   * Set a buffer as the content of this surface.
+   *
+   * The new size of the surface is calculated based on the buffer
+   * size transformed by the inverse buffer_transform and the inverse
+   * buffer_scale. This means that at commit time the supplied buffer
+   * size must be an integer multiple of the buffer_scale. If that's
+   * not the case, an invalid_size error is sent.
+   *
+   * The x and y arguments specify the location of the new pending
+   * buffer's upper left corner, relative to the current buffer's
+   * upper left corner, in surface-local coordinates. In other words,
+   * the x and y, combined with the new surface size define in which
+   * directions the surface's size changes. Setting anything other
+   * than 0 as x and y arguments is discouraged, and should instead
+   * be replaced with using the separate wl_surface.offset request.
+   *
+   * When the bound wl_surface version is 5 or higher, passing any
+   * non-zero x or y is a protocol violation, and will result in an
+   * 'invalid_offset' error being raised. The x and y arguments are
+   * ignored and do not change the pending state. To achieve
+   * equivalent semantics, use wl_surface.offset.
+   *
+   * Surface contents are double-buffered state, see
+   * wl_surface.commit.
+   *
+   * The initial surface contents are void; there is no content.
+   * wl_surface.attach assigns the given wl_buffer as the pending
+   * wl_buffer. wl_surface.commit makes the pending wl_buffer the new
+   * surface contents, and the size of the surface becomes the size
+   * calculated from the wl_buffer, as described above. After commit,
+   * there is no pending buffer until the next attach.
+   *
+   * Committing a pending wl_buffer allows the compositor to read the
+   * pixels in the wl_buffer. The compositor may access the pixels at
+   * any time after the wl_surface.commit request. When the
+   * compositor will not access the pixels anymore, it will send the
+   * wl_buffer.release event. Only after receiving wl_buffer.release,
+   * the client may reuse the wl_buffer. A wl_buffer that has been
+   * attached and then replaced by another attach instead of
+   * committed will not receive a release event, and is not used by
+   * the compositor.
+   *
+   * If a pending wl_buffer has been committed to more than one
+   * wl_surface, the delivery of wl_buffer.release events becomes
+   * undefined. A well behaved client should not rely on
+   * wl_buffer.release events in this case. Alternatively, a client
+   * could create multiple wl_buffer objects from the same backing
+   * storage or use wp_linux_buffer_release.
+   *
+   * Destroying the wl_buffer after wl_buffer.release does not change
+   * the surface contents. Destroying the wl_buffer before
+   * wl_buffer.release is allowed as long as the underlying buffer
+   * storage isn't re-used (this can happen e.g. on client process
+   * termination). However, if the client destroys the wl_buffer
+   * before receiving the wl_buffer.release event and mutates the
+   * underlying buffer storage, the surface contents become undefined
+   * immediately.
+   *
+   * If wl_surface.attach is sent with a NULL wl_buffer, the
+   * following wl_surface.commit will remove the surface content.
+   * @param buffer buffer of surface contents
+   * @param x surface-local x coordinate
+   * @param y surface-local y coordinate
+   */
+  void (*attach)(struct wl_client *client, struct wl_resource *resource,
+                 struct wl_resource *buffer, int32_t x, int32_t y);
+  /**
+   * mark part of the surface damaged
+   *
+   * This request is used to describe the regions where the pending
+   * buffer is different from the current surface contents, and where
+   * the surface therefore needs to be repainted. The compositor
+   * ignores the parts of the damage that fall outside of the
+   * surface.
+   *
+   * Damage is double-buffered state, see wl_surface.commit.
+   *
+   * The damage rectangle is specified in surface-local coordinates,
+   * where x and y specify the upper left corner of the damage
+   * rectangle.
+   *
+   * The initial value for pending damage is empty: no damage.
+   * wl_surface.damage adds pending damage: the new pending damage is
+   * the union of old pending damage and the given rectangle.
+   *
+   * wl_surface.commit assigns pending damage as the current damage,
+   * and clears pending damage. The server will clear the current
+   * damage as it repaints the surface.
+   *
+   * Note! New clients should not use this request. Instead damage
+   * can be posted with wl_surface.damage_buffer which uses buffer
+   * coordinates instead of surface coordinates.
+   * @param x surface-local x coordinate
+   * @param y surface-local y coordinate
+   * @param width width of damage rectangle
+   * @param height height of damage rectangle
+   */
+  void (*damage)(struct wl_client *client, struct wl_resource *resource,
+                 int32_t x, int32_t y, int32_t width, int32_t height);
+  /**
+   * request a frame throttling hint
+   *
+   * Request a notification when it is a good time to start drawing
+   * a new frame, by creating a frame callback. This is useful for
+   * throttling redrawing operations, and driving animations.
+   *
+   * When a client is animating on a wl_surface, it can use the
+   * 'frame' request to get notified when it is a good time to draw
+   * and commit the next frame of animation. If the client commits an
+   * update earlier than that, it is likely that some updates will
+   * not make it to the display, and the client is wasting resources
+   * by drawing too often.
+   *
+   * The frame request will take effect on the next
+   * wl_surface.commit. The notification will only be posted for one
+   * frame unless requested again. For a wl_surface, the
+   * notifications are posted in the order the frame requests were
+   * committed.
+   *
+   * The server must send the notifications so that a client will not
+   * send excessive updates, while still allowing the highest
+   * possible update rate for clients that wait for the reply before
+   * drawing again. The server should give some time for the client
+   * to draw and commit after sending the frame callback events to
+   * let it hit the next output refresh.
+   *
+   * A server should avoid signaling the frame callbacks if the
+   * surface is not visible in any way, e.g. the surface is
+   * off-screen, or completely obscured by other opaque surfaces.
+   *
+   * The object returned by this request will be destroyed by the
+   * compositor after the callback is fired and as such the client
+   * must not attempt to use it after that point.
+   *
+   * The callback_data passed in the callback is the current time, in
+   * milliseconds, with an undefined base.
+   * @param callback callback object for the frame request
+   */
+  void (*frame)(struct wl_client *client, struct wl_resource *resource,
+                uint32_t callback);
+  /**
+   * set opaque region
+   *
+   * This request sets the region of the surface that contains
+   * opaque content.
+   *
+   * The opaque region is an optimization hint for the compositor
+   * that lets it optimize the redrawing of content behind opaque
+   * regions. Setting an opaque region is not required for correct
+   * behaviour, but marking transparent content as opaque will result
+   * in repaint artifacts.
+   *
+   * The opaque region is specified in surface-local coordinates.
+   *
+   * The compositor ignores the parts of the opaque region that fall
+   * outside of the surface.
+   *
+   * Opaque region is double-buffered state, see wl_surface.commit.
+   *
+   * wl_surface.set_opaque_region changes the pending opaque region.
+   * wl_surface.commit copies the pending region to the current
+   * region. Otherwise, the pending and current regions are never
+   * changed.
+   *
+   * The initial value for an opaque region is empty. Setting the
+   * pending opaque region has copy semantics, and the wl_region
+   * object can be destroyed immediately. A NULL wl_region causes the
+   * pending opaque region to be set to empty.
+   * @param region opaque region of the surface
+   */
+  void (*set_opaque_region)(struct wl_client *client,
+                            struct wl_resource *resource,
+                            struct wl_resource *region);
+  /**
+   * set input region
+   *
+   * This request sets the region of the surface that can receive
+   * pointer and touch events.
+   *
+   * Input events happening outside of this region will try the next
+   * surface in the server surface stack. The compositor ignores the
+   * parts of the input region that fall outside of the surface.
+   *
+   * The input region is specified in surface-local coordinates.
+   *
+   * Input region is double-buffered state, see wl_surface.commit.
+   *
+   * wl_surface.set_input_region changes the pending input region.
+   * wl_surface.commit copies the pending region to the current
+   * region. Otherwise the pending and current regions are never
+   * changed, except cursor and icon surfaces are special cases, see
+   * wl_pointer.set_cursor and wl_data_device.start_drag.
+   *
+   * The initial value for an input region is infinite. That means
+   * the whole surface will accept input. Setting the pending input
+   * region has copy semantics, and the wl_region object can be
+   * destroyed immediately. A NULL wl_region causes the input region
+   * to be set to infinite.
+   * @param region input region of the surface
+   */
+  void (*set_input_region)(struct wl_client *client,
+                           struct wl_resource *resource,
+                           struct wl_resource *region);
+  /**
+   * commit pending surface state
+   *
+   * Surface state (input, opaque, and damage regions, attached
+   * buffers, etc.) is double-buffered. Protocol requests modify the
+   * pending state, as opposed to the current state in use by the
+   * compositor. A commit request atomically applies all pending
+   * state, replacing the current state. After commit, the new
+   * pending state is as documented for each related request.
+   *
+   * On commit, a pending wl_buffer is applied first, and all other
+   * state second. This means that all coordinates in double-buffered
+   * state are relative to the new wl_buffer coming into use, except
+   * for wl_surface.attach itself. If there is no pending wl_buffer,
+   * the coordinates are relative to the current surface contents.
+   *
+   * All requests that need a commit to become effective are
+   * documented to affect double-buffered state.
+   *
+   * Other interfaces may add further double-buffered surface state.
+   */
+  void (*commit)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * sets the buffer transformation
+   *
+   * This request sets an optional transformation on how the
+   * compositor interprets the contents of the buffer attached to the
+   * surface. The accepted values for the transform parameter are the
+   * values for wl_output.transform.
+   *
+   * Buffer transform is double-buffered state, see
+   * wl_surface.commit.
+   *
+   * A newly created surface has its buffer transformation set to
+   * normal.
+   *
+   * wl_surface.set_buffer_transform changes the pending buffer
+   * transformation. wl_surface.commit copies the pending buffer
+   * transformation to the current one. Otherwise, the pending and
+   * current values are never changed.
+   *
+   * The purpose of this request is to allow clients to render
+   * content according to the output transform, thus permitting the
+   * compositor to use certain optimizations even if the display is
+   * rotated. Using hardware overlays and scanning out a client
+   * buffer for fullscreen surfaces are examples of such
+   * optimizations. Those optimizations are highly dependent on the
+   * compositor implementation, so the use of this request should be
+   * considered on a case-by-case basis.
+   *
+   * Note that if the transform value includes 90 or 270 degree
+   * rotation, the width of the buffer will become the surface height
+   * and the height of the buffer will become the surface width.
+   *
+   * If transform is not one of the values from the
+   * wl_output.transform enum the invalid_transform protocol error is
+   * raised.
+   * @param transform transform for interpreting buffer contents
+   * @since 2
+   */
+  void (*set_buffer_transform)(struct wl_client *client,
+                               struct wl_resource *resource, int32_t transform);
+  /**
+   * sets the buffer scaling factor
+   *
+   * This request sets an optional scaling factor on how the
+   * compositor interprets the contents of the buffer attached to the
+   * window.
+   *
+   * Buffer scale is double-buffered state, see wl_surface.commit.
+   *
+   * A newly created surface has its buffer scale set to 1.
+   *
+   * wl_surface.set_buffer_scale changes the pending buffer scale.
+   * wl_surface.commit copies the pending buffer scale to the current
+   * one. Otherwise, the pending and current values are never
+   * changed.
+   *
+   * The purpose of this request is to allow clients to supply higher
+   * resolution buffer data for use on high resolution outputs. It is
+   * intended that you pick the same buffer scale as the scale of the
+   * output that the surface is displayed on. This means the
+   * compositor can avoid scaling when rendering the surface on that
+   * output.
+   *
+   * Note that if the scale is larger than 1, then you have to attach
+   * a buffer that is larger (by a factor of scale in each dimension)
+   * than the desired surface size.
+   *
+   * If scale is not positive the invalid_scale protocol error is
+   * raised.
+   * @param scale positive scale for interpreting buffer contents
+   * @since 3
+   */
+  void (*set_buffer_scale)(struct wl_client *client,
+                           struct wl_resource *resource, int32_t scale);
+  /**
+   * mark part of the surface damaged using buffer coordinates
+   *
+   * This request is used to describe the regions where the pending
+   * buffer is different from the current surface contents, and where
+   * the surface therefore needs to be repainted. The compositor
+   * ignores the parts of the damage that fall outside of the
+   * surface.
+   *
+   * Damage is double-buffered state, see wl_surface.commit.
+   *
+   * The damage rectangle is specified in buffer coordinates, where x
+   * and y specify the upper left corner of the damage rectangle.
+   *
+   * The initial value for pending damage is empty: no damage.
+   * wl_surface.damage_buffer adds pending damage: the new pending
+   * damage is the union of old pending damage and the given
+   * rectangle.
+   *
+   * wl_surface.commit assigns pending damage as the current damage,
+   * and clears pending damage. The server will clear the current
+   * damage as it repaints the surface.
+   *
+   * This request differs from wl_surface.damage in only one way - it
+   * takes damage in buffer coordinates instead of surface-local
+   * coordinates. While this generally is more intuitive than surface
+   * coordinates, it is especially desirable when using wp_viewport
+   * or when a drawing library (like EGL) is unaware of buffer scale
+   * and buffer transform.
+   *
+   * Note: Because buffer transformation changes and damage requests
+   * may be interleaved in the protocol stream, it is impossible to
+   * determine the actual mapping between surface and buffer damage
+   * until wl_surface.commit time. Therefore, compositors wishing to
+   * take both kinds of damage into account will have to accumulate
+   * damage from the two requests separately and only transform from
+   * one to the other after receiving the wl_surface.commit.
+   * @param x buffer-local x coordinate
+   * @param y buffer-local y coordinate
+   * @param width width of damage rectangle
+   * @param height height of damage rectangle
+   * @since 4
+   */
+  void (*damage_buffer)(struct wl_client *client, struct wl_resource *resource,
+                        int32_t x, int32_t y, int32_t width, int32_t height);
+  /**
+   * set the surface contents offset
+   *
+   * The x and y arguments specify the location of the new pending
+   * buffer's upper left corner, relative to the current buffer's
+   * upper left corner, in surface-local coordinates. In other words,
+   * the x and y, combined with the new surface size define in which
+   * directions the surface's size changes.
+   *
+   * Surface location offset is double-buffered state, see
+   * wl_surface.commit.
+   *
+   * This request is semantically equivalent to and the replaces the
+   * x and y arguments in the wl_surface.attach request in wl_surface
+   * versions prior to 5. See wl_surface.attach for details.
+   * @param x surface-local x coordinate
+   * @param y surface-local y coordinate
+   * @since 5
+   */
+  void (*offset)(struct wl_client *client, struct wl_resource *resource,
+                 int32_t x, int32_t y);
 };
 
 #define WL_SURFACE_ENTER 0
@@ -3440,10 +3356,9 @@ struct wl_surface_interface {
  * @param resource_ The client's resource
  * @param output output entered by the surface
  */
-static inline void
-wl_surface_send_enter(struct wl_resource *resource_, struct wl_resource *output)
-{
-	wl_resource_post_event(resource_, WL_SURFACE_ENTER, output);
+static inline void wl_surface_send_enter(struct wl_resource *resource_,
+                                         struct wl_resource *output) {
+  wl_resource_post_event(resource_, WL_SURFACE_ENTER, output);
 }
 
 /**
@@ -3452,10 +3367,9 @@ wl_surface_send_enter(struct wl_resource *resource_, struct wl_resource *output)
  * @param resource_ The client's resource
  * @param output output left by the surface
  */
-static inline void
-wl_surface_send_leave(struct wl_resource *resource_, struct wl_resource *output)
-{
-	wl_resource_post_event(resource_, WL_SURFACE_LEAVE, output);
+static inline void wl_surface_send_leave(struct wl_resource *resource_,
+                                         struct wl_resource *output) {
+  wl_resource_post_event(resource_, WL_SURFACE_LEAVE, output);
 }
 
 /**
@@ -3464,10 +3378,9 @@ wl_surface_send_leave(struct wl_resource *resource_, struct wl_resource *output)
  * @param resource_ The client's resource
  * @param factor preferred scaling factor
  */
-static inline void
-wl_surface_send_preferred_buffer_scale(struct wl_resource *resource_, int32_t factor)
-{
-	wl_resource_post_event(resource_, WL_SURFACE_PREFERRED_BUFFER_SCALE, factor);
+static inline void wl_surface_send_preferred_buffer_scale(
+    struct wl_resource *resource_, int32_t factor) {
+  wl_resource_post_event(resource_, WL_SURFACE_PREFERRED_BUFFER_SCALE, factor);
 }
 
 /**
@@ -3476,10 +3389,10 @@ wl_surface_send_preferred_buffer_scale(struct wl_resource *resource_, int32_t fa
  * @param resource_ The client's resource
  * @param transform preferred transform
  */
-static inline void
-wl_surface_send_preferred_buffer_transform(struct wl_resource *resource_, uint32_t transform)
-{
-	wl_resource_post_event(resource_, WL_SURFACE_PREFERRED_BUFFER_TRANSFORM, transform);
+static inline void wl_surface_send_preferred_buffer_transform(
+    struct wl_resource *resource_, uint32_t transform) {
+  wl_resource_post_event(resource_, WL_SURFACE_PREFERRED_BUFFER_TRANSFORM,
+                         transform);
 }
 
 #ifndef WL_SEAT_CAPABILITY_ENUM
@@ -3492,18 +3405,18 @@ wl_surface_send_preferred_buffer_transform(struct wl_resource *resource_, uint32
  * set, then it is present on the seat.
  */
 enum wl_seat_capability {
-	/**
-	 * the seat has pointer devices
-	 */
-	WL_SEAT_CAPABILITY_POINTER = 1,
-	/**
-	 * the seat has one or more keyboards
-	 */
-	WL_SEAT_CAPABILITY_KEYBOARD = 2,
-	/**
-	 * the seat has touch devices
-	 */
-	WL_SEAT_CAPABILITY_TOUCH = 4,
+  /**
+   * the seat has pointer devices
+   */
+  WL_SEAT_CAPABILITY_POINTER = 1,
+  /**
+   * the seat has one or more keyboards
+   */
+  WL_SEAT_CAPABILITY_KEYBOARD = 2,
+  /**
+   * the seat has touch devices
+   */
+  WL_SEAT_CAPABILITY_TOUCH = 4,
 };
 #endif /* WL_SEAT_CAPABILITY_ENUM */
 
@@ -3516,10 +3429,11 @@ enum wl_seat_capability {
  * These errors can be emitted in response to wl_seat requests.
  */
 enum wl_seat_error {
-	/**
-	 * get_pointer, get_keyboard or get_touch called on seat without the matching capability
-	 */
-	WL_SEAT_ERROR_MISSING_CAPABILITY = 0,
+  /**
+   * get_pointer, get_keyboard or get_touch called on seat without the matching
+   * capability
+   */
+  WL_SEAT_ERROR_MISSING_CAPABILITY = 0,
 };
 #endif /* WL_SEAT_ERROR_ENUM */
 
@@ -3528,63 +3442,59 @@ enum wl_seat_error {
  * @struct wl_seat_interface
  */
 struct wl_seat_interface {
-	/**
-	 * return pointer object
-	 *
-	 * The ID provided will be initialized to the wl_pointer
-	 * interface for this seat.
-	 *
-	 * This request only takes effect if the seat has the pointer
-	 * capability, or has had the pointer capability in the past. It is
-	 * a protocol violation to issue this request on a seat that has
-	 * never had the pointer capability. The missing_capability error
-	 * will be sent in this case.
-	 * @param id seat pointer
-	 */
-	void (*get_pointer)(struct wl_client *client,
-			    struct wl_resource *resource,
-			    uint32_t id);
-	/**
-	 * return keyboard object
-	 *
-	 * The ID provided will be initialized to the wl_keyboard
-	 * interface for this seat.
-	 *
-	 * This request only takes effect if the seat has the keyboard
-	 * capability, or has had the keyboard capability in the past. It
-	 * is a protocol violation to issue this request on a seat that has
-	 * never had the keyboard capability. The missing_capability error
-	 * will be sent in this case.
-	 * @param id seat keyboard
-	 */
-	void (*get_keyboard)(struct wl_client *client,
-			     struct wl_resource *resource,
-			     uint32_t id);
-	/**
-	 * return touch object
-	 *
-	 * The ID provided will be initialized to the wl_touch interface
-	 * for this seat.
-	 *
-	 * This request only takes effect if the seat has the touch
-	 * capability, or has had the touch capability in the past. It is a
-	 * protocol violation to issue this request on a seat that has
-	 * never had the touch capability. The missing_capability error
-	 * will be sent in this case.
-	 * @param id seat touch interface
-	 */
-	void (*get_touch)(struct wl_client *client,
-			  struct wl_resource *resource,
-			  uint32_t id);
-	/**
-	 * release the seat object
-	 *
-	 * Using this request a client can tell the server that it is not
-	 * going to use the seat object anymore.
-	 * @since 5
-	 */
-	void (*release)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * return pointer object
+   *
+   * The ID provided will be initialized to the wl_pointer
+   * interface for this seat.
+   *
+   * This request only takes effect if the seat has the pointer
+   * capability, or has had the pointer capability in the past. It is
+   * a protocol violation to issue this request on a seat that has
+   * never had the pointer capability. The missing_capability error
+   * will be sent in this case.
+   * @param id seat pointer
+   */
+  void (*get_pointer)(struct wl_client *client, struct wl_resource *resource,
+                      uint32_t id);
+  /**
+   * return keyboard object
+   *
+   * The ID provided will be initialized to the wl_keyboard
+   * interface for this seat.
+   *
+   * This request only takes effect if the seat has the keyboard
+   * capability, or has had the keyboard capability in the past. It
+   * is a protocol violation to issue this request on a seat that has
+   * never had the keyboard capability. The missing_capability error
+   * will be sent in this case.
+   * @param id seat keyboard
+   */
+  void (*get_keyboard)(struct wl_client *client, struct wl_resource *resource,
+                       uint32_t id);
+  /**
+   * return touch object
+   *
+   * The ID provided will be initialized to the wl_touch interface
+   * for this seat.
+   *
+   * This request only takes effect if the seat has the touch
+   * capability, or has had the touch capability in the past. It is a
+   * protocol violation to issue this request on a seat that has
+   * never had the touch capability. The missing_capability error
+   * will be sent in this case.
+   * @param id seat touch interface
+   */
+  void (*get_touch)(struct wl_client *client, struct wl_resource *resource,
+                    uint32_t id);
+  /**
+   * release the seat object
+   *
+   * Using this request a client can tell the server that it is not
+   * going to use the seat object anymore.
+   * @since 5
+   */
+  void (*release)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WL_SEAT_CAPABILITIES 0
@@ -3622,10 +3532,9 @@ struct wl_seat_interface {
  * @param resource_ The client's resource
  * @param capabilities capabilities of the seat
  */
-static inline void
-wl_seat_send_capabilities(struct wl_resource *resource_, uint32_t capabilities)
-{
-	wl_resource_post_event(resource_, WL_SEAT_CAPABILITIES, capabilities);
+static inline void wl_seat_send_capabilities(struct wl_resource *resource_,
+                                             uint32_t capabilities) {
+  wl_resource_post_event(resource_, WL_SEAT_CAPABILITIES, capabilities);
 }
 
 /**
@@ -3634,19 +3543,18 @@ wl_seat_send_capabilities(struct wl_resource *resource_, uint32_t capabilities)
  * @param resource_ The client's resource
  * @param name seat identifier
  */
-static inline void
-wl_seat_send_name(struct wl_resource *resource_, const char *name)
-{
-	wl_resource_post_event(resource_, WL_SEAT_NAME, name);
+static inline void wl_seat_send_name(struct wl_resource *resource_,
+                                     const char *name) {
+  wl_resource_post_event(resource_, WL_SEAT_NAME, name);
 }
 
 #ifndef WL_POINTER_ERROR_ENUM
 #define WL_POINTER_ERROR_ENUM
 enum wl_pointer_error {
-	/**
-	 * given wl_surface has another role
-	 */
-	WL_POINTER_ERROR_ROLE = 0,
+  /**
+   * given wl_surface has another role
+   */
+  WL_POINTER_ERROR_ROLE = 0,
 };
 #endif /* WL_POINTER_ERROR_ENUM */
 
@@ -3660,14 +3568,14 @@ enum wl_pointer_error {
  * event.
  */
 enum wl_pointer_button_state {
-	/**
-	 * the button is not pressed
-	 */
-	WL_POINTER_BUTTON_STATE_RELEASED = 0,
-	/**
-	 * the button is pressed
-	 */
-	WL_POINTER_BUTTON_STATE_PRESSED = 1,
+  /**
+   * the button is not pressed
+   */
+  WL_POINTER_BUTTON_STATE_RELEASED = 0,
+  /**
+   * the button is pressed
+   */
+  WL_POINTER_BUTTON_STATE_PRESSED = 1,
 };
 #endif /* WL_POINTER_BUTTON_STATE_ENUM */
 
@@ -3680,14 +3588,14 @@ enum wl_pointer_button_state {
  * Describes the axis types of scroll events.
  */
 enum wl_pointer_axis {
-	/**
-	 * vertical axis
-	 */
-	WL_POINTER_AXIS_VERTICAL_SCROLL = 0,
-	/**
-	 * horizontal axis
-	 */
-	WL_POINTER_AXIS_HORIZONTAL_SCROLL = 1,
+  /**
+   * vertical axis
+   */
+  WL_POINTER_AXIS_VERTICAL_SCROLL = 0,
+  /**
+   * horizontal axis
+   */
+  WL_POINTER_AXIS_HORIZONTAL_SCROLL = 1,
 };
 #endif /* WL_POINTER_AXIS_ENUM */
 
@@ -3715,23 +3623,23 @@ enum wl_pointer_axis {
  * (usually sideways) tilt of the wheel.
  */
 enum wl_pointer_axis_source {
-	/**
-	 * a physical wheel rotation
-	 */
-	WL_POINTER_AXIS_SOURCE_WHEEL = 0,
-	/**
-	 * finger on a touch surface
-	 */
-	WL_POINTER_AXIS_SOURCE_FINGER = 1,
-	/**
-	 * continuous coordinate space
-	 */
-	WL_POINTER_AXIS_SOURCE_CONTINUOUS = 2,
-	/**
-	 * a physical wheel tilt
-	 * @since 6
-	 */
-	WL_POINTER_AXIS_SOURCE_WHEEL_TILT = 3,
+  /**
+   * a physical wheel rotation
+   */
+  WL_POINTER_AXIS_SOURCE_WHEEL = 0,
+  /**
+   * finger on a touch surface
+   */
+  WL_POINTER_AXIS_SOURCE_FINGER = 1,
+  /**
+   * continuous coordinate space
+   */
+  WL_POINTER_AXIS_SOURCE_CONTINUOUS = 2,
+  /**
+   * a physical wheel tilt
+   * @since 6
+   */
+  WL_POINTER_AXIS_SOURCE_WHEEL_TILT = 3,
 };
 /**
  * @ingroup iface_wl_pointer
@@ -3749,14 +3657,14 @@ enum wl_pointer_axis_source {
  * wl_pointer.axis event, relative to the wl_pointer.axis direction.
  */
 enum wl_pointer_axis_relative_direction {
-	/**
-	 * physical motion matches axis direction
-	 */
-	WL_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL = 0,
-	/**
-	 * physical motion is the inverse of the axis direction
-	 */
-	WL_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED = 1,
+  /**
+   * physical motion matches axis direction
+   */
+  WL_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL = 0,
+  /**
+   * physical motion is the inverse of the axis direction
+   */
+  WL_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED = 1,
 };
 #endif /* WL_POINTER_AXIS_RELATIVE_DIRECTION_ENUM */
 
@@ -3765,65 +3673,61 @@ enum wl_pointer_axis_relative_direction {
  * @struct wl_pointer_interface
  */
 struct wl_pointer_interface {
-	/**
-	 * set the pointer surface
-	 *
-	 * Set the pointer surface, i.e., the surface that contains the
-	 * pointer image (cursor). This request gives the surface the role
-	 * of a cursor. If the surface already has another role, it raises
-	 * a protocol error.
-	 *
-	 * The cursor actually changes only if the pointer focus for this
-	 * device is one of the requesting client's surfaces or the surface
-	 * parameter is the current pointer surface. If there was a
-	 * previous surface set with this request it is replaced. If
-	 * surface is NULL, the pointer image is hidden.
-	 *
-	 * The parameters hotspot_x and hotspot_y define the position of
-	 * the pointer surface relative to the pointer location. Its
-	 * top-left corner is always at (x, y) - (hotspot_x, hotspot_y),
-	 * where (x, y) are the coordinates of the pointer location, in
-	 * surface-local coordinates.
-	 *
-	 * On wl_surface.offset requests to the pointer surface, hotspot_x
-	 * and hotspot_y are decremented by the x and y parameters passed
-	 * to the request. The offset must be applied by wl_surface.commit
-	 * as usual.
-	 *
-	 * The hotspot can also be updated by passing the currently set
-	 * pointer surface to this request with new values for hotspot_x
-	 * and hotspot_y.
-	 *
-	 * The input region is ignored for wl_surfaces with the role of a
-	 * cursor. When the use as a cursor ends, the wl_surface is
-	 * unmapped.
-	 *
-	 * The serial parameter must match the latest wl_pointer.enter
-	 * serial number sent to the client. Otherwise the request will be
-	 * ignored.
-	 * @param serial serial number of the enter event
-	 * @param surface pointer surface
-	 * @param hotspot_x surface-local x coordinate
-	 * @param hotspot_y surface-local y coordinate
-	 */
-	void (*set_cursor)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   uint32_t serial,
-			   struct wl_resource *surface,
-			   int32_t hotspot_x,
-			   int32_t hotspot_y);
-	/**
-	 * release the pointer object
-	 *
-	 * Using this request a client can tell the server that it is not
-	 * going to use the pointer object anymore.
-	 *
-	 * This request destroys the pointer proxy object, so clients must
-	 * not call wl_pointer_destroy() after using this request.
-	 * @since 3
-	 */
-	void (*release)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * set the pointer surface
+   *
+   * Set the pointer surface, i.e., the surface that contains the
+   * pointer image (cursor). This request gives the surface the role
+   * of a cursor. If the surface already has another role, it raises
+   * a protocol error.
+   *
+   * The cursor actually changes only if the pointer focus for this
+   * device is one of the requesting client's surfaces or the surface
+   * parameter is the current pointer surface. If there was a
+   * previous surface set with this request it is replaced. If
+   * surface is NULL, the pointer image is hidden.
+   *
+   * The parameters hotspot_x and hotspot_y define the position of
+   * the pointer surface relative to the pointer location. Its
+   * top-left corner is always at (x, y) - (hotspot_x, hotspot_y),
+   * where (x, y) are the coordinates of the pointer location, in
+   * surface-local coordinates.
+   *
+   * On wl_surface.offset requests to the pointer surface, hotspot_x
+   * and hotspot_y are decremented by the x and y parameters passed
+   * to the request. The offset must be applied by wl_surface.commit
+   * as usual.
+   *
+   * The hotspot can also be updated by passing the currently set
+   * pointer surface to this request with new values for hotspot_x
+   * and hotspot_y.
+   *
+   * The input region is ignored for wl_surfaces with the role of a
+   * cursor. When the use as a cursor ends, the wl_surface is
+   * unmapped.
+   *
+   * The serial parameter must match the latest wl_pointer.enter
+   * serial number sent to the client. Otherwise the request will be
+   * ignored.
+   * @param serial serial number of the enter event
+   * @param surface pointer surface
+   * @param hotspot_x surface-local x coordinate
+   * @param hotspot_y surface-local y coordinate
+   */
+  void (*set_cursor)(struct wl_client *client, struct wl_resource *resource,
+                     uint32_t serial, struct wl_resource *surface,
+                     int32_t hotspot_x, int32_t hotspot_y);
+  /**
+   * release the pointer object
+   *
+   * Using this request a client can tell the server that it is not
+   * going to use the pointer object anymore.
+   *
+   * This request destroys the pointer proxy object, so clients must
+   * not call wl_pointer_destroy() after using this request.
+   * @since 3
+   */
+  void (*release)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WL_POINTER_ENTER 0
@@ -3901,10 +3805,13 @@ struct wl_pointer_interface {
  * @param surface_x surface-local x coordinate
  * @param surface_y surface-local y coordinate
  */
-static inline void
-wl_pointer_send_enter(struct wl_resource *resource_, uint32_t serial, struct wl_resource *surface, wl_fixed_t surface_x, wl_fixed_t surface_y)
-{
-	wl_resource_post_event(resource_, WL_POINTER_ENTER, serial, surface, surface_x, surface_y);
+static inline void wl_pointer_send_enter(struct wl_resource *resource_,
+                                         uint32_t serial,
+                                         struct wl_resource *surface,
+                                         wl_fixed_t surface_x,
+                                         wl_fixed_t surface_y) {
+  wl_resource_post_event(resource_, WL_POINTER_ENTER, serial, surface,
+                         surface_x, surface_y);
 }
 
 /**
@@ -3914,10 +3821,10 @@ wl_pointer_send_enter(struct wl_resource *resource_, uint32_t serial, struct wl_
  * @param serial serial number of the leave event
  * @param surface surface left by the pointer
  */
-static inline void
-wl_pointer_send_leave(struct wl_resource *resource_, uint32_t serial, struct wl_resource *surface)
-{
-	wl_resource_post_event(resource_, WL_POINTER_LEAVE, serial, surface);
+static inline void wl_pointer_send_leave(struct wl_resource *resource_,
+                                         uint32_t serial,
+                                         struct wl_resource *surface) {
+  wl_resource_post_event(resource_, WL_POINTER_LEAVE, serial, surface);
 }
 
 /**
@@ -3928,10 +3835,11 @@ wl_pointer_send_leave(struct wl_resource *resource_, uint32_t serial, struct wl_
  * @param surface_x surface-local x coordinate
  * @param surface_y surface-local y coordinate
  */
-static inline void
-wl_pointer_send_motion(struct wl_resource *resource_, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y)
-{
-	wl_resource_post_event(resource_, WL_POINTER_MOTION, time, surface_x, surface_y);
+static inline void wl_pointer_send_motion(struct wl_resource *resource_,
+                                          uint32_t time, wl_fixed_t surface_x,
+                                          wl_fixed_t surface_y) {
+  wl_resource_post_event(resource_, WL_POINTER_MOTION, time, surface_x,
+                         surface_y);
 }
 
 /**
@@ -3943,10 +3851,11 @@ wl_pointer_send_motion(struct wl_resource *resource_, uint32_t time, wl_fixed_t 
  * @param button button that produced the event
  * @param state physical state of the button
  */
-static inline void
-wl_pointer_send_button(struct wl_resource *resource_, uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
-{
-	wl_resource_post_event(resource_, WL_POINTER_BUTTON, serial, time, button, state);
+static inline void wl_pointer_send_button(struct wl_resource *resource_,
+                                          uint32_t serial, uint32_t time,
+                                          uint32_t button, uint32_t state) {
+  wl_resource_post_event(resource_, WL_POINTER_BUTTON, serial, time, button,
+                         state);
 }
 
 /**
@@ -3957,10 +3866,10 @@ wl_pointer_send_button(struct wl_resource *resource_, uint32_t serial, uint32_t 
  * @param axis axis type
  * @param value length of vector in surface-local coordinate space
  */
-static inline void
-wl_pointer_send_axis(struct wl_resource *resource_, uint32_t time, uint32_t axis, wl_fixed_t value)
-{
-	wl_resource_post_event(resource_, WL_POINTER_AXIS, time, axis, value);
+static inline void wl_pointer_send_axis(struct wl_resource *resource_,
+                                        uint32_t time, uint32_t axis,
+                                        wl_fixed_t value) {
+  wl_resource_post_event(resource_, WL_POINTER_AXIS, time, axis, value);
 }
 
 /**
@@ -3968,10 +3877,8 @@ wl_pointer_send_axis(struct wl_resource *resource_, uint32_t time, uint32_t axis
  * Sends an frame event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_pointer_send_frame(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_POINTER_FRAME);
+static inline void wl_pointer_send_frame(struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_POINTER_FRAME);
 }
 
 /**
@@ -3980,10 +3887,9 @@ wl_pointer_send_frame(struct wl_resource *resource_)
  * @param resource_ The client's resource
  * @param axis_source source of the axis event
  */
-static inline void
-wl_pointer_send_axis_source(struct wl_resource *resource_, uint32_t axis_source)
-{
-	wl_resource_post_event(resource_, WL_POINTER_AXIS_SOURCE, axis_source);
+static inline void wl_pointer_send_axis_source(struct wl_resource *resource_,
+                                               uint32_t axis_source) {
+  wl_resource_post_event(resource_, WL_POINTER_AXIS_SOURCE, axis_source);
 }
 
 /**
@@ -3993,10 +3899,9 @@ wl_pointer_send_axis_source(struct wl_resource *resource_, uint32_t axis_source)
  * @param time timestamp with millisecond granularity
  * @param axis the axis stopped with this event
  */
-static inline void
-wl_pointer_send_axis_stop(struct wl_resource *resource_, uint32_t time, uint32_t axis)
-{
-	wl_resource_post_event(resource_, WL_POINTER_AXIS_STOP, time, axis);
+static inline void wl_pointer_send_axis_stop(struct wl_resource *resource_,
+                                             uint32_t time, uint32_t axis) {
+  wl_resource_post_event(resource_, WL_POINTER_AXIS_STOP, time, axis);
 }
 
 /**
@@ -4006,10 +3911,10 @@ wl_pointer_send_axis_stop(struct wl_resource *resource_, uint32_t time, uint32_t
  * @param axis axis type
  * @param discrete number of steps
  */
-static inline void
-wl_pointer_send_axis_discrete(struct wl_resource *resource_, uint32_t axis, int32_t discrete)
-{
-	wl_resource_post_event(resource_, WL_POINTER_AXIS_DISCRETE, axis, discrete);
+static inline void wl_pointer_send_axis_discrete(struct wl_resource *resource_,
+                                                 uint32_t axis,
+                                                 int32_t discrete) {
+  wl_resource_post_event(resource_, WL_POINTER_AXIS_DISCRETE, axis, discrete);
 }
 
 /**
@@ -4019,10 +3924,10 @@ wl_pointer_send_axis_discrete(struct wl_resource *resource_, uint32_t axis, int3
  * @param axis axis type
  * @param value120 scroll distance as fraction of 120
  */
-static inline void
-wl_pointer_send_axis_value120(struct wl_resource *resource_, uint32_t axis, int32_t value120)
-{
-	wl_resource_post_event(resource_, WL_POINTER_AXIS_VALUE120, axis, value120);
+static inline void wl_pointer_send_axis_value120(struct wl_resource *resource_,
+                                                 uint32_t axis,
+                                                 int32_t value120) {
+  wl_resource_post_event(resource_, WL_POINTER_AXIS_VALUE120, axis, value120);
 }
 
 /**
@@ -4032,10 +3937,10 @@ wl_pointer_send_axis_value120(struct wl_resource *resource_, uint32_t axis, int3
  * @param axis axis type
  * @param direction physical direction relative to axis motion
  */
-static inline void
-wl_pointer_send_axis_relative_direction(struct wl_resource *resource_, uint32_t axis, uint32_t direction)
-{
-	wl_resource_post_event(resource_, WL_POINTER_AXIS_RELATIVE_DIRECTION, axis, direction);
+static inline void wl_pointer_send_axis_relative_direction(
+    struct wl_resource *resource_, uint32_t axis, uint32_t direction) {
+  wl_resource_post_event(resource_, WL_POINTER_AXIS_RELATIVE_DIRECTION, axis,
+                         direction);
 }
 
 #ifndef WL_KEYBOARD_KEYMAP_FORMAT_ENUM
@@ -4048,14 +3953,15 @@ wl_pointer_send_axis_relative_direction(struct wl_resource *resource_, uint32_t 
  * client with the wl_keyboard.keymap event.
  */
 enum wl_keyboard_keymap_format {
-	/**
-	 * no keymap; client must understand how to interpret the raw keycode
-	 */
-	WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP = 0,
-	/**
-	 * libxkbcommon compatible, null-terminated string; to determine the xkb keycode, clients must add 8 to the key event keycode
-	 */
-	WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1 = 1,
+  /**
+   * no keymap; client must understand how to interpret the raw keycode
+   */
+  WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP = 0,
+  /**
+   * libxkbcommon compatible, null-terminated string; to determine the xkb
+   * keycode, clients must add 8 to the key event keycode
+   */
+  WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1 = 1,
 };
 #endif /* WL_KEYBOARD_KEYMAP_FORMAT_ENUM */
 
@@ -4068,14 +3974,14 @@ enum wl_keyboard_keymap_format {
  * Describes the physical state of a key that produced the key event.
  */
 enum wl_keyboard_key_state {
-	/**
-	 * key is not pressed
-	 */
-	WL_KEYBOARD_KEY_STATE_RELEASED = 0,
-	/**
-	 * key is pressed
-	 */
-	WL_KEYBOARD_KEY_STATE_PRESSED = 1,
+  /**
+   * key is not pressed
+   */
+  WL_KEYBOARD_KEY_STATE_RELEASED = 0,
+  /**
+   * key is pressed
+   */
+  WL_KEYBOARD_KEY_STATE_PRESSED = 1,
 };
 #endif /* WL_KEYBOARD_KEY_STATE_ENUM */
 
@@ -4084,14 +3990,13 @@ enum wl_keyboard_key_state {
  * @struct wl_keyboard_interface
  */
 struct wl_keyboard_interface {
-	/**
-	 * release the keyboard object
-	 *
-	 *
-	 * @since 3
-	 */
-	void (*release)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * release the keyboard object
+   *
+   *
+   * @since 3
+   */
+  void (*release)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WL_KEYBOARD_KEYMAP 0
@@ -4139,10 +4044,10 @@ struct wl_keyboard_interface {
  * @param fd keymap file descriptor
  * @param size keymap size, in bytes
  */
-static inline void
-wl_keyboard_send_keymap(struct wl_resource *resource_, uint32_t format, int32_t fd, uint32_t size)
-{
-	wl_resource_post_event(resource_, WL_KEYBOARD_KEYMAP, format, fd, size);
+static inline void wl_keyboard_send_keymap(struct wl_resource *resource_,
+                                           uint32_t format, int32_t fd,
+                                           uint32_t size) {
+  wl_resource_post_event(resource_, WL_KEYBOARD_KEYMAP, format, fd, size);
 }
 
 /**
@@ -4153,10 +4058,11 @@ wl_keyboard_send_keymap(struct wl_resource *resource_, uint32_t format, int32_t 
  * @param surface surface gaining keyboard focus
  * @param keys the currently pressed keys
  */
-static inline void
-wl_keyboard_send_enter(struct wl_resource *resource_, uint32_t serial, struct wl_resource *surface, struct wl_array *keys)
-{
-	wl_resource_post_event(resource_, WL_KEYBOARD_ENTER, serial, surface, keys);
+static inline void wl_keyboard_send_enter(struct wl_resource *resource_,
+                                          uint32_t serial,
+                                          struct wl_resource *surface,
+                                          struct wl_array *keys) {
+  wl_resource_post_event(resource_, WL_KEYBOARD_ENTER, serial, surface, keys);
 }
 
 /**
@@ -4166,10 +4072,10 @@ wl_keyboard_send_enter(struct wl_resource *resource_, uint32_t serial, struct wl
  * @param serial serial number of the leave event
  * @param surface surface that lost keyboard focus
  */
-static inline void
-wl_keyboard_send_leave(struct wl_resource *resource_, uint32_t serial, struct wl_resource *surface)
-{
-	wl_resource_post_event(resource_, WL_KEYBOARD_LEAVE, serial, surface);
+static inline void wl_keyboard_send_leave(struct wl_resource *resource_,
+                                          uint32_t serial,
+                                          struct wl_resource *surface) {
+  wl_resource_post_event(resource_, WL_KEYBOARD_LEAVE, serial, surface);
 }
 
 /**
@@ -4181,10 +4087,10 @@ wl_keyboard_send_leave(struct wl_resource *resource_, uint32_t serial, struct wl
  * @param key key that produced the event
  * @param state physical state of the key
  */
-static inline void
-wl_keyboard_send_key(struct wl_resource *resource_, uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
-{
-	wl_resource_post_event(resource_, WL_KEYBOARD_KEY, serial, time, key, state);
+static inline void wl_keyboard_send_key(struct wl_resource *resource_,
+                                        uint32_t serial, uint32_t time,
+                                        uint32_t key, uint32_t state) {
+  wl_resource_post_event(resource_, WL_KEYBOARD_KEY, serial, time, key, state);
 }
 
 /**
@@ -4197,10 +4103,11 @@ wl_keyboard_send_key(struct wl_resource *resource_, uint32_t serial, uint32_t ti
  * @param mods_locked locked modifiers
  * @param group keyboard layout
  */
-static inline void
-wl_keyboard_send_modifiers(struct wl_resource *resource_, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group)
-{
-	wl_resource_post_event(resource_, WL_KEYBOARD_MODIFIERS, serial, mods_depressed, mods_latched, mods_locked, group);
+static inline void wl_keyboard_send_modifiers(
+    struct wl_resource *resource_, uint32_t serial, uint32_t mods_depressed,
+    uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
+  wl_resource_post_event(resource_, WL_KEYBOARD_MODIFIERS, serial,
+                         mods_depressed, mods_latched, mods_locked, group);
 }
 
 /**
@@ -4210,10 +4117,9 @@ wl_keyboard_send_modifiers(struct wl_resource *resource_, uint32_t serial, uint3
  * @param rate the rate of repeating keys in characters per second
  * @param delay delay in milliseconds since key down until repeating starts
  */
-static inline void
-wl_keyboard_send_repeat_info(struct wl_resource *resource_, int32_t rate, int32_t delay)
-{
-	wl_resource_post_event(resource_, WL_KEYBOARD_REPEAT_INFO, rate, delay);
+static inline void wl_keyboard_send_repeat_info(struct wl_resource *resource_,
+                                                int32_t rate, int32_t delay) {
+  wl_resource_post_event(resource_, WL_KEYBOARD_REPEAT_INFO, rate, delay);
 }
 
 /**
@@ -4221,14 +4127,13 @@ wl_keyboard_send_repeat_info(struct wl_resource *resource_, int32_t rate, int32_
  * @struct wl_touch_interface
  */
 struct wl_touch_interface {
-	/**
-	 * release the touch object
-	 *
-	 *
-	 * @since 3
-	 */
-	void (*release)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * release the touch object
+   *
+   *
+   * @since 3
+   */
+  void (*release)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WL_TOUCH_DOWN 0
@@ -4284,10 +4189,12 @@ struct wl_touch_interface {
  * @param x surface-local x coordinate
  * @param y surface-local y coordinate
  */
-static inline void
-wl_touch_send_down(struct wl_resource *resource_, uint32_t serial, uint32_t time, struct wl_resource *surface, int32_t id, wl_fixed_t x, wl_fixed_t y)
-{
-	wl_resource_post_event(resource_, WL_TOUCH_DOWN, serial, time, surface, id, x, y);
+static inline void wl_touch_send_down(struct wl_resource *resource_,
+                                      uint32_t serial, uint32_t time,
+                                      struct wl_resource *surface, int32_t id,
+                                      wl_fixed_t x, wl_fixed_t y) {
+  wl_resource_post_event(resource_, WL_TOUCH_DOWN, serial, time, surface, id, x,
+                         y);
 }
 
 /**
@@ -4298,10 +4205,10 @@ wl_touch_send_down(struct wl_resource *resource_, uint32_t serial, uint32_t time
  * @param time timestamp with millisecond granularity
  * @param id the unique ID of this touch point
  */
-static inline void
-wl_touch_send_up(struct wl_resource *resource_, uint32_t serial, uint32_t time, int32_t id)
-{
-	wl_resource_post_event(resource_, WL_TOUCH_UP, serial, time, id);
+static inline void wl_touch_send_up(struct wl_resource *resource_,
+                                    uint32_t serial, uint32_t time,
+                                    int32_t id) {
+  wl_resource_post_event(resource_, WL_TOUCH_UP, serial, time, id);
 }
 
 /**
@@ -4313,10 +4220,10 @@ wl_touch_send_up(struct wl_resource *resource_, uint32_t serial, uint32_t time, 
  * @param x surface-local x coordinate
  * @param y surface-local y coordinate
  */
-static inline void
-wl_touch_send_motion(struct wl_resource *resource_, uint32_t time, int32_t id, wl_fixed_t x, wl_fixed_t y)
-{
-	wl_resource_post_event(resource_, WL_TOUCH_MOTION, time, id, x, y);
+static inline void wl_touch_send_motion(struct wl_resource *resource_,
+                                        uint32_t time, int32_t id, wl_fixed_t x,
+                                        wl_fixed_t y) {
+  wl_resource_post_event(resource_, WL_TOUCH_MOTION, time, id, x, y);
 }
 
 /**
@@ -4324,10 +4231,8 @@ wl_touch_send_motion(struct wl_resource *resource_, uint32_t time, int32_t id, w
  * Sends an frame event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_touch_send_frame(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_TOUCH_FRAME);
+static inline void wl_touch_send_frame(struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_TOUCH_FRAME);
 }
 
 /**
@@ -4335,10 +4240,8 @@ wl_touch_send_frame(struct wl_resource *resource_)
  * Sends an cancel event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_touch_send_cancel(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_TOUCH_CANCEL);
+static inline void wl_touch_send_cancel(struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_TOUCH_CANCEL);
 }
 
 /**
@@ -4349,10 +4252,10 @@ wl_touch_send_cancel(struct wl_resource *resource_)
  * @param major length of the major axis in surface-local coordinates
  * @param minor length of the minor axis in surface-local coordinates
  */
-static inline void
-wl_touch_send_shape(struct wl_resource *resource_, int32_t id, wl_fixed_t major, wl_fixed_t minor)
-{
-	wl_resource_post_event(resource_, WL_TOUCH_SHAPE, id, major, minor);
+static inline void wl_touch_send_shape(struct wl_resource *resource_,
+                                       int32_t id, wl_fixed_t major,
+                                       wl_fixed_t minor) {
+  wl_resource_post_event(resource_, WL_TOUCH_SHAPE, id, major, minor);
 }
 
 /**
@@ -4360,12 +4263,13 @@ wl_touch_send_shape(struct wl_resource *resource_, int32_t id, wl_fixed_t major,
  * Sends an orientation event to the client owning the resource.
  * @param resource_ The client's resource
  * @param id the unique ID of this touch point
- * @param orientation angle between major axis and positive surface y-axis in degrees
+ * @param orientation angle between major axis and positive surface y-axis in
+ * degrees
  */
-static inline void
-wl_touch_send_orientation(struct wl_resource *resource_, int32_t id, wl_fixed_t orientation)
-{
-	wl_resource_post_event(resource_, WL_TOUCH_ORIENTATION, id, orientation);
+static inline void wl_touch_send_orientation(struct wl_resource *resource_,
+                                             int32_t id,
+                                             wl_fixed_t orientation) {
+  wl_resource_post_event(resource_, WL_TOUCH_ORIENTATION, id, orientation);
 }
 
 #ifndef WL_OUTPUT_SUBPIXEL_ENUM
@@ -4378,30 +4282,30 @@ wl_touch_send_orientation(struct wl_resource *resource_, int32_t id, wl_fixed_t 
  * pixels on an output are laid out.
  */
 enum wl_output_subpixel {
-	/**
-	 * unknown geometry
-	 */
-	WL_OUTPUT_SUBPIXEL_UNKNOWN = 0,
-	/**
-	 * no geometry
-	 */
-	WL_OUTPUT_SUBPIXEL_NONE = 1,
-	/**
-	 * horizontal RGB
-	 */
-	WL_OUTPUT_SUBPIXEL_HORIZONTAL_RGB = 2,
-	/**
-	 * horizontal BGR
-	 */
-	WL_OUTPUT_SUBPIXEL_HORIZONTAL_BGR = 3,
-	/**
-	 * vertical RGB
-	 */
-	WL_OUTPUT_SUBPIXEL_VERTICAL_RGB = 4,
-	/**
-	 * vertical BGR
-	 */
-	WL_OUTPUT_SUBPIXEL_VERTICAL_BGR = 5,
+  /**
+   * unknown geometry
+   */
+  WL_OUTPUT_SUBPIXEL_UNKNOWN = 0,
+  /**
+   * no geometry
+   */
+  WL_OUTPUT_SUBPIXEL_NONE = 1,
+  /**
+   * horizontal RGB
+   */
+  WL_OUTPUT_SUBPIXEL_HORIZONTAL_RGB = 2,
+  /**
+   * horizontal BGR
+   */
+  WL_OUTPUT_SUBPIXEL_HORIZONTAL_BGR = 3,
+  /**
+   * vertical RGB
+   */
+  WL_OUTPUT_SUBPIXEL_VERTICAL_RGB = 4,
+  /**
+   * vertical BGR
+   */
+  WL_OUTPUT_SUBPIXEL_VERTICAL_BGR = 5,
 };
 #endif /* WL_OUTPUT_SUBPIXEL_ENUM */
 
@@ -4424,38 +4328,38 @@ enum wl_output_subpixel {
  * surfaces.
  */
 enum wl_output_transform {
-	/**
-	 * no transform
-	 */
-	WL_OUTPUT_TRANSFORM_NORMAL = 0,
-	/**
-	 * 90 degrees counter-clockwise
-	 */
-	WL_OUTPUT_TRANSFORM_90 = 1,
-	/**
-	 * 180 degrees counter-clockwise
-	 */
-	WL_OUTPUT_TRANSFORM_180 = 2,
-	/**
-	 * 270 degrees counter-clockwise
-	 */
-	WL_OUTPUT_TRANSFORM_270 = 3,
-	/**
-	 * 180 degree flip around a vertical axis
-	 */
-	WL_OUTPUT_TRANSFORM_FLIPPED = 4,
-	/**
-	 * flip and rotate 90 degrees counter-clockwise
-	 */
-	WL_OUTPUT_TRANSFORM_FLIPPED_90 = 5,
-	/**
-	 * flip and rotate 180 degrees counter-clockwise
-	 */
-	WL_OUTPUT_TRANSFORM_FLIPPED_180 = 6,
-	/**
-	 * flip and rotate 270 degrees counter-clockwise
-	 */
-	WL_OUTPUT_TRANSFORM_FLIPPED_270 = 7,
+  /**
+   * no transform
+   */
+  WL_OUTPUT_TRANSFORM_NORMAL = 0,
+  /**
+   * 90 degrees counter-clockwise
+   */
+  WL_OUTPUT_TRANSFORM_90 = 1,
+  /**
+   * 180 degrees counter-clockwise
+   */
+  WL_OUTPUT_TRANSFORM_180 = 2,
+  /**
+   * 270 degrees counter-clockwise
+   */
+  WL_OUTPUT_TRANSFORM_270 = 3,
+  /**
+   * 180 degree flip around a vertical axis
+   */
+  WL_OUTPUT_TRANSFORM_FLIPPED = 4,
+  /**
+   * flip and rotate 90 degrees counter-clockwise
+   */
+  WL_OUTPUT_TRANSFORM_FLIPPED_90 = 5,
+  /**
+   * flip and rotate 180 degrees counter-clockwise
+   */
+  WL_OUTPUT_TRANSFORM_FLIPPED_180 = 6,
+  /**
+   * flip and rotate 270 degrees counter-clockwise
+   */
+  WL_OUTPUT_TRANSFORM_FLIPPED_270 = 7,
 };
 #endif /* WL_OUTPUT_TRANSFORM_ENUM */
 
@@ -4469,14 +4373,14 @@ enum wl_output_transform {
  * They are used in the flags bitfield of the mode event.
  */
 enum wl_output_mode {
-	/**
-	 * indicates this is the current mode
-	 */
-	WL_OUTPUT_MODE_CURRENT = 0x1,
-	/**
-	 * indicates this is the preferred mode
-	 */
-	WL_OUTPUT_MODE_PREFERRED = 0x2,
+  /**
+   * indicates this is the current mode
+   */
+  WL_OUTPUT_MODE_CURRENT = 0x1,
+  /**
+   * indicates this is the preferred mode
+   */
+  WL_OUTPUT_MODE_PREFERRED = 0x2,
 };
 #endif /* WL_OUTPUT_MODE_ENUM */
 
@@ -4485,15 +4389,14 @@ enum wl_output_mode {
  * @struct wl_output_interface
  */
 struct wl_output_interface {
-	/**
-	 * release the output object
-	 *
-	 * Using this request a client can tell the server that it is not
-	 * going to use the output object anymore.
-	 * @since 3
-	 */
-	void (*release)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * release the output object
+   *
+   * Using this request a client can tell the server that it is not
+   * going to use the output object anymore.
+   * @since 3
+   */
+  void (*release)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WL_OUTPUT_GEOMETRY 0
@@ -4546,10 +4449,12 @@ struct wl_output_interface {
  * @param model textual description of the model
  * @param transform transform that maps framebuffer to output
  */
-static inline void
-wl_output_send_geometry(struct wl_resource *resource_, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform)
-{
-	wl_resource_post_event(resource_, WL_OUTPUT_GEOMETRY, x, y, physical_width, physical_height, subpixel, make, model, transform);
+static inline void wl_output_send_geometry(
+    struct wl_resource *resource_, int32_t x, int32_t y, int32_t physical_width,
+    int32_t physical_height, int32_t subpixel, const char *make,
+    const char *model, int32_t transform) {
+  wl_resource_post_event(resource_, WL_OUTPUT_GEOMETRY, x, y, physical_width,
+                         physical_height, subpixel, make, model, transform);
 }
 
 /**
@@ -4561,10 +4466,11 @@ wl_output_send_geometry(struct wl_resource *resource_, int32_t x, int32_t y, int
  * @param height height of the mode in hardware units
  * @param refresh vertical refresh rate in mHz
  */
-static inline void
-wl_output_send_mode(struct wl_resource *resource_, uint32_t flags, int32_t width, int32_t height, int32_t refresh)
-{
-	wl_resource_post_event(resource_, WL_OUTPUT_MODE, flags, width, height, refresh);
+static inline void wl_output_send_mode(struct wl_resource *resource_,
+                                       uint32_t flags, int32_t width,
+                                       int32_t height, int32_t refresh) {
+  wl_resource_post_event(resource_, WL_OUTPUT_MODE, flags, width, height,
+                         refresh);
 }
 
 /**
@@ -4572,10 +4478,8 @@ wl_output_send_mode(struct wl_resource *resource_, uint32_t flags, int32_t width
  * Sends an done event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wl_output_send_done(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WL_OUTPUT_DONE);
+static inline void wl_output_send_done(struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WL_OUTPUT_DONE);
 }
 
 /**
@@ -4584,10 +4488,9 @@ wl_output_send_done(struct wl_resource *resource_)
  * @param resource_ The client's resource
  * @param factor scaling factor of output
  */
-static inline void
-wl_output_send_scale(struct wl_resource *resource_, int32_t factor)
-{
-	wl_resource_post_event(resource_, WL_OUTPUT_SCALE, factor);
+static inline void wl_output_send_scale(struct wl_resource *resource_,
+                                        int32_t factor) {
+  wl_resource_post_event(resource_, WL_OUTPUT_SCALE, factor);
 }
 
 /**
@@ -4596,10 +4499,9 @@ wl_output_send_scale(struct wl_resource *resource_, int32_t factor)
  * @param resource_ The client's resource
  * @param name output name
  */
-static inline void
-wl_output_send_name(struct wl_resource *resource_, const char *name)
-{
-	wl_resource_post_event(resource_, WL_OUTPUT_NAME, name);
+static inline void wl_output_send_name(struct wl_resource *resource_,
+                                       const char *name) {
+  wl_resource_post_event(resource_, WL_OUTPUT_NAME, name);
 }
 
 /**
@@ -4608,10 +4510,9 @@ wl_output_send_name(struct wl_resource *resource_, const char *name)
  * @param resource_ The client's resource
  * @param description output description
  */
-static inline void
-wl_output_send_description(struct wl_resource *resource_, const char *description)
-{
-	wl_resource_post_event(resource_, WL_OUTPUT_DESCRIPTION, description);
+static inline void wl_output_send_description(struct wl_resource *resource_,
+                                              const char *description) {
+  wl_resource_post_event(resource_, WL_OUTPUT_DESCRIPTION, description);
 }
 
 /**
@@ -4619,45 +4520,35 @@ wl_output_send_description(struct wl_resource *resource_, const char *descriptio
  * @struct wl_region_interface
  */
 struct wl_region_interface {
-	/**
-	 * destroy region
-	 *
-	 * Destroy the region. This will invalidate the object ID.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * add rectangle to region
-	 *
-	 * Add the specified rectangle to the region.
-	 * @param x region-local x coordinate
-	 * @param y region-local y coordinate
-	 * @param width rectangle width
-	 * @param height rectangle height
-	 */
-	void (*add)(struct wl_client *client,
-		    struct wl_resource *resource,
-		    int32_t x,
-		    int32_t y,
-		    int32_t width,
-		    int32_t height);
-	/**
-	 * subtract rectangle from region
-	 *
-	 * Subtract the specified rectangle from the region.
-	 * @param x region-local x coordinate
-	 * @param y region-local y coordinate
-	 * @param width rectangle width
-	 * @param height rectangle height
-	 */
-	void (*subtract)(struct wl_client *client,
-			 struct wl_resource *resource,
-			 int32_t x,
-			 int32_t y,
-			 int32_t width,
-			 int32_t height);
+  /**
+   * destroy region
+   *
+   * Destroy the region. This will invalidate the object ID.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * add rectangle to region
+   *
+   * Add the specified rectangle to the region.
+   * @param x region-local x coordinate
+   * @param y region-local y coordinate
+   * @param width rectangle width
+   * @param height rectangle height
+   */
+  void (*add)(struct wl_client *client, struct wl_resource *resource, int32_t x,
+              int32_t y, int32_t width, int32_t height);
+  /**
+   * subtract rectangle from region
+   *
+   * Subtract the specified rectangle from the region.
+   * @param x region-local x coordinate
+   * @param y region-local y coordinate
+   * @param width rectangle width
+   * @param height rectangle height
+   */
+  void (*subtract)(struct wl_client *client, struct wl_resource *resource,
+                   int32_t x, int32_t y, int32_t width, int32_t height);
 };
-
 
 /**
  * @ingroup iface_wl_region
@@ -4675,14 +4566,14 @@ struct wl_region_interface {
 #ifndef WL_SUBCOMPOSITOR_ERROR_ENUM
 #define WL_SUBCOMPOSITOR_ERROR_ENUM
 enum wl_subcompositor_error {
-	/**
-	 * the to-be sub-surface is invalid
-	 */
-	WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE = 0,
-	/**
-	 * the to-be sub-surface parent is invalid
-	 */
-	WL_SUBCOMPOSITOR_ERROR_BAD_PARENT = 1,
+  /**
+   * the to-be sub-surface is invalid
+   */
+  WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE = 0,
+  /**
+   * the to-be sub-surface parent is invalid
+   */
+  WL_SUBCOMPOSITOR_ERROR_BAD_PARENT = 1,
 };
 #endif /* WL_SUBCOMPOSITOR_ERROR_ENUM */
 
@@ -4691,49 +4582,45 @@ enum wl_subcompositor_error {
  * @struct wl_subcompositor_interface
  */
 struct wl_subcompositor_interface {
-	/**
-	 * unbind from the subcompositor interface
-	 *
-	 * Informs the server that the client will not be using this
-	 * protocol object anymore. This does not affect any other objects,
-	 * wl_subsurface objects included.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * give a surface the role sub-surface
-	 *
-	 * Create a sub-surface interface for the given surface, and
-	 * associate it with the given parent surface. This turns a plain
-	 * wl_surface into a sub-surface.
-	 *
-	 * The to-be sub-surface must not already have another role, and it
-	 * must not have an existing wl_subsurface object. Otherwise the
-	 * bad_surface protocol error is raised.
-	 *
-	 * Adding sub-surfaces to a parent is a double-buffered operation
-	 * on the parent (see wl_surface.commit). The effect of adding a
-	 * sub-surface becomes visible on the next time the state of the
-	 * parent surface is applied.
-	 *
-	 * The parent surface must not be one of the child surface's
-	 * descendants, and the parent must be different from the child
-	 * surface, otherwise the bad_parent protocol error is raised.
-	 *
-	 * This request modifies the behaviour of wl_surface.commit request
-	 * on the sub-surface, see the documentation on wl_subsurface
-	 * interface.
-	 * @param id the new sub-surface object ID
-	 * @param surface the surface to be turned into a sub-surface
-	 * @param parent the parent surface
-	 */
-	void (*get_subsurface)(struct wl_client *client,
-			       struct wl_resource *resource,
-			       uint32_t id,
-			       struct wl_resource *surface,
-			       struct wl_resource *parent);
+  /**
+   * unbind from the subcompositor interface
+   *
+   * Informs the server that the client will not be using this
+   * protocol object anymore. This does not affect any other objects,
+   * wl_subsurface objects included.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * give a surface the role sub-surface
+   *
+   * Create a sub-surface interface for the given surface, and
+   * associate it with the given parent surface. This turns a plain
+   * wl_surface into a sub-surface.
+   *
+   * The to-be sub-surface must not already have another role, and it
+   * must not have an existing wl_subsurface object. Otherwise the
+   * bad_surface protocol error is raised.
+   *
+   * Adding sub-surfaces to a parent is a double-buffered operation
+   * on the parent (see wl_surface.commit). The effect of adding a
+   * sub-surface becomes visible on the next time the state of the
+   * parent surface is applied.
+   *
+   * The parent surface must not be one of the child surface's
+   * descendants, and the parent must be different from the child
+   * surface, otherwise the bad_parent protocol error is raised.
+   *
+   * This request modifies the behaviour of wl_surface.commit request
+   * on the sub-surface, see the documentation on wl_subsurface
+   * interface.
+   * @param id the new sub-surface object ID
+   * @param surface the surface to be turned into a sub-surface
+   * @param parent the parent surface
+   */
+  void (*get_subsurface)(struct wl_client *client, struct wl_resource *resource,
+                         uint32_t id, struct wl_resource *surface,
+                         struct wl_resource *parent);
 };
-
 
 /**
  * @ingroup iface_wl_subcompositor
@@ -4747,10 +4634,10 @@ struct wl_subcompositor_interface {
 #ifndef WL_SUBSURFACE_ERROR_ENUM
 #define WL_SUBSURFACE_ERROR_ENUM
 enum wl_subsurface_error {
-	/**
-	 * wl_surface is not a sibling or the parent
-	 */
-	WL_SUBSURFACE_ERROR_BAD_SURFACE = 0,
+  /**
+   * wl_surface is not a sibling or the parent
+   */
+  WL_SUBSURFACE_ERROR_BAD_SURFACE = 0,
 };
 #endif /* WL_SUBSURFACE_ERROR_ENUM */
 
@@ -4759,124 +4646,116 @@ enum wl_subsurface_error {
  * @struct wl_subsurface_interface
  */
 struct wl_subsurface_interface {
-	/**
-	 * remove sub-surface interface
-	 *
-	 * The sub-surface interface is removed from the wl_surface
-	 * object that was turned into a sub-surface with a
-	 * wl_subcompositor.get_subsurface request. The wl_surface's
-	 * association to the parent is deleted. The wl_surface is unmapped
-	 * immediately.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * reposition the sub-surface
-	 *
-	 * This schedules a sub-surface position change. The sub-surface
-	 * will be moved so that its origin (top left corner pixel) will be
-	 * at the location x, y of the parent surface coordinate system.
-	 * The coordinates are not restricted to the parent surface area.
-	 * Negative values are allowed.
-	 *
-	 * The scheduled coordinates will take effect whenever the state of
-	 * the parent surface is applied. When this happens depends on
-	 * whether the parent surface is in synchronized mode or not. See
-	 * wl_subsurface.set_sync and wl_subsurface.set_desync for details.
-	 *
-	 * If more than one set_position request is invoked by the client
-	 * before the commit of the parent surface, the position of a new
-	 * request always replaces the scheduled position from any previous
-	 * request.
-	 *
-	 * The initial position is 0, 0.
-	 * @param x x coordinate in the parent surface
-	 * @param y y coordinate in the parent surface
-	 */
-	void (*set_position)(struct wl_client *client,
-			     struct wl_resource *resource,
-			     int32_t x,
-			     int32_t y);
-	/**
-	 * restack the sub-surface
-	 *
-	 * This sub-surface is taken from the stack, and put back just
-	 * above the reference surface, changing the z-order of the
-	 * sub-surfaces. The reference surface must be one of the sibling
-	 * surfaces, or the parent surface. Using any other surface,
-	 * including this sub-surface, will cause a protocol error.
-	 *
-	 * The z-order is double-buffered. Requests are handled in order
-	 * and applied immediately to a pending state. The final pending
-	 * state is copied to the active state the next time the state of
-	 * the parent surface is applied. When this happens depends on
-	 * whether the parent surface is in synchronized mode or not. See
-	 * wl_subsurface.set_sync and wl_subsurface.set_desync for details.
-	 *
-	 * A new sub-surface is initially added as the top-most in the
-	 * stack of its siblings and parent.
-	 * @param sibling the reference surface
-	 */
-	void (*place_above)(struct wl_client *client,
-			    struct wl_resource *resource,
-			    struct wl_resource *sibling);
-	/**
-	 * restack the sub-surface
-	 *
-	 * The sub-surface is placed just below the reference surface.
-	 * See wl_subsurface.place_above.
-	 * @param sibling the reference surface
-	 */
-	void (*place_below)(struct wl_client *client,
-			    struct wl_resource *resource,
-			    struct wl_resource *sibling);
-	/**
-	 * set sub-surface to synchronized mode
-	 *
-	 * Change the commit behaviour of the sub-surface to synchronized
-	 * mode, also described as the parent dependent mode.
-	 *
-	 * In synchronized mode, wl_surface.commit on a sub-surface will
-	 * accumulate the committed state in a cache, but the state will
-	 * not be applied and hence will not change the compositor output.
-	 * The cached state is applied to the sub-surface immediately after
-	 * the parent surface's state is applied. This ensures atomic
-	 * updates of the parent and all its synchronized sub-surfaces.
-	 * Applying the cached state will invalidate the cache, so further
-	 * parent surface commits do not (re-)apply old state.
-	 *
-	 * See wl_subsurface for the recursive effect of this mode.
-	 */
-	void (*set_sync)(struct wl_client *client,
-			 struct wl_resource *resource);
-	/**
-	 * set sub-surface to desynchronized mode
-	 *
-	 * Change the commit behaviour of the sub-surface to
-	 * desynchronized mode, also described as independent or freely
-	 * running mode.
-	 *
-	 * In desynchronized mode, wl_surface.commit on a sub-surface will
-	 * apply the pending state directly, without caching, as happens
-	 * normally with a wl_surface. Calling wl_surface.commit on the
-	 * parent surface has no effect on the sub-surface's wl_surface
-	 * state. This mode allows a sub-surface to be updated on its own.
-	 *
-	 * If cached state exists when wl_surface.commit is called in
-	 * desynchronized mode, the pending state is added to the cached
-	 * state, and applied as a whole. This invalidates the cache.
-	 *
-	 * Note: even if a sub-surface is set to desynchronized, a parent
-	 * sub-surface may override it to behave as synchronized. For
-	 * details, see wl_subsurface.
-	 *
-	 * If a surface's parent surface behaves as desynchronized, then
-	 * the cached state is applied on set_desync.
-	 */
-	void (*set_desync)(struct wl_client *client,
-			   struct wl_resource *resource);
+  /**
+   * remove sub-surface interface
+   *
+   * The sub-surface interface is removed from the wl_surface
+   * object that was turned into a sub-surface with a
+   * wl_subcompositor.get_subsurface request. The wl_surface's
+   * association to the parent is deleted. The wl_surface is unmapped
+   * immediately.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * reposition the sub-surface
+   *
+   * This schedules a sub-surface position change. The sub-surface
+   * will be moved so that its origin (top left corner pixel) will be
+   * at the location x, y of the parent surface coordinate system.
+   * The coordinates are not restricted to the parent surface area.
+   * Negative values are allowed.
+   *
+   * The scheduled coordinates will take effect whenever the state of
+   * the parent surface is applied. When this happens depends on
+   * whether the parent surface is in synchronized mode or not. See
+   * wl_subsurface.set_sync and wl_subsurface.set_desync for details.
+   *
+   * If more than one set_position request is invoked by the client
+   * before the commit of the parent surface, the position of a new
+   * request always replaces the scheduled position from any previous
+   * request.
+   *
+   * The initial position is 0, 0.
+   * @param x x coordinate in the parent surface
+   * @param y y coordinate in the parent surface
+   */
+  void (*set_position)(struct wl_client *client, struct wl_resource *resource,
+                       int32_t x, int32_t y);
+  /**
+   * restack the sub-surface
+   *
+   * This sub-surface is taken from the stack, and put back just
+   * above the reference surface, changing the z-order of the
+   * sub-surfaces. The reference surface must be one of the sibling
+   * surfaces, or the parent surface. Using any other surface,
+   * including this sub-surface, will cause a protocol error.
+   *
+   * The z-order is double-buffered. Requests are handled in order
+   * and applied immediately to a pending state. The final pending
+   * state is copied to the active state the next time the state of
+   * the parent surface is applied. When this happens depends on
+   * whether the parent surface is in synchronized mode or not. See
+   * wl_subsurface.set_sync and wl_subsurface.set_desync for details.
+   *
+   * A new sub-surface is initially added as the top-most in the
+   * stack of its siblings and parent.
+   * @param sibling the reference surface
+   */
+  void (*place_above)(struct wl_client *client, struct wl_resource *resource,
+                      struct wl_resource *sibling);
+  /**
+   * restack the sub-surface
+   *
+   * The sub-surface is placed just below the reference surface.
+   * See wl_subsurface.place_above.
+   * @param sibling the reference surface
+   */
+  void (*place_below)(struct wl_client *client, struct wl_resource *resource,
+                      struct wl_resource *sibling);
+  /**
+   * set sub-surface to synchronized mode
+   *
+   * Change the commit behaviour of the sub-surface to synchronized
+   * mode, also described as the parent dependent mode.
+   *
+   * In synchronized mode, wl_surface.commit on a sub-surface will
+   * accumulate the committed state in a cache, but the state will
+   * not be applied and hence will not change the compositor output.
+   * The cached state is applied to the sub-surface immediately after
+   * the parent surface's state is applied. This ensures atomic
+   * updates of the parent and all its synchronized sub-surfaces.
+   * Applying the cached state will invalidate the cache, so further
+   * parent surface commits do not (re-)apply old state.
+   *
+   * See wl_subsurface for the recursive effect of this mode.
+   */
+  void (*set_sync)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * set sub-surface to desynchronized mode
+   *
+   * Change the commit behaviour of the sub-surface to
+   * desynchronized mode, also described as independent or freely
+   * running mode.
+   *
+   * In desynchronized mode, wl_surface.commit on a sub-surface will
+   * apply the pending state directly, without caching, as happens
+   * normally with a wl_surface. Calling wl_surface.commit on the
+   * parent surface has no effect on the sub-surface's wl_surface
+   * state. This mode allows a sub-surface to be updated on its own.
+   *
+   * If cached state exists when wl_surface.commit is called in
+   * desynchronized mode, the pending state is added to the cached
+   * state, and applied as a whole. This invalidates the cache.
+   *
+   * Note: even if a sub-surface is set to desynchronized, a parent
+   * sub-surface may override it to behave as synchronized. For
+   * details, see wl_subsurface.
+   *
+   * If a surface's parent surface behaves as desynchronized, then
+   * the cached state is applied on set_desync.
+   */
+  void (*set_desync)(struct wl_client *client, struct wl_resource *resource);
 };
-
 
 /**
  * @ingroup iface_wl_subsurface
@@ -4903,7 +4782,7 @@ struct wl_subsurface_interface {
  */
 #define WL_SUBSURFACE_SET_DESYNC_SINCE_VERSION 1
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

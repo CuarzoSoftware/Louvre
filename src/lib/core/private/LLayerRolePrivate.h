@@ -5,13 +5,12 @@
 
 using namespace Louvre;
 
-struct LLayerRole::Params
-{
-    LResource *layerSurfaceRes;
-    LSurface *surface;
-    LOutput *output;
-    LSurfaceLayer layer;
-    const char *scope;
+struct LLayerRole::Params {
+  LResource *layerSurfaceRes;
+  LSurface *surface;
+  LOutput *output;
+  LSurfaceLayer layer;
+  const char *scope;
 };
 
-#endif // LLAYERROLEPRIVATE_H
+#endif  // LLAYERROLEPRIVATE_H

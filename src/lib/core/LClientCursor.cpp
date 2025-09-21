@@ -3,10 +3,8 @@
 
 using namespace Louvre;
 
-LClientCursor::~LClientCursor() noexcept
-{
-    notifyDestruction();
+LClientCursor::~LClientCursor() noexcept {
+  notifyDestruction();
 
-    if (cursor()->clientCursor() == this)
-        cursor()->useDefault();
+  if (cursor()->clientCursor() == this) cursor()->useDefault();
 }

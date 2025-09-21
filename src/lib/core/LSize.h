@@ -3,4 +3,4 @@
 
 #include <LPoint.h>
 
-#endif // LSIZE_H
+#endif  // LSIZE_H

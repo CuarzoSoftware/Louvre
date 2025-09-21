@@ -3,11 +3,12 @@
 #ifndef PRESENTATION_TIME_SERVER_PROTOCOL_H
 #define PRESENTATION_TIME_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -17,8 +18,10 @@ struct wl_resource;
 /**
  * @page page_presentation_time The presentation_time protocol
  * @section page_ifaces_presentation_time Interfaces
- * - @subpage page_iface_wp_presentation - timed presentation related wl_surface requests
- * - @subpage page_iface_wp_presentation_feedback - presentation time feedback event
+ * - @subpage page_iface_wp_presentation - timed presentation related wl_surface
+ * requests
+ * - @subpage page_iface_wp_presentation_feedback - presentation time feedback
+ * event
  * @section page_copyright_presentation_time Copyright
  * <pre>
  *
@@ -129,7 +132,8 @@ extern const struct wl_interface wp_presentation_interface;
  * See @ref iface_wp_presentation_feedback.
  */
 /**
- * @defgroup iface_wp_presentation_feedback The wp_presentation_feedback interface
+ * @defgroup iface_wp_presentation_feedback The wp_presentation_feedback
+ * interface
  *
  * A presentation_feedback object returns an indication that a
  * wl_surface content update has become visible to the user.
@@ -156,14 +160,14 @@ extern const struct wl_interface wp_presentation_feedback_interface;
  * illegal presentation requests.
  */
 enum wp_presentation_error {
-	/**
-	 * invalid value in tv_nsec
-	 */
-	WP_PRESENTATION_ERROR_INVALID_TIMESTAMP = 0,
-	/**
-	 * invalid flag
-	 */
-	WP_PRESENTATION_ERROR_INVALID_FLAG = 1,
+  /**
+   * invalid value in tv_nsec
+   */
+  WP_PRESENTATION_ERROR_INVALID_TIMESTAMP = 0,
+  /**
+   * invalid flag
+   */
+  WP_PRESENTATION_ERROR_INVALID_FLAG = 1,
 };
 #endif /* WP_PRESENTATION_ERROR_ENUM */
 
@@ -172,34 +176,31 @@ enum wp_presentation_error {
  * @struct wp_presentation_interface
  */
 struct wp_presentation_interface {
-	/**
-	 * unbind from the presentation interface
-	 *
-	 * Informs the server that the client will no longer be using
-	 * this protocol object. Existing objects created by this object
-	 * are not affected.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * request presentation feedback information
-	 *
-	 * Request presentation feedback for the current content
-	 * submission on the given surface. This creates a new
-	 * presentation_feedback object, which will deliver the feedback
-	 * information once. If multiple presentation_feedback objects are
-	 * created for the same submission, they will all deliver the same
-	 * information.
-	 *
-	 * For details on what information is returned, see the
-	 * presentation_feedback interface.
-	 * @param surface target surface
-	 * @param callback new feedback object
-	 */
-	void (*feedback)(struct wl_client *client,
-			 struct wl_resource *resource,
-			 struct wl_resource *surface,
-			 uint32_t callback);
+  /**
+   * unbind from the presentation interface
+   *
+   * Informs the server that the client will no longer be using
+   * this protocol object. Existing objects created by this object
+   * are not affected.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * request presentation feedback information
+   *
+   * Request presentation feedback for the current content
+   * submission on the given surface. This creates a new
+   * presentation_feedback object, which will deliver the feedback
+   * information once. If multiple presentation_feedback objects are
+   * created for the same submission, they will all deliver the same
+   * information.
+   *
+   * For details on what information is returned, see the
+   * presentation_feedback interface.
+   * @param surface target surface
+   * @param callback new feedback object
+   */
+  void (*feedback)(struct wl_client *client, struct wl_resource *resource,
+                   struct wl_resource *surface, uint32_t callback);
 };
 
 #define WP_PRESENTATION_CLOCK_ID 0
@@ -224,10 +225,9 @@ struct wp_presentation_interface {
  * @param resource_ The client's resource
  * @param clk_id platform clock identifier
  */
-static inline void
-wp_presentation_send_clock_id(struct wl_resource *resource_, uint32_t clk_id)
-{
-	wl_resource_post_event(resource_, WP_PRESENTATION_CLOCK_ID, clk_id);
+static inline void wp_presentation_send_clock_id(struct wl_resource *resource_,
+                                                 uint32_t clk_id) {
+  wl_resource_post_event(resource_, WP_PRESENTATION_CLOCK_ID, clk_id);
 }
 
 #ifndef WP_PRESENTATION_FEEDBACK_KIND_ENUM
@@ -242,44 +242,44 @@ wp_presentation_send_clock_id(struct wl_resource *resource_, uint32_t clk_id)
  * quality with respect to possible tearing and timings.
  */
 enum wp_presentation_feedback_kind {
-	/**
-	 * presentation was vsync'd
-	 *
-	 * The presentation was synchronized to the "vertical retrace" by
-	 * the display hardware such that tearing does not happen. Relying
-	 * on software scheduling is not acceptable for this flag. If
-	 * presentation is done by a copy to the active frontbuffer, then
-	 * it must guarantee that tearing cannot happen.
-	 */
-	WP_PRESENTATION_FEEDBACK_KIND_VSYNC = 0x1,
-	/**
-	 * hardware provided the presentation timestamp
-	 *
-	 * The display hardware provided measurements that the hardware
-	 * driver converted into a presentation timestamp. Sampling a clock
-	 * in software is not acceptable for this flag.
-	 */
-	WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK = 0x2,
-	/**
-	 * hardware signalled the start of the presentation
-	 *
-	 * The display hardware signalled that it started using the new
-	 * image content. The opposite of this is e.g. a timer being used
-	 * to guess when the display hardware has switched to the new image
-	 * content.
-	 */
-	WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION = 0x4,
-	/**
-	 * presentation was done zero-copy
-	 *
-	 * The presentation of this update was done zero-copy. This means
-	 * the buffer from the client was given to display hardware as is,
-	 * without copying it. Compositing with OpenGL counts as copying,
-	 * even if textured directly from the client buffer. Possible
-	 * zero-copy cases include direct scanout of a fullscreen surface
-	 * and a surface on a hardware overlay.
-	 */
-	WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY = 0x8,
+  /**
+   * presentation was vsync'd
+   *
+   * The presentation was synchronized to the "vertical retrace" by
+   * the display hardware such that tearing does not happen. Relying
+   * on software scheduling is not acceptable for this flag. If
+   * presentation is done by a copy to the active frontbuffer, then
+   * it must guarantee that tearing cannot happen.
+   */
+  WP_PRESENTATION_FEEDBACK_KIND_VSYNC = 0x1,
+  /**
+   * hardware provided the presentation timestamp
+   *
+   * The display hardware provided measurements that the hardware
+   * driver converted into a presentation timestamp. Sampling a clock
+   * in software is not acceptable for this flag.
+   */
+  WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK = 0x2,
+  /**
+   * hardware signalled the start of the presentation
+   *
+   * The display hardware signalled that it started using the new
+   * image content. The opposite of this is e.g. a timer being used
+   * to guess when the display hardware has switched to the new image
+   * content.
+   */
+  WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION = 0x4,
+  /**
+   * presentation was done zero-copy
+   *
+   * The presentation of this update was done zero-copy. This means
+   * the buffer from the client was given to display hardware as is,
+   * without copying it. Compositing with OpenGL counts as copying,
+   * even if textured directly from the client buffer. Possible
+   * zero-copy cases include direct scanout of a fullscreen surface
+   * and a surface on a hardware overlay.
+   */
+  WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY = 0x8,
 };
 #endif /* WP_PRESENTATION_FEEDBACK_KIND_ENUM */
 
@@ -300,35 +300,39 @@ enum wp_presentation_feedback_kind {
  */
 #define WP_PRESENTATION_FEEDBACK_DISCARDED_SINCE_VERSION 1
 
-
 /**
  * @ingroup iface_wp_presentation_feedback
  * Sends an sync_output event to the client owning the resource.
  * @param resource_ The client's resource
  * @param output presentation output
  */
-static inline void
-wp_presentation_feedback_send_sync_output(struct wl_resource *resource_, struct wl_resource *output)
-{
-	wl_resource_post_event(resource_, WP_PRESENTATION_FEEDBACK_SYNC_OUTPUT, output);
+static inline void wp_presentation_feedback_send_sync_output(
+    struct wl_resource *resource_, struct wl_resource *output) {
+  wl_resource_post_event(resource_, WP_PRESENTATION_FEEDBACK_SYNC_OUTPUT,
+                         output);
 }
 
 /**
  * @ingroup iface_wp_presentation_feedback
  * Sends an presented event to the client owning the resource.
  * @param resource_ The client's resource
- * @param tv_sec_hi high 32 bits of the seconds part of the presentation timestamp
- * @param tv_sec_lo low 32 bits of the seconds part of the presentation timestamp
+ * @param tv_sec_hi high 32 bits of the seconds part of the presentation
+ * timestamp
+ * @param tv_sec_lo low 32 bits of the seconds part of the presentation
+ * timestamp
  * @param tv_nsec nanoseconds part of the presentation timestamp
  * @param refresh nanoseconds till next refresh
  * @param seq_hi high 32 bits of refresh counter
  * @param seq_lo low 32 bits of refresh counter
  * @param flags combination of 'kind' values
  */
-static inline void
-wp_presentation_feedback_send_presented(struct wl_resource *resource_, uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec, uint32_t refresh, uint32_t seq_hi, uint32_t seq_lo, uint32_t flags)
-{
-	wl_resource_post_event(resource_, WP_PRESENTATION_FEEDBACK_PRESENTED, tv_sec_hi, tv_sec_lo, tv_nsec, refresh, seq_hi, seq_lo, flags);
+static inline void wp_presentation_feedback_send_presented(
+    struct wl_resource *resource_, uint32_t tv_sec_hi, uint32_t tv_sec_lo,
+    uint32_t tv_nsec, uint32_t refresh, uint32_t seq_hi, uint32_t seq_lo,
+    uint32_t flags) {
+  wl_resource_post_event(resource_, WP_PRESENTATION_FEEDBACK_PRESENTED,
+                         tv_sec_hi, tv_sec_lo, tv_nsec, refresh, seq_hi, seq_lo,
+                         flags);
 }
 
 /**
@@ -336,13 +340,12 @@ wp_presentation_feedback_send_presented(struct wl_resource *resource_, uint32_t 
  * Sends an discarded event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wp_presentation_feedback_send_discarded(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WP_PRESENTATION_FEEDBACK_DISCARDED);
+static inline void wp_presentation_feedback_send_discarded(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WP_PRESENTATION_FEEDBACK_DISCARDED);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

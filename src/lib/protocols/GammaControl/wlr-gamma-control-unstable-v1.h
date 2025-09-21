@@ -3,11 +3,12 @@
 #ifndef WLR_GAMMA_CONTROL_UNSTABLE_V1_SERVER_PROTOCOL_H
 #define WLR_GAMMA_CONTROL_UNSTABLE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -15,8 +16,8 @@ struct wl_client;
 struct wl_resource;
 
 /**
- * @page page_wlr_gamma_control_unstable_v1 The wlr_gamma_control_unstable_v1 protocol
- * manage gamma tables of outputs
+ * @page page_wlr_gamma_control_unstable_v1 The wlr_gamma_control_unstable_v1
+ * protocol manage gamma tables of outputs
  *
  * @section page_desc_wlr_gamma_control_unstable_v1 Description
  *
@@ -33,8 +34,10 @@ struct wl_resource;
  * interface version number is reset.
  *
  * @section page_ifaces_wlr_gamma_control_unstable_v1 Interfaces
- * - @subpage page_iface_zwlr_gamma_control_manager_v1 - manager to create per-output gamma controls
- * - @subpage page_iface_zwlr_gamma_control_v1 - adjust gamma tables for an output
+ * - @subpage page_iface_zwlr_gamma_control_manager_v1 - manager to create
+ * per-output gamma controls
+ * - @subpage page_iface_zwlr_gamma_control_v1 - adjust gamma tables for an
+ * output
  * @section page_copyright_wlr_gamma_control_unstable_v1 Copyright
  * <pre>
  *
@@ -79,7 +82,8 @@ struct zwlr_gamma_control_v1;
  * See @ref iface_zwlr_gamma_control_manager_v1.
  */
 /**
- * @defgroup iface_zwlr_gamma_control_manager_v1 The zwlr_gamma_control_manager_v1 interface
+ * @defgroup iface_zwlr_gamma_control_manager_v1 The
+ * zwlr_gamma_control_manager_v1 interface
  *
  * This interface is a manager that allows creating per-output gamma
  * controls.
@@ -127,26 +131,23 @@ extern const struct wl_interface zwlr_gamma_control_v1_interface;
  * @struct zwlr_gamma_control_manager_v1_interface
  */
 struct zwlr_gamma_control_manager_v1_interface {
-	/**
-	 * get a gamma control for an output
-	 *
-	 * Create a gamma control that can be used to adjust gamma tables
-	 * for the provided output.
-	 */
-	void (*get_gamma_control)(struct wl_client *client,
-				  struct wl_resource *resource,
-				  uint32_t id,
-				  struct wl_resource *output);
-	/**
-	 * destroy the manager
-	 *
-	 * All objects created by the manager will still remain valid,
-	 * until their appropriate destroy request has been called.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * get a gamma control for an output
+   *
+   * Create a gamma control that can be used to adjust gamma tables
+   * for the provided output.
+   */
+  void (*get_gamma_control)(struct wl_client *client,
+                            struct wl_resource *resource, uint32_t id,
+                            struct wl_resource *output);
+  /**
+   * destroy the manager
+   *
+   * All objects created by the manager will still remain valid,
+   * until their appropriate destroy request has been called.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
-
 
 /**
  * @ingroup iface_zwlr_gamma_control_manager_v1
@@ -160,10 +161,10 @@ struct zwlr_gamma_control_manager_v1_interface {
 #ifndef ZWLR_GAMMA_CONTROL_V1_ERROR_ENUM
 #define ZWLR_GAMMA_CONTROL_V1_ERROR_ENUM
 enum zwlr_gamma_control_v1_error {
-	/**
-	 * invalid gamma tables
-	 */
-	ZWLR_GAMMA_CONTROL_V1_ERROR_INVALID_GAMMA = 1,
+  /**
+   * invalid gamma tables
+   */
+  ZWLR_GAMMA_CONTROL_V1_ERROR_INVALID_GAMMA = 1,
 };
 #endif /* ZWLR_GAMMA_CONTROL_V1_ERROR_ENUM */
 
@@ -172,30 +173,28 @@ enum zwlr_gamma_control_v1_error {
  * @struct zwlr_gamma_control_v1_interface
  */
 struct zwlr_gamma_control_v1_interface {
-	/**
-	 * set the gamma table
-	 *
-	 * Set the gamma table. The file descriptor can be memory-mapped
-	 * to provide the raw gamma table, which contains successive gamma
-	 * ramps for the red, green and blue channels. Each gamma ramp is
-	 * an array of 16-byte unsigned integers which has the same length
-	 * as the gamma size.
-	 *
-	 * The file descriptor data must have the same length as three
-	 * times the gamma size.
-	 * @param fd gamma table file descriptor
-	 */
-	void (*set_gamma)(struct wl_client *client,
-			  struct wl_resource *resource,
-			  int32_t fd);
-	/**
-	 * destroy this control
-	 *
-	 * Destroys the gamma control object. If the object is still
-	 * valid, this restores the original gamma tables.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * set the gamma table
+   *
+   * Set the gamma table. The file descriptor can be memory-mapped
+   * to provide the raw gamma table, which contains successive gamma
+   * ramps for the red, green and blue channels. Each gamma ramp is
+   * an array of 16-byte unsigned integers which has the same length
+   * as the gamma size.
+   *
+   * The file descriptor data must have the same length as three
+   * times the gamma size.
+   * @param fd gamma table file descriptor
+   */
+  void (*set_gamma)(struct wl_client *client, struct wl_resource *resource,
+                    int32_t fd);
+  /**
+   * destroy this control
+   *
+   * Destroys the gamma control object. If the object is still
+   * valid, this restores the original gamma tables.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZWLR_GAMMA_CONTROL_V1_GAMMA_SIZE 0
@@ -225,10 +224,9 @@ struct zwlr_gamma_control_v1_interface {
  * @param resource_ The client's resource
  * @param size number of elements in a ramp
  */
-static inline void
-zwlr_gamma_control_v1_send_gamma_size(struct wl_resource *resource_, uint32_t size)
-{
-	wl_resource_post_event(resource_, ZWLR_GAMMA_CONTROL_V1_GAMMA_SIZE, size);
+static inline void zwlr_gamma_control_v1_send_gamma_size(
+    struct wl_resource *resource_, uint32_t size) {
+  wl_resource_post_event(resource_, ZWLR_GAMMA_CONTROL_V1_GAMMA_SIZE, size);
 }
 
 /**
@@ -236,13 +234,12 @@ zwlr_gamma_control_v1_send_gamma_size(struct wl_resource *resource_, uint32_t si
  * Sends an failed event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_gamma_control_v1_send_failed(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_GAMMA_CONTROL_V1_FAILED);
+static inline void zwlr_gamma_control_v1_send_failed(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_GAMMA_CONTROL_V1_FAILED);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

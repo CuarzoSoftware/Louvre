@@ -3,11 +3,12 @@
 #ifndef FRACTIONAL_SCALE_V1_SERVER_PROTOCOL_H
 #define FRACTIONAL_SCALE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -40,8 +41,10 @@ struct wl_resource;
  * rounding algorithm for subsurface position and size is not defined.
  *
  * @section page_ifaces_fractional_scale_v1 Interfaces
- * - @subpage page_iface_wp_fractional_scale_manager_v1 - fractional surface scale information
- * - @subpage page_iface_wp_fractional_scale_v1 - fractional scale interface to a wl_surface
+ * - @subpage page_iface_wp_fractional_scale_manager_v1 - fractional surface
+ * scale information
+ * - @subpage page_iface_wp_fractional_scale_v1 - fractional scale interface to
+ * a wl_surface
  * @section page_copyright_fractional_scale_v1 Copyright
  * <pre>
  *
@@ -74,7 +77,8 @@ struct wp_fractional_scale_v1;
 #ifndef WP_FRACTIONAL_SCALE_MANAGER_V1_INTERFACE
 #define WP_FRACTIONAL_SCALE_MANAGER_V1_INTERFACE
 /**
- * @page page_iface_wp_fractional_scale_manager_v1 wp_fractional_scale_manager_v1
+ * @page page_iface_wp_fractional_scale_manager_v1
+ * wp_fractional_scale_manager_v1
  * @section page_iface_wp_fractional_scale_manager_v1_desc Description
  *
  * A global interface for requesting surfaces to use fractional scales.
@@ -82,7 +86,8 @@ struct wp_fractional_scale_v1;
  * See @ref iface_wp_fractional_scale_manager_v1.
  */
 /**
- * @defgroup iface_wp_fractional_scale_manager_v1 The wp_fractional_scale_manager_v1 interface
+ * @defgroup iface_wp_fractional_scale_manager_v1 The
+ * wp_fractional_scale_manager_v1 interface
  *
  * A global interface for requesting surfaces to use fractional scales.
  */
@@ -111,10 +116,10 @@ extern const struct wl_interface wp_fractional_scale_v1_interface;
 #ifndef WP_FRACTIONAL_SCALE_MANAGER_V1_ERROR_ENUM
 #define WP_FRACTIONAL_SCALE_MANAGER_V1_ERROR_ENUM
 enum wp_fractional_scale_manager_v1_error {
-	/**
-	 * the surface already has a fractional_scale object associated
-	 */
-	WP_FRACTIONAL_SCALE_MANAGER_V1_ERROR_FRACTIONAL_SCALE_EXISTS = 0,
+  /**
+   * the surface already has a fractional_scale object associated
+   */
+  WP_FRACTIONAL_SCALE_MANAGER_V1_ERROR_FRACTIONAL_SCALE_EXISTS = 0,
 };
 #endif /* WP_FRACTIONAL_SCALE_MANAGER_V1_ERROR_ENUM */
 
@@ -123,31 +128,28 @@ enum wp_fractional_scale_manager_v1_error {
  * @struct wp_fractional_scale_manager_v1_interface
  */
 struct wp_fractional_scale_manager_v1_interface {
-	/**
-	 * unbind the fractional surface scale interface
-	 *
-	 * Informs the server that the client will not be using this
-	 * protocol object anymore. This does not affect any other objects,
-	 * wp_fractional_scale_v1 objects included.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * extend surface interface for scale information
-	 *
-	 * Create an add-on object for the the wl_surface to let the
-	 * compositor request fractional scales. If the given wl_surface
-	 * already has a wp_fractional_scale_v1 object associated, the
-	 * fractional_scale_exists protocol error is raised.
-	 * @param id the new surface scale info interface id
-	 * @param surface the surface
-	 */
-	void (*get_fractional_scale)(struct wl_client *client,
-				     struct wl_resource *resource,
-				     uint32_t id,
-				     struct wl_resource *surface);
+  /**
+   * unbind the fractional surface scale interface
+   *
+   * Informs the server that the client will not be using this
+   * protocol object anymore. This does not affect any other objects,
+   * wp_fractional_scale_v1 objects included.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * extend surface interface for scale information
+   *
+   * Create an add-on object for the the wl_surface to let the
+   * compositor request fractional scales. If the given wl_surface
+   * already has a wp_fractional_scale_v1 object associated, the
+   * fractional_scale_exists protocol error is raised.
+   * @param id the new surface scale info interface id
+   * @param surface the surface
+   */
+  void (*get_fractional_scale)(struct wl_client *client,
+                               struct wl_resource *resource, uint32_t id,
+                               struct wl_resource *surface);
 };
-
 
 /**
  * @ingroup iface_wp_fractional_scale_manager_v1
@@ -163,14 +165,13 @@ struct wp_fractional_scale_manager_v1_interface {
  * @struct wp_fractional_scale_v1_interface
  */
 struct wp_fractional_scale_v1_interface {
-	/**
-	 * remove surface scale information for surface
-	 *
-	 * Destroy the fractional scale object. When this object is
-	 * destroyed, preferred_scale events will no longer be sent.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * remove surface scale information for surface
+   *
+   * Destroy the fractional scale object. When this object is
+   * destroyed, preferred_scale events will no longer be sent.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WP_FRACTIONAL_SCALE_V1_PREFERRED_SCALE 0
@@ -191,13 +192,13 @@ struct wp_fractional_scale_v1_interface {
  * @param resource_ The client's resource
  * @param scale the new preferred scale
  */
-static inline void
-wp_fractional_scale_v1_send_preferred_scale(struct wl_resource *resource_, uint32_t scale)
-{
-	wl_resource_post_event(resource_, WP_FRACTIONAL_SCALE_V1_PREFERRED_SCALE, scale);
+static inline void wp_fractional_scale_v1_send_preferred_scale(
+    struct wl_resource *resource_, uint32_t scale) {
+  wl_resource_post_event(resource_, WP_FRACTIONAL_SCALE_V1_PREFERRED_SCALE,
+                         scale);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

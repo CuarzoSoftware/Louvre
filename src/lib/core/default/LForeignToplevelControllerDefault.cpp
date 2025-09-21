@@ -3,8 +3,7 @@
 using namespace Louvre;
 
 //! [taskbarChanged]
-void LForeignToplevelController::taskbarChanged()
-{
-    /* No default implementation */
+void LForeignToplevelController::taskbarChanged() {
+  /* No default implementation */
 }
 //! [taskbarChanged]

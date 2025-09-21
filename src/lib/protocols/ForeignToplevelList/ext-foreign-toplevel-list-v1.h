@@ -3,11 +3,12 @@
 #ifndef EXT_FOREIGN_TOPLEVEL_LIST_V1_SERVER_PROTOCOL_H
 #define EXT_FOREIGN_TOPLEVEL_LIST_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -15,8 +16,8 @@ struct wl_client;
 struct wl_resource;
 
 /**
- * @page page_ext_foreign_toplevel_list_v1 The ext_foreign_toplevel_list_v1 protocol
- * list toplevels
+ * @page page_ext_foreign_toplevel_list_v1 The ext_foreign_toplevel_list_v1
+ * protocol list toplevels
  *
  * @section page_desc_ext_foreign_toplevel_list_v1 Description
  *
@@ -96,14 +97,15 @@ struct ext_foreign_toplevel_list_v1;
  * For each instance of ext_foreign_toplevel_list_v1, the compositor must
  * create a new ext_foreign_toplevel_handle_v1 object for each mapped toplevel.
  *
- * If a compositor implementation sends the ext_foreign_toplevel_list_v1.finished
- * event after the global is bound, the compositor must not send any
- * ext_foreign_toplevel_list_v1.toplevel events.
+ * If a compositor implementation sends the
+ * ext_foreign_toplevel_list_v1.finished event after the global is bound, the
+ * compositor must not send any ext_foreign_toplevel_list_v1.toplevel events.
  * @section page_iface_ext_foreign_toplevel_list_v1_api API
  * See @ref iface_ext_foreign_toplevel_list_v1.
  */
 /**
- * @defgroup iface_ext_foreign_toplevel_list_v1 The ext_foreign_toplevel_list_v1 interface
+ * @defgroup iface_ext_foreign_toplevel_list_v1 The ext_foreign_toplevel_list_v1
+ * interface
  *
  * A toplevel is defined as a surface with a role similar to xdg_toplevel.
  * XWayland surfaces may be treated like toplevels in this protocol.
@@ -118,16 +120,17 @@ struct ext_foreign_toplevel_list_v1;
  * For each instance of ext_foreign_toplevel_list_v1, the compositor must
  * create a new ext_foreign_toplevel_handle_v1 object for each mapped toplevel.
  *
- * If a compositor implementation sends the ext_foreign_toplevel_list_v1.finished
- * event after the global is bound, the compositor must not send any
- * ext_foreign_toplevel_list_v1.toplevel events.
+ * If a compositor implementation sends the
+ * ext_foreign_toplevel_list_v1.finished event after the global is bound, the
+ * compositor must not send any ext_foreign_toplevel_list_v1.toplevel events.
  */
 extern const struct wl_interface ext_foreign_toplevel_list_v1_interface;
 #endif
 #ifndef EXT_FOREIGN_TOPLEVEL_HANDLE_V1_INTERFACE
 #define EXT_FOREIGN_TOPLEVEL_HANDLE_V1_INTERFACE
 /**
- * @page page_iface_ext_foreign_toplevel_handle_v1 ext_foreign_toplevel_handle_v1
+ * @page page_iface_ext_foreign_toplevel_handle_v1
+ * ext_foreign_toplevel_handle_v1
  * @section page_iface_ext_foreign_toplevel_handle_v1_desc Description
  *
  * A ext_foreign_toplevel_handle_v1 object represents a mapped toplevel
@@ -136,7 +139,8 @@ extern const struct wl_interface ext_foreign_toplevel_list_v1_interface;
  * See @ref iface_ext_foreign_toplevel_handle_v1.
  */
 /**
- * @defgroup iface_ext_foreign_toplevel_handle_v1 The ext_foreign_toplevel_handle_v1 interface
+ * @defgroup iface_ext_foreign_toplevel_handle_v1 The
+ * ext_foreign_toplevel_handle_v1 interface
  *
  * A ext_foreign_toplevel_handle_v1 object represents a mapped toplevel
  * window. A single app may have multiple mapped toplevels.
@@ -149,35 +153,33 @@ extern const struct wl_interface ext_foreign_toplevel_handle_v1_interface;
  * @struct ext_foreign_toplevel_list_v1_interface
  */
 struct ext_foreign_toplevel_list_v1_interface {
-	/**
-	 * stop sending events
-	 *
-	 * This request indicates that the client no longer wishes to
-	 * receive events for new toplevels.
-	 *
-	 * The Wayland protocol is asynchronous, meaning the compositor may
-	 * send further toplevel events until the stop request is
-	 * processed. The client should wait for a
-	 * ext_foreign_toplevel_list_v1.finished event before destroying
-	 * this object.
-	 */
-	void (*stop)(struct wl_client *client,
-		     struct wl_resource *resource);
-	/**
-	 * destroy the ext_foreign_toplevel_list_v1 object
-	 *
-	 * This request should be called either when the client will no
-	 * longer use the ext_foreign_toplevel_list_v1 or after the
-	 * finished event has been received to allow destruction of the
-	 * object.
-	 *
-	 * If a client wishes to destroy this object it should send a
-	 * ext_foreign_toplevel_list_v1.stop request and wait for a
-	 * ext_foreign_toplevel_list_v1.finished event, then destroy the
-	 * handles and then this object.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * stop sending events
+   *
+   * This request indicates that the client no longer wishes to
+   * receive events for new toplevels.
+   *
+   * The Wayland protocol is asynchronous, meaning the compositor may
+   * send further toplevel events until the stop request is
+   * processed. The client should wait for a
+   * ext_foreign_toplevel_list_v1.finished event before destroying
+   * this object.
+   */
+  void (*stop)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * destroy the ext_foreign_toplevel_list_v1 object
+   *
+   * This request should be called either when the client will no
+   * longer use the ext_foreign_toplevel_list_v1 or after the
+   * finished event has been received to allow destruction of the
+   * object.
+   *
+   * If a client wishes to destroy this object it should send a
+   * ext_foreign_toplevel_list_v1.stop request and wait for a
+   * ext_foreign_toplevel_list_v1.finished event, then destroy the
+   * handles and then this object.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define EXT_FOREIGN_TOPLEVEL_LIST_V1_TOPLEVEL 0
@@ -206,10 +208,10 @@ struct ext_foreign_toplevel_list_v1_interface {
  * Sends an toplevel event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_foreign_toplevel_list_v1_send_toplevel(struct wl_resource *resource_, struct wl_resource *toplevel)
-{
-	wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_LIST_V1_TOPLEVEL, toplevel);
+static inline void ext_foreign_toplevel_list_v1_send_toplevel(
+    struct wl_resource *resource_, struct wl_resource *toplevel) {
+  wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_LIST_V1_TOPLEVEL,
+                         toplevel);
 }
 
 /**
@@ -217,10 +219,9 @@ ext_foreign_toplevel_list_v1_send_toplevel(struct wl_resource *resource_, struct
  * Sends an finished event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_foreign_toplevel_list_v1_send_finished(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_LIST_V1_FINISHED);
+static inline void ext_foreign_toplevel_list_v1_send_finished(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_LIST_V1_FINISHED);
 }
 
 /**
@@ -228,26 +229,25 @@ ext_foreign_toplevel_list_v1_send_finished(struct wl_resource *resource_)
  * @struct ext_foreign_toplevel_handle_v1_interface
  */
 struct ext_foreign_toplevel_handle_v1_interface {
-	/**
-	 * destroy the ext_foreign_toplevel_handle_v1 object
-	 *
-	 * This request should be used when the client will no longer use
-	 * the handle or after the closed event has been received to allow
-	 * destruction of the object.
-	 *
-	 * When a handle is destroyed, a new handle may not be created by
-	 * the server until the toplevel is unmapped and then remapped.
-	 * Destroying a toplevel handle is not recommended unless the
-	 * client is cleaning up child objects before destroying the
-	 * ext_foreign_toplevel_list_v1 object, the toplevel was closed or
-	 * the toplevel handle will not be used in the future.
-	 *
-	 * Other protocols which extend the ext_foreign_toplevel_handle_v1
-	 * interface should require destructors for extension interfaces be
-	 * called before allowing the toplevel handle to be destroyed.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy the ext_foreign_toplevel_handle_v1 object
+   *
+   * This request should be used when the client will no longer use
+   * the handle or after the closed event has been received to allow
+   * destruction of the object.
+   *
+   * When a handle is destroyed, a new handle may not be created by
+   * the server until the toplevel is unmapped and then remapped.
+   * Destroying a toplevel handle is not recommended unless the
+   * client is cleaning up child objects before destroying the
+   * ext_foreign_toplevel_list_v1 object, the toplevel was closed or
+   * the toplevel handle will not be used in the future.
+   *
+   * Other protocols which extend the ext_foreign_toplevel_handle_v1
+   * interface should require destructors for extension interfaces be
+   * called before allowing the toplevel handle to be destroyed.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define EXT_FOREIGN_TOPLEVEL_HANDLE_V1_CLOSED 0
@@ -287,10 +287,9 @@ struct ext_foreign_toplevel_handle_v1_interface {
  * Sends an closed event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_foreign_toplevel_handle_v1_send_closed(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_HANDLE_V1_CLOSED);
+static inline void ext_foreign_toplevel_handle_v1_send_closed(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_HANDLE_V1_CLOSED);
 }
 
 /**
@@ -298,10 +297,9 @@ ext_foreign_toplevel_handle_v1_send_closed(struct wl_resource *resource_)
  * Sends an done event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_foreign_toplevel_handle_v1_send_done(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_HANDLE_V1_DONE);
+static inline void ext_foreign_toplevel_handle_v1_send_done(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_HANDLE_V1_DONE);
 }
 
 /**
@@ -309,10 +307,10 @@ ext_foreign_toplevel_handle_v1_send_done(struct wl_resource *resource_)
  * Sends an title event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_foreign_toplevel_handle_v1_send_title(struct wl_resource *resource_, const char *title)
-{
-	wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_HANDLE_V1_TITLE, title);
+static inline void ext_foreign_toplevel_handle_v1_send_title(
+    struct wl_resource *resource_, const char *title) {
+  wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_HANDLE_V1_TITLE,
+                         title);
 }
 
 /**
@@ -320,10 +318,10 @@ ext_foreign_toplevel_handle_v1_send_title(struct wl_resource *resource_, const c
  * Sends an app_id event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_foreign_toplevel_handle_v1_send_app_id(struct wl_resource *resource_, const char *app_id)
-{
-	wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_HANDLE_V1_APP_ID, app_id);
+static inline void ext_foreign_toplevel_handle_v1_send_app_id(
+    struct wl_resource *resource_, const char *app_id) {
+  wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_HANDLE_V1_APP_ID,
+                         app_id);
 }
 
 /**
@@ -331,13 +329,13 @@ ext_foreign_toplevel_handle_v1_send_app_id(struct wl_resource *resource_, const 
  * Sends an identifier event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_foreign_toplevel_handle_v1_send_identifier(struct wl_resource *resource_, const char *identifier)
-{
-	wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_HANDLE_V1_IDENTIFIER, identifier);
+static inline void ext_foreign_toplevel_handle_v1_send_identifier(
+    struct wl_resource *resource_, const char *identifier) {
+  wl_resource_post_event(resource_, EXT_FOREIGN_TOPLEVEL_HANDLE_V1_IDENTIFIER,
+                         identifier);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

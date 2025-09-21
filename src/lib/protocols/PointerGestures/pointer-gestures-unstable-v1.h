@@ -3,11 +3,12 @@
 #ifndef POINTER_GESTURES_UNSTABLE_V1_SERVER_PROTOCOL_H
 #define POINTER_GESTURES_UNSTABLE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -15,7 +16,8 @@ struct wl_client;
 struct wl_resource;
 
 /**
- * @page page_pointer_gestures_unstable_v1 The pointer_gestures_unstable_v1 protocol
+ * @page page_pointer_gestures_unstable_v1 The pointer_gestures_unstable_v1
+ * protocol
  * @section page_ifaces_pointer_gestures_unstable_v1 Interfaces
  * - @subpage page_iface_zwp_pointer_gestures_v1 - touchpad gestures
  * - @subpage page_iface_zwp_pointer_gesture_swipe_v1 - a swipe gesture object
@@ -101,7 +103,8 @@ extern const struct wl_interface zwp_pointer_gestures_v1_interface;
  * See @ref iface_zwp_pointer_gesture_swipe_v1.
  */
 /**
- * @defgroup iface_zwp_pointer_gesture_swipe_v1 The zwp_pointer_gesture_swipe_v1 interface
+ * @defgroup iface_zwp_pointer_gesture_swipe_v1 The zwp_pointer_gesture_swipe_v1
+ * interface
  *
  * A swipe gesture object notifies a client about a multi-finger swipe
  * gesture detected on an indirect input device such as a touchpad.
@@ -146,7 +149,8 @@ extern const struct wl_interface zwp_pointer_gesture_swipe_v1_interface;
  * See @ref iface_zwp_pointer_gesture_pinch_v1.
  */
 /**
- * @defgroup iface_zwp_pointer_gesture_pinch_v1 The zwp_pointer_gesture_pinch_v1 interface
+ * @defgroup iface_zwp_pointer_gesture_pinch_v1 The zwp_pointer_gesture_pinch_v1
+ * interface
  *
  * A pinch gesture object notifies a client about a multi-finger pinch
  * gesture detected on an indirect input device such as a touchpad.
@@ -193,7 +197,8 @@ extern const struct wl_interface zwp_pointer_gesture_pinch_v1_interface;
  * See @ref iface_zwp_pointer_gesture_hold_v1.
  */
 /**
- * @defgroup iface_zwp_pointer_gesture_hold_v1 The zwp_pointer_gesture_hold_v1 interface
+ * @defgroup iface_zwp_pointer_gesture_hold_v1 The zwp_pointer_gesture_hold_v1
+ * interface
  *
  * A hold gesture object notifies a client about a single- or
  * multi-finger hold gesture detected on an indirect input device such as
@@ -221,48 +226,43 @@ extern const struct wl_interface zwp_pointer_gesture_hold_v1_interface;
  * @struct zwp_pointer_gestures_v1_interface
  */
 struct zwp_pointer_gestures_v1_interface {
-	/**
-	 * get swipe gesture
-	 *
-	 * Create a swipe gesture object. See the
-	 * wl_pointer_gesture_swipe interface for details.
-	 */
-	void (*get_swipe_gesture)(struct wl_client *client,
-				  struct wl_resource *resource,
-				  uint32_t id,
-				  struct wl_resource *pointer);
-	/**
-	 * get pinch gesture
-	 *
-	 * Create a pinch gesture object. See the
-	 * wl_pointer_gesture_pinch interface for details.
-	 */
-	void (*get_pinch_gesture)(struct wl_client *client,
-				  struct wl_resource *resource,
-				  uint32_t id,
-				  struct wl_resource *pointer);
-	/**
-	 * destroy the pointer gesture object
-	 *
-	 * Destroy the pointer gesture object. Swipe, pinch and hold
-	 * objects created via this gesture object remain valid.
-	 * @since 2
-	 */
-	void (*release)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * get hold gesture
-	 *
-	 * Create a hold gesture object. See the wl_pointer_gesture_hold
-	 * interface for details.
-	 * @since 3
-	 */
-	void (*get_hold_gesture)(struct wl_client *client,
-				 struct wl_resource *resource,
-				 uint32_t id,
-				 struct wl_resource *pointer);
+  /**
+   * get swipe gesture
+   *
+   * Create a swipe gesture object. See the
+   * wl_pointer_gesture_swipe interface for details.
+   */
+  void (*get_swipe_gesture)(struct wl_client *client,
+                            struct wl_resource *resource, uint32_t id,
+                            struct wl_resource *pointer);
+  /**
+   * get pinch gesture
+   *
+   * Create a pinch gesture object. See the
+   * wl_pointer_gesture_pinch interface for details.
+   */
+  void (*get_pinch_gesture)(struct wl_client *client,
+                            struct wl_resource *resource, uint32_t id,
+                            struct wl_resource *pointer);
+  /**
+   * destroy the pointer gesture object
+   *
+   * Destroy the pointer gesture object. Swipe, pinch and hold
+   * objects created via this gesture object remain valid.
+   * @since 2
+   */
+  void (*release)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * get hold gesture
+   *
+   * Create a hold gesture object. See the wl_pointer_gesture_hold
+   * interface for details.
+   * @since 3
+   */
+  void (*get_hold_gesture)(struct wl_client *client,
+                           struct wl_resource *resource, uint32_t id,
+                           struct wl_resource *pointer);
 };
-
 
 /**
  * @ingroup iface_zwp_pointer_gestures_v1
@@ -286,13 +286,12 @@ struct zwp_pointer_gestures_v1_interface {
  * @struct zwp_pointer_gesture_swipe_v1_interface
  */
 struct zwp_pointer_gesture_swipe_v1_interface {
-	/**
-	 * destroy the pointer swipe gesture object
-	 *
-	 * 
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy the pointer swipe gesture object
+   *
+   *
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZWP_POINTER_GESTURE_SWIPE_V1_BEGIN 0
@@ -324,10 +323,11 @@ struct zwp_pointer_gesture_swipe_v1_interface {
  * @param time timestamp with millisecond granularity
  * @param fingers number of fingers
  */
-static inline void
-zwp_pointer_gesture_swipe_v1_send_begin(struct wl_resource *resource_, uint32_t serial, uint32_t time, struct wl_resource *surface, uint32_t fingers)
-{
-	wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_SWIPE_V1_BEGIN, serial, time, surface, fingers);
+static inline void zwp_pointer_gesture_swipe_v1_send_begin(
+    struct wl_resource *resource_, uint32_t serial, uint32_t time,
+    struct wl_resource *surface, uint32_t fingers) {
+  wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_SWIPE_V1_BEGIN, serial,
+                         time, surface, fingers);
 }
 
 /**
@@ -338,10 +338,11 @@ zwp_pointer_gesture_swipe_v1_send_begin(struct wl_resource *resource_, uint32_t 
  * @param dx delta x coordinate in surface coordinate space
  * @param dy delta y coordinate in surface coordinate space
  */
-static inline void
-zwp_pointer_gesture_swipe_v1_send_update(struct wl_resource *resource_, uint32_t time, wl_fixed_t dx, wl_fixed_t dy)
-{
-	wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_SWIPE_V1_UPDATE, time, dx, dy);
+static inline void zwp_pointer_gesture_swipe_v1_send_update(
+    struct wl_resource *resource_, uint32_t time, wl_fixed_t dx,
+    wl_fixed_t dy) {
+  wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_SWIPE_V1_UPDATE, time,
+                         dx, dy);
 }
 
 /**
@@ -351,10 +352,11 @@ zwp_pointer_gesture_swipe_v1_send_update(struct wl_resource *resource_, uint32_t
  * @param time timestamp with millisecond granularity
  * @param cancelled 1 if the gesture was cancelled, 0 otherwise
  */
-static inline void
-zwp_pointer_gesture_swipe_v1_send_end(struct wl_resource *resource_, uint32_t serial, uint32_t time, int32_t cancelled)
-{
-	wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_SWIPE_V1_END, serial, time, cancelled);
+static inline void zwp_pointer_gesture_swipe_v1_send_end(
+    struct wl_resource *resource_, uint32_t serial, uint32_t time,
+    int32_t cancelled) {
+  wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_SWIPE_V1_END, serial,
+                         time, cancelled);
 }
 
 /**
@@ -362,13 +364,12 @@ zwp_pointer_gesture_swipe_v1_send_end(struct wl_resource *resource_, uint32_t se
  * @struct zwp_pointer_gesture_pinch_v1_interface
  */
 struct zwp_pointer_gesture_pinch_v1_interface {
-	/**
-	 * destroy the pinch gesture object
-	 *
-	 * 
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy the pinch gesture object
+   *
+   *
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZWP_POINTER_GESTURE_PINCH_V1_BEGIN 0
@@ -400,10 +401,11 @@ struct zwp_pointer_gesture_pinch_v1_interface {
  * @param time timestamp with millisecond granularity
  * @param fingers number of fingers
  */
-static inline void
-zwp_pointer_gesture_pinch_v1_send_begin(struct wl_resource *resource_, uint32_t serial, uint32_t time, struct wl_resource *surface, uint32_t fingers)
-{
-	wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_PINCH_V1_BEGIN, serial, time, surface, fingers);
+static inline void zwp_pointer_gesture_pinch_v1_send_begin(
+    struct wl_resource *resource_, uint32_t serial, uint32_t time,
+    struct wl_resource *surface, uint32_t fingers) {
+  wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_PINCH_V1_BEGIN, serial,
+                         time, surface, fingers);
 }
 
 /**
@@ -416,10 +418,11 @@ zwp_pointer_gesture_pinch_v1_send_begin(struct wl_resource *resource_, uint32_t 
  * @param scale scale relative to the initial finger position
  * @param rotation angle in degrees cw relative to the previous event
  */
-static inline void
-zwp_pointer_gesture_pinch_v1_send_update(struct wl_resource *resource_, uint32_t time, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t scale, wl_fixed_t rotation)
-{
-	wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_PINCH_V1_UPDATE, time, dx, dy, scale, rotation);
+static inline void zwp_pointer_gesture_pinch_v1_send_update(
+    struct wl_resource *resource_, uint32_t time, wl_fixed_t dx, wl_fixed_t dy,
+    wl_fixed_t scale, wl_fixed_t rotation) {
+  wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_PINCH_V1_UPDATE, time,
+                         dx, dy, scale, rotation);
 }
 
 /**
@@ -429,10 +432,11 @@ zwp_pointer_gesture_pinch_v1_send_update(struct wl_resource *resource_, uint32_t
  * @param time timestamp with millisecond granularity
  * @param cancelled 1 if the gesture was cancelled, 0 otherwise
  */
-static inline void
-zwp_pointer_gesture_pinch_v1_send_end(struct wl_resource *resource_, uint32_t serial, uint32_t time, int32_t cancelled)
-{
-	wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_PINCH_V1_END, serial, time, cancelled);
+static inline void zwp_pointer_gesture_pinch_v1_send_end(
+    struct wl_resource *resource_, uint32_t serial, uint32_t time,
+    int32_t cancelled) {
+  wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_PINCH_V1_END, serial,
+                         time, cancelled);
 }
 
 /**
@@ -440,14 +444,13 @@ zwp_pointer_gesture_pinch_v1_send_end(struct wl_resource *resource_, uint32_t se
  * @struct zwp_pointer_gesture_hold_v1_interface
  */
 struct zwp_pointer_gesture_hold_v1_interface {
-	/**
-	 * destroy the hold gesture object
-	 *
-	 * 
-	 * @since 3
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy the hold gesture object
+   *
+   *
+   * @since 3
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZWP_POINTER_GESTURE_HOLD_V1_BEGIN 0
@@ -474,10 +477,11 @@ struct zwp_pointer_gesture_hold_v1_interface {
  * @param time timestamp with millisecond granularity
  * @param fingers number of fingers
  */
-static inline void
-zwp_pointer_gesture_hold_v1_send_begin(struct wl_resource *resource_, uint32_t serial, uint32_t time, struct wl_resource *surface, uint32_t fingers)
-{
-	wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_HOLD_V1_BEGIN, serial, time, surface, fingers);
+static inline void zwp_pointer_gesture_hold_v1_send_begin(
+    struct wl_resource *resource_, uint32_t serial, uint32_t time,
+    struct wl_resource *surface, uint32_t fingers) {
+  wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_HOLD_V1_BEGIN, serial,
+                         time, surface, fingers);
 }
 
 /**
@@ -487,13 +491,14 @@ zwp_pointer_gesture_hold_v1_send_begin(struct wl_resource *resource_, uint32_t s
  * @param time timestamp with millisecond granularity
  * @param cancelled 1 if the gesture was cancelled, 0 otherwise
  */
-static inline void
-zwp_pointer_gesture_hold_v1_send_end(struct wl_resource *resource_, uint32_t serial, uint32_t time, int32_t cancelled)
-{
-	wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_HOLD_V1_END, serial, time, cancelled);
+static inline void zwp_pointer_gesture_hold_v1_send_end(
+    struct wl_resource *resource_, uint32_t serial, uint32_t time,
+    int32_t cancelled) {
+  wl_resource_post_event(resource_, ZWP_POINTER_GESTURE_HOLD_V1_END, serial,
+                         time, cancelled);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

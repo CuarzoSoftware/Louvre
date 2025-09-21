@@ -3,11 +3,12 @@
 #ifndef XDG_OUTPUT_UNSTABLE_V1_SERVER_PROTOCOL_H
 #define XDG_OUTPUT_UNSTABLE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -136,28 +137,24 @@ extern const struct wl_interface zxdg_output_v1_interface;
  * @struct zxdg_output_manager_v1_interface
  */
 struct zxdg_output_manager_v1_interface {
-	/**
-	 * destroy the xdg_output_manager object
-	 *
-	 * Using this request a client can tell the server that it is not
-	 * going to use the xdg_output_manager object anymore.
-	 *
-	 * Any objects already created through this instance are not
-	 * affected.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * create an xdg output from a wl_output
-	 *
-	 * This creates a new xdg_output object for the given wl_output.
-	 */
-	void (*get_xdg_output)(struct wl_client *client,
-			       struct wl_resource *resource,
-			       uint32_t id,
-			       struct wl_resource *output);
+  /**
+   * destroy the xdg_output_manager object
+   *
+   * Using this request a client can tell the server that it is not
+   * going to use the xdg_output_manager object anymore.
+   *
+   * Any objects already created through this instance are not
+   * affected.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * create an xdg output from a wl_output
+   *
+   * This creates a new xdg_output object for the given wl_output.
+   */
+  void (*get_xdg_output)(struct wl_client *client, struct wl_resource *resource,
+                         uint32_t id, struct wl_resource *output);
 };
-
 
 /**
  * @ingroup iface_zxdg_output_manager_v1
@@ -173,14 +170,13 @@ struct zxdg_output_manager_v1_interface {
  * @struct zxdg_output_v1_interface
  */
 struct zxdg_output_v1_interface {
-	/**
-	 * destroy the xdg_output object
-	 *
-	 * Using this request a client can tell the server that it is not
-	 * going to use the xdg_output object anymore.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy the xdg_output object
+   *
+   * Using this request a client can tell the server that it is not
+   * going to use the xdg_output object anymore.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZXDG_OUTPUT_V1_LOGICAL_POSITION 0
@@ -222,10 +218,9 @@ struct zxdg_output_v1_interface {
  * @param x x position within the global compositor space
  * @param y y position within the global compositor space
  */
-static inline void
-zxdg_output_v1_send_logical_position(struct wl_resource *resource_, int32_t x, int32_t y)
-{
-	wl_resource_post_event(resource_, ZXDG_OUTPUT_V1_LOGICAL_POSITION, x, y);
+static inline void zxdg_output_v1_send_logical_position(
+    struct wl_resource *resource_, int32_t x, int32_t y) {
+  wl_resource_post_event(resource_, ZXDG_OUTPUT_V1_LOGICAL_POSITION, x, y);
 }
 
 /**
@@ -235,10 +230,9 @@ zxdg_output_v1_send_logical_position(struct wl_resource *resource_, int32_t x, i
  * @param width width in global compositor space
  * @param height height in global compositor space
  */
-static inline void
-zxdg_output_v1_send_logical_size(struct wl_resource *resource_, int32_t width, int32_t height)
-{
-	wl_resource_post_event(resource_, ZXDG_OUTPUT_V1_LOGICAL_SIZE, width, height);
+static inline void zxdg_output_v1_send_logical_size(
+    struct wl_resource *resource_, int32_t width, int32_t height) {
+  wl_resource_post_event(resource_, ZXDG_OUTPUT_V1_LOGICAL_SIZE, width, height);
 }
 
 /**
@@ -246,10 +240,8 @@ zxdg_output_v1_send_logical_size(struct wl_resource *resource_, int32_t width, i
  * Sends an done event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zxdg_output_v1_send_done(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZXDG_OUTPUT_V1_DONE);
+static inline void zxdg_output_v1_send_done(struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZXDG_OUTPUT_V1_DONE);
 }
 
 /**
@@ -258,10 +250,9 @@ zxdg_output_v1_send_done(struct wl_resource *resource_)
  * @param resource_ The client's resource
  * @param name output name
  */
-static inline void
-zxdg_output_v1_send_name(struct wl_resource *resource_, const char *name)
-{
-	wl_resource_post_event(resource_, ZXDG_OUTPUT_V1_NAME, name);
+static inline void zxdg_output_v1_send_name(struct wl_resource *resource_,
+                                            const char *name) {
+  wl_resource_post_event(resource_, ZXDG_OUTPUT_V1_NAME, name);
 }
 
 /**
@@ -270,13 +261,12 @@ zxdg_output_v1_send_name(struct wl_resource *resource_, const char *name)
  * @param resource_ The client's resource
  * @param description output description
  */
-static inline void
-zxdg_output_v1_send_description(struct wl_resource *resource_, const char *description)
-{
-	wl_resource_post_event(resource_, ZXDG_OUTPUT_V1_DESCRIPTION, description);
+static inline void zxdg_output_v1_send_description(
+    struct wl_resource *resource_, const char *description) {
+  wl_resource_post_event(resource_, ZXDG_OUTPUT_V1_DESCRIPTION, description);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

@@ -3,11 +3,12 @@
 #ifndef EXT_IDLE_NOTIFY_V1_SERVER_PROTOCOL_H
 #define EXT_IDLE_NOTIFY_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -96,7 +97,8 @@ extern const struct wl_interface ext_idle_notifier_v1_interface;
  * See @ref iface_ext_idle_notification_v1.
  */
 /**
- * @defgroup iface_ext_idle_notification_v1 The ext_idle_notification_v1 interface
+ * @defgroup iface_ext_idle_notification_v1 The ext_idle_notification_v1
+ * interface
  *
  * This interface is used by the compositor to send idle notification events
  * to clients.
@@ -121,35 +123,31 @@ extern const struct wl_interface ext_idle_notification_v1_interface;
  * @struct ext_idle_notifier_v1_interface
  */
 struct ext_idle_notifier_v1_interface {
-	/**
-	 * destroy the manager
-	 *
-	 * Destroy the manager object. All objects created via this
-	 * interface remain valid.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * create a notification object
-	 *
-	 * Create a new idle notification object.
-	 *
-	 * The notification object has a minimum timeout duration and is
-	 * tied to a seat. The client will be notified if the seat is
-	 * inactive for at least the provided timeout. See
-	 * ext_idle_notification_v1 for more details.
-	 *
-	 * A zero timeout is valid and means the client wants to be
-	 * notified as soon as possible when the seat is inactive.
-	 * @param timeout minimum idle timeout in msec
-	 */
-	void (*get_idle_notification)(struct wl_client *client,
-				      struct wl_resource *resource,
-				      uint32_t id,
-				      uint32_t timeout,
-				      struct wl_resource *seat);
+  /**
+   * destroy the manager
+   *
+   * Destroy the manager object. All objects created via this
+   * interface remain valid.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * create a notification object
+   *
+   * Create a new idle notification object.
+   *
+   * The notification object has a minimum timeout duration and is
+   * tied to a seat. The client will be notified if the seat is
+   * inactive for at least the provided timeout. See
+   * ext_idle_notification_v1 for more details.
+   *
+   * A zero timeout is valid and means the client wants to be
+   * notified as soon as possible when the seat is inactive.
+   * @param timeout minimum idle timeout in msec
+   */
+  void (*get_idle_notification)(struct wl_client *client,
+                                struct wl_resource *resource, uint32_t id,
+                                uint32_t timeout, struct wl_resource *seat);
 };
-
 
 /**
  * @ingroup iface_ext_idle_notifier_v1
@@ -165,13 +163,12 @@ struct ext_idle_notifier_v1_interface {
  * @struct ext_idle_notification_v1_interface
  */
 struct ext_idle_notification_v1_interface {
-	/**
-	 * destroy the notification object
-	 *
-	 * Destroy the notification object.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy the notification object
+   *
+   * Destroy the notification object.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define EXT_IDLE_NOTIFICATION_V1_IDLED 0
@@ -196,10 +193,9 @@ struct ext_idle_notification_v1_interface {
  * Sends an idled event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_idle_notification_v1_send_idled(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, EXT_IDLE_NOTIFICATION_V1_IDLED);
+static inline void ext_idle_notification_v1_send_idled(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, EXT_IDLE_NOTIFICATION_V1_IDLED);
 }
 
 /**
@@ -207,13 +203,12 @@ ext_idle_notification_v1_send_idled(struct wl_resource *resource_)
  * Sends an resumed event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-ext_idle_notification_v1_send_resumed(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, EXT_IDLE_NOTIFICATION_V1_RESUMED);
+static inline void ext_idle_notification_v1_send_resumed(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, EXT_IDLE_NOTIFICATION_V1_RESUMED);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

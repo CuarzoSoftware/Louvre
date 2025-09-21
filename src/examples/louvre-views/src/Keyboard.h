@@ -5,13 +5,12 @@
 
 using namespace Louvre;
 
-class Keyboard final : public LKeyboard
-{
-public:
-    Keyboard(const void *params);
+class Keyboard final : public LKeyboard {
+ public:
+  Keyboard(const void *params);
 
-    void keyEvent(const LKeyboardKeyEvent &event) override;
-    void focusChanged() override;
+  void keyEvent(const LKeyboardKeyEvent &event) override;
+  void focusChanged() override;
 };
 
-#endif // KEYBOARD_H
+#endif  // KEYBOARD_H

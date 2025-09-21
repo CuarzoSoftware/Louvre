@@ -3,11 +3,12 @@
 #ifndef WLR_OUTPUT_MANAGEMENT_UNSTABLE_V1_SERVER_PROTOCOL_H
 #define WLR_OUTPUT_MANAGEMENT_UNSTABLE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -15,8 +16,9 @@ struct wl_client;
 struct wl_resource;
 
 /**
- * @page page_wlr_output_management_unstable_v1 The wlr_output_management_unstable_v1 protocol
- * protocol to configure output devices
+ * @page page_wlr_output_management_unstable_v1 The
+ * wlr_output_management_unstable_v1 protocol protocol to configure output
+ * devices
  *
  * @section page_desc_wlr_output_management_unstable_v1 Description
  *
@@ -33,7 +35,8 @@ struct wl_resource;
  * interface version number is reset.
  *
  * @section page_ifaces_wlr_output_management_unstable_v1 Interfaces
- * - @subpage page_iface_zwlr_output_manager_v1 - output device configuration manager
+ * - @subpage page_iface_zwlr_output_manager_v1 - output device configuration
+ * manager
  * - @subpage page_iface_zwlr_output_head_v1 - output device
  * - @subpage page_iface_zwlr_output_mode_v1 - output mode
  * - @subpage page_iface_zwlr_output_configuration_v1 - output configuration
@@ -232,7 +235,8 @@ extern const struct wl_interface zwlr_output_mode_v1_interface;
  * See @ref iface_zwlr_output_configuration_v1.
  */
 /**
- * @defgroup iface_zwlr_output_configuration_v1 The zwlr_output_configuration_v1 interface
+ * @defgroup iface_zwlr_output_configuration_v1 The zwlr_output_configuration_v1
+ * interface
  *
  * This object is used by the client to describe a full output configuration.
  *
@@ -250,7 +254,8 @@ extern const struct wl_interface zwlr_output_configuration_v1_interface;
 #ifndef ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_INTERFACE
 #define ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_INTERFACE
 /**
- * @page page_iface_zwlr_output_configuration_head_v1 zwlr_output_configuration_head_v1
+ * @page page_iface_zwlr_output_configuration_head_v1
+ * zwlr_output_configuration_head_v1
  * @section page_iface_zwlr_output_configuration_head_v1_desc Description
  *
  * This object is used by the client to update a single head's configuration.
@@ -260,7 +265,8 @@ extern const struct wl_interface zwlr_output_configuration_v1_interface;
  * See @ref iface_zwlr_output_configuration_head_v1.
  */
 /**
- * @defgroup iface_zwlr_output_configuration_head_v1 The zwlr_output_configuration_head_v1 interface
+ * @defgroup iface_zwlr_output_configuration_head_v1 The
+ * zwlr_output_configuration_head_v1 interface
  *
  * This object is used by the client to update a single head's configuration.
  *
@@ -274,27 +280,25 @@ extern const struct wl_interface zwlr_output_configuration_head_v1_interface;
  * @struct zwlr_output_manager_v1_interface
  */
 struct zwlr_output_manager_v1_interface {
-	/**
-	 * create a new output configuration object
-	 *
-	 * Create a new output configuration object. This allows to
-	 * update head properties.
-	 */
-	void (*create_configuration)(struct wl_client *client,
-				     struct wl_resource *resource,
-				     uint32_t id,
-				     uint32_t serial);
-	/**
-	 * stop sending events
-	 *
-	 * Indicates the client no longer wishes to receive events for
-	 * output configuration changes. However the compositor may emit
-	 * further events, until the finished event is emitted.
-	 *
-	 * The client must not send any more requests after this one.
-	 */
-	void (*stop)(struct wl_client *client,
-		     struct wl_resource *resource);
+  /**
+   * create a new output configuration object
+   *
+   * Create a new output configuration object. This allows to
+   * update head properties.
+   */
+  void (*create_configuration)(struct wl_client *client,
+                               struct wl_resource *resource, uint32_t id,
+                               uint32_t serial);
+  /**
+   * stop sending events
+   *
+   * Indicates the client no longer wishes to receive events for
+   * output configuration changes. However the compositor may emit
+   * further events, until the finished event is emitted.
+   *
+   * The client must not send any more requests after this one.
+   */
+  void (*stop)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZWLR_OUTPUT_MANAGER_V1_HEAD 0
@@ -328,10 +332,9 @@ struct zwlr_output_manager_v1_interface {
  * Sends an head event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_manager_v1_send_head(struct wl_resource *resource_, struct wl_resource *head)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_MANAGER_V1_HEAD, head);
+static inline void zwlr_output_manager_v1_send_head(
+    struct wl_resource *resource_, struct wl_resource *head) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_MANAGER_V1_HEAD, head);
 }
 
 /**
@@ -340,10 +343,9 @@ zwlr_output_manager_v1_send_head(struct wl_resource *resource_, struct wl_resour
  * @param resource_ The client's resource
  * @param serial current configuration serial
  */
-static inline void
-zwlr_output_manager_v1_send_done(struct wl_resource *resource_, uint32_t serial)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_MANAGER_V1_DONE, serial);
+static inline void zwlr_output_manager_v1_send_done(
+    struct wl_resource *resource_, uint32_t serial) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_MANAGER_V1_DONE, serial);
 }
 
 /**
@@ -351,23 +353,22 @@ zwlr_output_manager_v1_send_done(struct wl_resource *resource_, uint32_t serial)
  * Sends an finished event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_manager_v1_send_finished(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_MANAGER_V1_FINISHED);
+static inline void zwlr_output_manager_v1_send_finished(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_MANAGER_V1_FINISHED);
 }
 
 #ifndef ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENUM
 #define ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENUM
 enum zwlr_output_head_v1_adaptive_sync_state {
-	/**
-	 * adaptive sync is disabled
-	 */
-	ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED = 0,
-	/**
-	 * adaptive sync is enabled
-	 */
-	ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED = 1,
+  /**
+   * adaptive sync is disabled
+   */
+  ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED = 0,
+  /**
+   * adaptive sync is enabled
+   */
+  ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED = 1,
 };
 /**
  * @ingroup iface_zwlr_output_head_v1
@@ -376,16 +377,13 @@ enum zwlr_output_head_v1_adaptive_sync_state {
  * @return true on success, false on error.
  * @ref zwlr_output_head_v1_adaptive_sync_state
  */
-static inline bool
-zwlr_output_head_v1_adaptive_sync_state_is_valid(uint32_t value, uint32_t version) {
-	switch (value) {
-	case ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED:
-		return version >= 1;
-	case ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED:
-		return version >= 1;
-	default:
-		return false;
-	}
+static inline bool zwlr_output_head_v1_adaptive_sync_state_is_valid(
+    uint32_t value, uint32_t version) {
+  switch (value) {
+    case ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_DISABLED: return version >= 1;
+    case ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENABLED: return version >= 1;
+    default: return false;
+  }
 }
 #endif /* ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC_STATE_ENUM */
 
@@ -394,15 +392,14 @@ zwlr_output_head_v1_adaptive_sync_state_is_valid(uint32_t value, uint32_t versio
  * @struct zwlr_output_head_v1_interface
  */
 struct zwlr_output_head_v1_interface {
-	/**
-	 * destroy the head object
-	 *
-	 * This request indicates that the client will no longer use this
-	 * head object.
-	 * @since 3
-	 */
-	void (*release)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy the head object
+   *
+   * This request indicates that the client will no longer use this
+   * head object.
+   * @since 3
+   */
+  void (*release)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZWLR_OUTPUT_HEAD_V1_NAME 0
@@ -487,10 +484,9 @@ struct zwlr_output_head_v1_interface {
  * Sends an name event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_name(struct wl_resource *resource_, const char *name)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_NAME, name);
+static inline void zwlr_output_head_v1_send_name(struct wl_resource *resource_,
+                                                 const char *name) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_NAME, name);
 }
 
 /**
@@ -498,10 +494,10 @@ zwlr_output_head_v1_send_name(struct wl_resource *resource_, const char *name)
  * Sends an description event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_description(struct wl_resource *resource_, const char *description)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_DESCRIPTION, description);
+static inline void zwlr_output_head_v1_send_description(
+    struct wl_resource *resource_, const char *description) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_DESCRIPTION,
+                         description);
 }
 
 /**
@@ -511,10 +507,10 @@ zwlr_output_head_v1_send_description(struct wl_resource *resource_, const char *
  * @param width width in millimeters of the output
  * @param height height in millimeters of the output
  */
-static inline void
-zwlr_output_head_v1_send_physical_size(struct wl_resource *resource_, int32_t width, int32_t height)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_PHYSICAL_SIZE, width, height);
+static inline void zwlr_output_head_v1_send_physical_size(
+    struct wl_resource *resource_, int32_t width, int32_t height) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_PHYSICAL_SIZE, width,
+                         height);
 }
 
 /**
@@ -522,10 +518,9 @@ zwlr_output_head_v1_send_physical_size(struct wl_resource *resource_, int32_t wi
  * Sends an mode event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_mode(struct wl_resource *resource_, struct wl_resource *mode)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_MODE, mode);
+static inline void zwlr_output_head_v1_send_mode(struct wl_resource *resource_,
+                                                 struct wl_resource *mode) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_MODE, mode);
 }
 
 /**
@@ -534,10 +529,9 @@ zwlr_output_head_v1_send_mode(struct wl_resource *resource_, struct wl_resource 
  * @param resource_ The client's resource
  * @param enabled zero if disabled, non-zero if enabled
  */
-static inline void
-zwlr_output_head_v1_send_enabled(struct wl_resource *resource_, int32_t enabled)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_ENABLED, enabled);
+static inline void zwlr_output_head_v1_send_enabled(
+    struct wl_resource *resource_, int32_t enabled) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_ENABLED, enabled);
 }
 
 /**
@@ -545,10 +539,9 @@ zwlr_output_head_v1_send_enabled(struct wl_resource *resource_, int32_t enabled)
  * Sends an current_mode event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_current_mode(struct wl_resource *resource_, struct wl_resource *mode)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_CURRENT_MODE, mode);
+static inline void zwlr_output_head_v1_send_current_mode(
+    struct wl_resource *resource_, struct wl_resource *mode) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_CURRENT_MODE, mode);
 }
 
 /**
@@ -558,10 +551,9 @@ zwlr_output_head_v1_send_current_mode(struct wl_resource *resource_, struct wl_r
  * @param x x position within the global compositor space
  * @param y y position within the global compositor space
  */
-static inline void
-zwlr_output_head_v1_send_position(struct wl_resource *resource_, int32_t x, int32_t y)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_POSITION, x, y);
+static inline void zwlr_output_head_v1_send_position(
+    struct wl_resource *resource_, int32_t x, int32_t y) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_POSITION, x, y);
 }
 
 /**
@@ -569,10 +561,9 @@ zwlr_output_head_v1_send_position(struct wl_resource *resource_, int32_t x, int3
  * Sends an transform event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_transform(struct wl_resource *resource_, int32_t transform)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_TRANSFORM, transform);
+static inline void zwlr_output_head_v1_send_transform(
+    struct wl_resource *resource_, int32_t transform) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_TRANSFORM, transform);
 }
 
 /**
@@ -580,10 +571,9 @@ zwlr_output_head_v1_send_transform(struct wl_resource *resource_, int32_t transf
  * Sends an scale event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_scale(struct wl_resource *resource_, wl_fixed_t scale)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_SCALE, scale);
+static inline void zwlr_output_head_v1_send_scale(struct wl_resource *resource_,
+                                                  wl_fixed_t scale) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_SCALE, scale);
 }
 
 /**
@@ -591,10 +581,9 @@ zwlr_output_head_v1_send_scale(struct wl_resource *resource_, wl_fixed_t scale)
  * Sends an finished event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_finished(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_FINISHED);
+static inline void zwlr_output_head_v1_send_finished(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_FINISHED);
 }
 
 /**
@@ -602,10 +591,9 @@ zwlr_output_head_v1_send_finished(struct wl_resource *resource_)
  * Sends an make event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_make(struct wl_resource *resource_, const char *make)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_MAKE, make);
+static inline void zwlr_output_head_v1_send_make(struct wl_resource *resource_,
+                                                 const char *make) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_MAKE, make);
 }
 
 /**
@@ -613,10 +601,9 @@ zwlr_output_head_v1_send_make(struct wl_resource *resource_, const char *make)
  * Sends an model event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_model(struct wl_resource *resource_, const char *model)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_MODEL, model);
+static inline void zwlr_output_head_v1_send_model(struct wl_resource *resource_,
+                                                  const char *model) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_MODEL, model);
 }
 
 /**
@@ -624,10 +611,10 @@ zwlr_output_head_v1_send_model(struct wl_resource *resource_, const char *model)
  * Sends an serial_number event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_serial_number(struct wl_resource *resource_, const char *serial_number)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_SERIAL_NUMBER, serial_number);
+static inline void zwlr_output_head_v1_send_serial_number(
+    struct wl_resource *resource_, const char *serial_number) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_SERIAL_NUMBER,
+                         serial_number);
 }
 
 /**
@@ -635,10 +622,9 @@ zwlr_output_head_v1_send_serial_number(struct wl_resource *resource_, const char
  * Sends an adaptive_sync event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_head_v1_send_adaptive_sync(struct wl_resource *resource_, uint32_t state)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC, state);
+static inline void zwlr_output_head_v1_send_adaptive_sync(
+    struct wl_resource *resource_, uint32_t state) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_HEAD_V1_ADAPTIVE_SYNC, state);
 }
 
 /**
@@ -646,15 +632,14 @@ zwlr_output_head_v1_send_adaptive_sync(struct wl_resource *resource_, uint32_t s
  * @struct zwlr_output_mode_v1_interface
  */
 struct zwlr_output_mode_v1_interface {
-	/**
-	 * destroy the mode object
-	 *
-	 * This request indicates that the client will no longer use this
-	 * mode object.
-	 * @since 3
-	 */
-	void (*release)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy the mode object
+   *
+   * This request indicates that the client will no longer use this
+   * mode object.
+   * @since 3
+   */
+  void (*release)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZWLR_OUTPUT_MODE_V1_SIZE 0
@@ -691,10 +676,10 @@ struct zwlr_output_mode_v1_interface {
  * @param width width of the mode in hardware units
  * @param height height of the mode in hardware units
  */
-static inline void
-zwlr_output_mode_v1_send_size(struct wl_resource *resource_, int32_t width, int32_t height)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_MODE_V1_SIZE, width, height);
+static inline void zwlr_output_mode_v1_send_size(struct wl_resource *resource_,
+                                                 int32_t width,
+                                                 int32_t height) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_MODE_V1_SIZE, width, height);
 }
 
 /**
@@ -703,10 +688,9 @@ zwlr_output_mode_v1_send_size(struct wl_resource *resource_, int32_t width, int3
  * @param resource_ The client's resource
  * @param refresh vertical refresh rate in mHz
  */
-static inline void
-zwlr_output_mode_v1_send_refresh(struct wl_resource *resource_, int32_t refresh)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_MODE_V1_REFRESH, refresh);
+static inline void zwlr_output_mode_v1_send_refresh(
+    struct wl_resource *resource_, int32_t refresh) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_MODE_V1_REFRESH, refresh);
 }
 
 /**
@@ -714,10 +698,9 @@ zwlr_output_mode_v1_send_refresh(struct wl_resource *resource_, int32_t refresh)
  * Sends an preferred event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_mode_v1_send_preferred(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_MODE_V1_PREFERRED);
+static inline void zwlr_output_mode_v1_send_preferred(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_MODE_V1_PREFERRED);
 }
 
 /**
@@ -725,27 +708,26 @@ zwlr_output_mode_v1_send_preferred(struct wl_resource *resource_)
  * Sends an finished event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_mode_v1_send_finished(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_MODE_V1_FINISHED);
+static inline void zwlr_output_mode_v1_send_finished(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_MODE_V1_FINISHED);
 }
 
 #ifndef ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ENUM
 #define ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ENUM
 enum zwlr_output_configuration_v1_error {
-	/**
-	 * head has been configured twice
-	 */
-	ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_CONFIGURED_HEAD = 1,
-	/**
-	 * head has not been configured
-	 */
-	ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_UNCONFIGURED_HEAD = 2,
-	/**
-	 * request sent after configuration has been applied or tested
-	 */
-	ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED = 3,
+  /**
+   * head has been configured twice
+   */
+  ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_CONFIGURED_HEAD = 1,
+  /**
+   * head has not been configured
+   */
+  ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_UNCONFIGURED_HEAD = 2,
+  /**
+   * request sent after configuration has been applied or tested
+   */
+  ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED = 3,
 };
 /**
  * @ingroup iface_zwlr_output_configuration_v1
@@ -754,18 +736,16 @@ enum zwlr_output_configuration_v1_error {
  * @return true on success, false on error.
  * @ref zwlr_output_configuration_v1_error
  */
-static inline bool
-zwlr_output_configuration_v1_error_is_valid(uint32_t value, uint32_t version) {
-	switch (value) {
-	case ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_CONFIGURED_HEAD:
-		return version >= 1;
-	case ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_UNCONFIGURED_HEAD:
-		return version >= 1;
-	case ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED:
-		return version >= 1;
-	default:
-		return false;
-	}
+static inline bool zwlr_output_configuration_v1_error_is_valid(
+    uint32_t value, uint32_t version) {
+  switch (value) {
+    case ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_CONFIGURED_HEAD:
+      return version >= 1;
+    case ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_UNCONFIGURED_HEAD:
+      return version >= 1;
+    case ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ALREADY_USED: return version >= 1;
+    default: return false;
+  }
 }
 #endif /* ZWLR_OUTPUT_CONFIGURATION_V1_ERROR_ENUM */
 
@@ -774,70 +754,64 @@ zwlr_output_configuration_v1_error_is_valid(uint32_t value, uint32_t version) {
  * @struct zwlr_output_configuration_v1_interface
  */
 struct zwlr_output_configuration_v1_interface {
-	/**
-	 * enable and configure a head
-	 *
-	 * Enable a head. This request creates a head configuration
-	 * object that can be used to change the head's properties.
-	 * @param id a new object to configure the head
-	 * @param head the head to be enabled
-	 */
-	void (*enable_head)(struct wl_client *client,
-			    struct wl_resource *resource,
-			    uint32_t id,
-			    struct wl_resource *head);
-	/**
-	 * disable a head
-	 *
-	 * Disable a head.
-	 * @param head the head to be disabled
-	 */
-	void (*disable_head)(struct wl_client *client,
-			     struct wl_resource *resource,
-			     struct wl_resource *head);
-	/**
-	 * apply the configuration
-	 *
-	 * Apply the new output configuration.
-	 *
-	 * In case the configuration is successfully applied, there is no
-	 * guarantee that the new output state matches completely the
-	 * requested configuration. For instance, a compositor might round
-	 * the scale if it doesn't support fractional scaling.
-	 *
-	 * After this request has been sent, the compositor must respond
-	 * with an succeeded, failed or cancelled event. Sending a request
-	 * that isn't the destructor is a protocol error.
-	 */
-	void (*apply)(struct wl_client *client,
-		      struct wl_resource *resource);
-	/**
-	 * test the configuration
-	 *
-	 * Test the new output configuration. The configuration won't be
-	 * applied, but will only be validated.
-	 *
-	 * Even if the compositor succeeds to test a configuration,
-	 * applying it may fail.
-	 *
-	 * After this request has been sent, the compositor must respond
-	 * with an succeeded, failed or cancelled event. Sending a request
-	 * that isn't the destructor is a protocol error.
-	 */
-	void (*test)(struct wl_client *client,
-		     struct wl_resource *resource);
-	/**
-	 * destroy the output configuration
-	 *
-	 * Using this request a client can tell the compositor that it is
-	 * not going to use the configuration object anymore. Any changes
-	 * to the outputs that have not been applied will be discarded.
-	 *
-	 * This request also destroys wlr_output_configuration_head objects
-	 * created via this object.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * enable and configure a head
+   *
+   * Enable a head. This request creates a head configuration
+   * object that can be used to change the head's properties.
+   * @param id a new object to configure the head
+   * @param head the head to be enabled
+   */
+  void (*enable_head)(struct wl_client *client, struct wl_resource *resource,
+                      uint32_t id, struct wl_resource *head);
+  /**
+   * disable a head
+   *
+   * Disable a head.
+   * @param head the head to be disabled
+   */
+  void (*disable_head)(struct wl_client *client, struct wl_resource *resource,
+                       struct wl_resource *head);
+  /**
+   * apply the configuration
+   *
+   * Apply the new output configuration.
+   *
+   * In case the configuration is successfully applied, there is no
+   * guarantee that the new output state matches completely the
+   * requested configuration. For instance, a compositor might round
+   * the scale if it doesn't support fractional scaling.
+   *
+   * After this request has been sent, the compositor must respond
+   * with an succeeded, failed or cancelled event. Sending a request
+   * that isn't the destructor is a protocol error.
+   */
+  void (*apply)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * test the configuration
+   *
+   * Test the new output configuration. The configuration won't be
+   * applied, but will only be validated.
+   *
+   * Even if the compositor succeeds to test a configuration,
+   * applying it may fail.
+   *
+   * After this request has been sent, the compositor must respond
+   * with an succeeded, failed or cancelled event. Sending a request
+   * that isn't the destructor is a protocol error.
+   */
+  void (*test)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * destroy the output configuration
+   *
+   * Using this request a client can tell the compositor that it is
+   * not going to use the configuration object anymore. Any changes
+   * to the outputs that have not been applied will be discarded.
+   *
+   * This request also destroys wlr_output_configuration_head objects
+   * created via this object.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZWLR_OUTPUT_CONFIGURATION_V1_SUCCEEDED 0
@@ -883,10 +857,9 @@ struct zwlr_output_configuration_v1_interface {
  * Sends an succeeded event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_configuration_v1_send_succeeded(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_CONFIGURATION_V1_SUCCEEDED);
+static inline void zwlr_output_configuration_v1_send_succeeded(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_CONFIGURATION_V1_SUCCEEDED);
 }
 
 /**
@@ -894,10 +867,9 @@ zwlr_output_configuration_v1_send_succeeded(struct wl_resource *resource_)
  * Sends an failed event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_configuration_v1_send_failed(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_CONFIGURATION_V1_FAILED);
+static inline void zwlr_output_configuration_v1_send_failed(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_CONFIGURATION_V1_FAILED);
 }
 
 /**
@@ -905,45 +877,45 @@ zwlr_output_configuration_v1_send_failed(struct wl_resource *resource_)
  * Sends an cancelled event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_output_configuration_v1_send_cancelled(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_OUTPUT_CONFIGURATION_V1_CANCELLED);
+static inline void zwlr_output_configuration_v1_send_cancelled(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_OUTPUT_CONFIGURATION_V1_CANCELLED);
 }
 
 #ifndef ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_ENUM
 #define ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_ENUM
 enum zwlr_output_configuration_head_v1_error {
-	/**
-	 * property has already been set
-	 */
-	ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_ALREADY_SET = 1,
-	/**
-	 * mode doesn't belong to head
-	 */
-	ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_MODE = 2,
-	/**
-	 * mode is invalid
-	 */
-	ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_CUSTOM_MODE = 3,
-	/**
-	 * transform value outside enum
-	 */
-	ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_TRANSFORM = 4,
-	/**
-	 * scale negative or zero
-	 */
-	ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_SCALE = 5,
-	/**
-	 * invalid enum value used in the set_adaptive_sync request
-	 * @since 4
-	 */
-	ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_ADAPTIVE_SYNC_STATE = 6,
+  /**
+   * property has already been set
+   */
+  ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_ALREADY_SET = 1,
+  /**
+   * mode doesn't belong to head
+   */
+  ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_MODE = 2,
+  /**
+   * mode is invalid
+   */
+  ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_CUSTOM_MODE = 3,
+  /**
+   * transform value outside enum
+   */
+  ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_TRANSFORM = 4,
+  /**
+   * scale negative or zero
+   */
+  ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_SCALE = 5,
+  /**
+   * invalid enum value used in the set_adaptive_sync request
+   * @since 4
+   */
+  ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_ADAPTIVE_SYNC_STATE = 6,
 };
 /**
  * @ingroup iface_zwlr_output_configuration_head_v1
  */
-#define ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_ADAPTIVE_SYNC_STATE_SINCE_VERSION 4
+#define ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_ADAPTIVE_SYNC_STATE_SINCE_VERSION \
+  4
 /**
  * @ingroup iface_zwlr_output_configuration_head_v1
  * Validate a zwlr_output_configuration_head_v1 error value.
@@ -951,24 +923,23 @@ enum zwlr_output_configuration_head_v1_error {
  * @return true on success, false on error.
  * @ref zwlr_output_configuration_head_v1_error
  */
-static inline bool
-zwlr_output_configuration_head_v1_error_is_valid(uint32_t value, uint32_t version) {
-	switch (value) {
-	case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_ALREADY_SET:
-		return version >= 1;
-	case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_MODE:
-		return version >= 1;
-	case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_CUSTOM_MODE:
-		return version >= 1;
-	case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_TRANSFORM:
-		return version >= 1;
-	case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_SCALE:
-		return version >= 1;
-	case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_ADAPTIVE_SYNC_STATE:
-		return version >= 4;
-	default:
-		return false;
-	}
+static inline bool zwlr_output_configuration_head_v1_error_is_valid(
+    uint32_t value, uint32_t version) {
+  switch (value) {
+    case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_ALREADY_SET:
+      return version >= 1;
+    case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_MODE:
+      return version >= 1;
+    case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_CUSTOM_MODE:
+      return version >= 1;
+    case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_TRANSFORM:
+      return version >= 1;
+    case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_SCALE:
+      return version >= 1;
+    case ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_INVALID_ADAPTIVE_SYNC_STATE:
+      return version >= 4;
+    default: return false;
+  }
 }
 #endif /* ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_ERROR_ENUM */
 
@@ -977,71 +948,62 @@ zwlr_output_configuration_head_v1_error_is_valid(uint32_t value, uint32_t versio
  * @struct zwlr_output_configuration_head_v1_interface
  */
 struct zwlr_output_configuration_head_v1_interface {
-	/**
-	 * set the mode
-	 *
-	 * This request sets the head's mode.
-	 */
-	void (*set_mode)(struct wl_client *client,
-			 struct wl_resource *resource,
-			 struct wl_resource *mode);
-	/**
-	 * set a custom mode
-	 *
-	 * This request assigns a custom mode to the head. The size is
-	 * given in physical hardware units of the output device. If set to
-	 * zero, the refresh rate is unspecified.
-	 *
-	 * It is a protocol error to set both a mode and a custom mode.
-	 * @param width width of the mode in hardware units
-	 * @param height height of the mode in hardware units
-	 * @param refresh vertical refresh rate in mHz or zero
-	 */
-	void (*set_custom_mode)(struct wl_client *client,
-				struct wl_resource *resource,
-				int32_t width,
-				int32_t height,
-				int32_t refresh);
-	/**
-	 * set the position
-	 *
-	 * This request sets the head's position in the global compositor
-	 * space.
-	 * @param x x position in the global compositor space
-	 * @param y y position in the global compositor space
-	 */
-	void (*set_position)(struct wl_client *client,
-			     struct wl_resource *resource,
-			     int32_t x,
-			     int32_t y);
-	/**
-	 * set the transform
-	 *
-	 * This request sets the head's transform.
-	 */
-	void (*set_transform)(struct wl_client *client,
-			      struct wl_resource *resource,
-			      int32_t transform);
-	/**
-	 * set the scale
-	 *
-	 * This request sets the head's scale.
-	 */
-	void (*set_scale)(struct wl_client *client,
-			  struct wl_resource *resource,
-			  wl_fixed_t scale);
-	/**
-	 * enable/disable adaptive sync
-	 *
-	 * This request enables/disables adaptive sync. Adaptive sync is
-	 * also known as Variable Refresh Rate or VRR.
-	 * @since 4
-	 */
-	void (*set_adaptive_sync)(struct wl_client *client,
-				  struct wl_resource *resource,
-				  uint32_t state);
+  /**
+   * set the mode
+   *
+   * This request sets the head's mode.
+   */
+  void (*set_mode)(struct wl_client *client, struct wl_resource *resource,
+                   struct wl_resource *mode);
+  /**
+   * set a custom mode
+   *
+   * This request assigns a custom mode to the head. The size is
+   * given in physical hardware units of the output device. If set to
+   * zero, the refresh rate is unspecified.
+   *
+   * It is a protocol error to set both a mode and a custom mode.
+   * @param width width of the mode in hardware units
+   * @param height height of the mode in hardware units
+   * @param refresh vertical refresh rate in mHz or zero
+   */
+  void (*set_custom_mode)(struct wl_client *client,
+                          struct wl_resource *resource, int32_t width,
+                          int32_t height, int32_t refresh);
+  /**
+   * set the position
+   *
+   * This request sets the head's position in the global compositor
+   * space.
+   * @param x x position in the global compositor space
+   * @param y y position in the global compositor space
+   */
+  void (*set_position)(struct wl_client *client, struct wl_resource *resource,
+                       int32_t x, int32_t y);
+  /**
+   * set the transform
+   *
+   * This request sets the head's transform.
+   */
+  void (*set_transform)(struct wl_client *client, struct wl_resource *resource,
+                        int32_t transform);
+  /**
+   * set the scale
+   *
+   * This request sets the head's scale.
+   */
+  void (*set_scale)(struct wl_client *client, struct wl_resource *resource,
+                    wl_fixed_t scale);
+  /**
+   * enable/disable adaptive sync
+   *
+   * This request enables/disables adaptive sync. Adaptive sync is
+   * also known as Variable Refresh Rate or VRR.
+   * @since 4
+   */
+  void (*set_adaptive_sync)(struct wl_client *client,
+                            struct wl_resource *resource, uint32_t state);
 };
-
 
 /**
  * @ingroup iface_zwlr_output_configuration_head_v1
@@ -1068,7 +1030,7 @@ struct zwlr_output_configuration_head_v1_interface {
  */
 #define ZWLR_OUTPUT_CONFIGURATION_HEAD_V1_SET_ADAPTIVE_SYNC_SINCE_VERSION 4
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

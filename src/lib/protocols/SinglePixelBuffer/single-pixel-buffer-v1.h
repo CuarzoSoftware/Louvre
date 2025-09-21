@@ -3,11 +3,12 @@
 #ifndef SINGLE_PIXEL_BUFFER_V1_SERVER_PROTOCOL_H
 #define SINGLE_PIXEL_BUFFER_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -32,7 +33,8 @@ struct wl_resource;
  * only be done by creating a new major version of the extension.
  *
  * @section page_ifaces_single_pixel_buffer_v1 Interfaces
- * - @subpage page_iface_wp_single_pixel_buffer_manager_v1 - global factory for single-pixel buffers
+ * - @subpage page_iface_wp_single_pixel_buffer_manager_v1 - global factory for
+ * single-pixel buffers
  * @section page_copyright_single_pixel_buffer_v1 Copyright
  * <pre>
  *
@@ -64,7 +66,8 @@ struct wp_single_pixel_buffer_manager_v1;
 #ifndef WP_SINGLE_PIXEL_BUFFER_MANAGER_V1_INTERFACE
 #define WP_SINGLE_PIXEL_BUFFER_MANAGER_V1_INTERFACE
 /**
- * @page page_iface_wp_single_pixel_buffer_manager_v1 wp_single_pixel_buffer_manager_v1
+ * @page page_iface_wp_single_pixel_buffer_manager_v1
+ * wp_single_pixel_buffer_manager_v1
  * @section page_iface_wp_single_pixel_buffer_manager_v1_desc Description
  *
  * The wp_single_pixel_buffer_manager_v1 interface is a factory for
@@ -73,7 +76,8 @@ struct wp_single_pixel_buffer_manager_v1;
  * See @ref iface_wp_single_pixel_buffer_manager_v1.
  */
 /**
- * @defgroup iface_wp_single_pixel_buffer_manager_v1 The wp_single_pixel_buffer_manager_v1 interface
+ * @defgroup iface_wp_single_pixel_buffer_manager_v1 The
+ * wp_single_pixel_buffer_manager_v1 interface
  *
  * The wp_single_pixel_buffer_manager_v1 interface is a factory for
  * single-pixel buffers.
@@ -86,38 +90,33 @@ extern const struct wl_interface wp_single_pixel_buffer_manager_v1_interface;
  * @struct wp_single_pixel_buffer_manager_v1_interface
  */
 struct wp_single_pixel_buffer_manager_v1_interface {
-	/**
-	 * destroy the manager
-	 *
-	 * Destroy the wp_single_pixel_buffer_manager_v1 object.
-	 *
-	 * The child objects created via this interface are unaffected.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * create a 1×1 buffer from 32-bit RGBA values
-	 *
-	 * Create a single-pixel buffer from four 32-bit RGBA values.
-	 *
-	 * Unless specified in another protocol extension, the RGBA values
-	 * use pre-multiplied alpha.
-	 *
-	 * The width and height of the buffer are 1.
-	 * @param r value of the buffer's red channel
-	 * @param g value of the buffer's green channel
-	 * @param b value of the buffer's blue channel
-	 * @param a value of the buffer's alpha channel
-	 */
-	void (*create_u32_rgba_buffer)(struct wl_client *client,
-				       struct wl_resource *resource,
-				       uint32_t id,
-				       uint32_t r,
-				       uint32_t g,
-				       uint32_t b,
-				       uint32_t a);
+  /**
+   * destroy the manager
+   *
+   * Destroy the wp_single_pixel_buffer_manager_v1 object.
+   *
+   * The child objects created via this interface are unaffected.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * create a 1×1 buffer from 32-bit RGBA values
+   *
+   * Create a single-pixel buffer from four 32-bit RGBA values.
+   *
+   * Unless specified in another protocol extension, the RGBA values
+   * use pre-multiplied alpha.
+   *
+   * The width and height of the buffer are 1.
+   * @param r value of the buffer's red channel
+   * @param g value of the buffer's green channel
+   * @param b value of the buffer's blue channel
+   * @param a value of the buffer's alpha channel
+   */
+  void (*create_u32_rgba_buffer)(struct wl_client *client,
+                                 struct wl_resource *resource, uint32_t id,
+                                 uint32_t r, uint32_t g, uint32_t b,
+                                 uint32_t a);
 };
-
 
 /**
  * @ingroup iface_wp_single_pixel_buffer_manager_v1
@@ -128,7 +127,7 @@ struct wp_single_pixel_buffer_manager_v1_interface {
  */
 #define WP_SINGLE_PIXEL_BUFFER_MANAGER_V1_CREATE_U32_RGBA_BUFFER_SINCE_VERSION 1
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

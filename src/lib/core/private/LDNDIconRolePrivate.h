@@ -5,9 +5,8 @@
 
 using namespace Louvre;
 
-struct LDNDIconRole::Params
-{
-    LSurface *surface;
+struct LDNDIconRole::Params {
+  LSurface *surface;
 };
 
-#endif // LDNDICONROLEPRIVATE_H
+#endif  // LDNDICONROLEPRIVATE_H

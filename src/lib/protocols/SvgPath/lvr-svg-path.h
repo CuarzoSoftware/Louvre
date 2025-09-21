@@ -3,11 +3,12 @@
 #ifndef LVR_SVG_PATH_SERVER_PROTOCOL_H
 #define LVR_SVG_PATH_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -22,16 +23,16 @@ struct wl_resource;
  *
  * This protocol provides an efficient way for clients to define complex shapes.
  *
- * One common use for these shapes is masking, as seen in the lvr_background_blur 
- * protocol. However, other protocols may apply them for purposes not covered in 
- * this document.
+ * One common use for these shapes is masking, as seen in the
+ * lvr_background_blur protocol. However, other protocols may apply them for
+ * purposes not covered in this document.
  *
- * Shapes are expressed as a string of SVG path commands, a standard and widely 
- * used format. In the future, this approach may be replaced by separate requests 
- * for each type of SVG path command.
+ * Shapes are expressed as a string of SVG path commands, a standard and widely
+ * used format. In the future, this approach may be replaced by separate
+ * requests for each type of SVG path command.
  *
- * Warning: This protocol is experimental, and backward-incompatible changes may be 
- * made in the future.
+ * Warning: This protocol is experimental, and backward-incompatible changes may
+ * be made in the future.
  *
  * @section page_ifaces_lvr_svg_path Interfaces
  * - @subpage page_iface_lvr_svg_path_manager - SVG path manager
@@ -91,23 +92,27 @@ extern const struct wl_interface lvr_svg_path_manager_interface;
  *
  * https://svgwg.org/specs/paths/
  *
- * After requesting a lvr_svg_path object, the client must send zero or multiple 
- * concat_commands if the string exceeds 4096 bytes, which is the default maximum 
- * length supported by libwayland. The compositor concatenates the strings in order 
- * of receipt. 
+ * After requesting a lvr_svg_path object, the client must send zero or multiple
+ * concat_commands if the string exceeds 4096 bytes, which is the default
+ * maximum length supported by libwayland. The compositor concatenates the
+ * strings in order of receipt.
  *
- * Once all commands are sent, the client must issue a done request, at which point 
- * the SVG path is considered complete. Sending a done request without having previously 
- * sent a concat_command is valid and represents an empty path. 
+ * Once all commands are sent, the client must issue a done request, at which
+ * point the SVG path is considered complete. Sending a done request without
+ * having previously sent a concat_command is valid and represents an empty
+ * path.
  *
- * No requests, except for destroy, are accepted after a done event, otherwise, 
+ * No requests, except for destroy, are accepted after a done event, otherwise,
  * the already_constructed error is emitted.
  *
- * Sending a destroy request without having sent a done request triggers the incomplete error. 
+ * Sending a destroy request without having sent a done request triggers the
+ * incomplete error.
  *
- * If the final string yield an invalid SVG path, the invalid_commands error is emitted. 
+ * If the final string yield an invalid SVG path, the invalid_commands error is
+ * emitted.
  *
- * The coordinate system of the described path depends on the context in which it is used.
+ * The coordinate system of the described path depends on the context in which
+ * it is used.
  * @section page_iface_lvr_svg_path_api API
  * See @ref iface_lvr_svg_path.
  */
@@ -118,23 +123,27 @@ extern const struct wl_interface lvr_svg_path_manager_interface;
  *
  * https://svgwg.org/specs/paths/
  *
- * After requesting a lvr_svg_path object, the client must send zero or multiple 
- * concat_commands if the string exceeds 4096 bytes, which is the default maximum 
- * length supported by libwayland. The compositor concatenates the strings in order 
- * of receipt. 
+ * After requesting a lvr_svg_path object, the client must send zero or multiple
+ * concat_commands if the string exceeds 4096 bytes, which is the default
+ * maximum length supported by libwayland. The compositor concatenates the
+ * strings in order of receipt.
  *
- * Once all commands are sent, the client must issue a done request, at which point 
- * the SVG path is considered complete. Sending a done request without having previously 
- * sent a concat_command is valid and represents an empty path. 
+ * Once all commands are sent, the client must issue a done request, at which
+ * point the SVG path is considered complete. Sending a done request without
+ * having previously sent a concat_command is valid and represents an empty
+ * path.
  *
- * No requests, except for destroy, are accepted after a done event, otherwise, 
+ * No requests, except for destroy, are accepted after a done event, otherwise,
  * the already_constructed error is emitted.
  *
- * Sending a destroy request without having sent a done request triggers the incomplete error. 
+ * Sending a destroy request without having sent a done request triggers the
+ * incomplete error.
  *
- * If the final string yield an invalid SVG path, the invalid_commands error is emitted. 
+ * If the final string yield an invalid SVG path, the invalid_commands error is
+ * emitted.
  *
- * The coordinate system of the described path depends on the context in which it is used.
+ * The coordinate system of the described path depends on the context in which
+ * it is used.
  */
 extern const struct wl_interface lvr_svg_path_interface;
 #endif
@@ -144,24 +153,21 @@ extern const struct wl_interface lvr_svg_path_interface;
  * @struct lvr_svg_path_manager_interface
  */
 struct lvr_svg_path_manager_interface {
-	/**
-	 * destroy the SVG path manager object
-	 *
-	 * Destroy the SVG path manager. This doesn't destroy objects
-	 * created with the manager.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * create a new SVG path object
-	 *
-	 * 
-	 */
-	void (*get_svg_path)(struct wl_client *client,
-			     struct wl_resource *resource,
-			     uint32_t id);
+  /**
+   * destroy the SVG path manager object
+   *
+   * Destroy the SVG path manager. This doesn't destroy objects
+   * created with the manager.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * create a new SVG path object
+   *
+   *
+   */
+  void (*get_svg_path)(struct wl_client *client, struct wl_resource *resource,
+                       uint32_t id);
 };
-
 
 /**
  * @ingroup iface_lvr_svg_path_manager
@@ -175,18 +181,18 @@ struct lvr_svg_path_manager_interface {
 #ifndef LVR_SVG_PATH_ERROR_ENUM
 #define LVR_SVG_PATH_ERROR_ENUM
 enum lvr_svg_path_error {
-	/**
-	 * incomplete svg path
-	 */
-	LVR_SVG_PATH_ERROR_INCOMPLETE = 0,
-	/**
-	 * a request other than destroy was made after a done request
-	 */
-	LVR_SVG_PATH_ERROR_ALREADY_CONSTRUCTED = 1,
-	/**
-	 * the final string doesn't represent a valid svg path
-	 */
-	LVR_SVG_PATH_ERROR_INVALID_COMMANDS = 2,
+  /**
+   * incomplete svg path
+   */
+  LVR_SVG_PATH_ERROR_INCOMPLETE = 0,
+  /**
+   * a request other than destroy was made after a done request
+   */
+  LVR_SVG_PATH_ERROR_ALREADY_CONSTRUCTED = 1,
+  /**
+   * the final string doesn't represent a valid svg path
+   */
+  LVR_SVG_PATH_ERROR_INVALID_COMMANDS = 2,
 };
 /**
  * @ingroup iface_lvr_svg_path
@@ -195,18 +201,14 @@ enum lvr_svg_path_error {
  * @return true on success, false on error.
  * @ref lvr_svg_path_error
  */
-static inline bool
-lvr_svg_path_error_is_valid(uint32_t value, uint32_t version) {
-	switch (value) {
-	case LVR_SVG_PATH_ERROR_INCOMPLETE:
-		return version >= 1;
-	case LVR_SVG_PATH_ERROR_ALREADY_CONSTRUCTED:
-		return version >= 1;
-	case LVR_SVG_PATH_ERROR_INVALID_COMMANDS:
-		return version >= 1;
-	default:
-		return false;
-	}
+static inline bool lvr_svg_path_error_is_valid(uint32_t value,
+                                               uint32_t version) {
+  switch (value) {
+    case LVR_SVG_PATH_ERROR_INCOMPLETE: return version >= 1;
+    case LVR_SVG_PATH_ERROR_ALREADY_CONSTRUCTED: return version >= 1;
+    case LVR_SVG_PATH_ERROR_INVALID_COMMANDS: return version >= 1;
+    default: return false;
+  }
 }
 #endif /* LVR_SVG_PATH_ERROR_ENUM */
 
@@ -215,32 +217,28 @@ lvr_svg_path_error_is_valid(uint32_t value, uint32_t version) {
  * @struct lvr_svg_path_interface
  */
 struct lvr_svg_path_interface {
-	/**
-	 * destroy the vector path object
-	 *
-	 * 
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * append SVG path commands
-	 *
-	 * The string size of each request must not exceed the 4096-byte
-	 * limit.
-	 */
-	void (*concat_commands)(struct wl_client *client,
-				struct wl_resource *resource,
-				const char *commands);
-	/**
-	 * all commands have been sent
-	 *
-	 * Once this request is sent, the only permissible action is
-	 * destroy.
-	 */
-	void (*done)(struct wl_client *client,
-		     struct wl_resource *resource);
+  /**
+   * destroy the vector path object
+   *
+   *
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * append SVG path commands
+   *
+   * The string size of each request must not exceed the 4096-byte
+   * limit.
+   */
+  void (*concat_commands)(struct wl_client *client,
+                          struct wl_resource *resource, const char *commands);
+  /**
+   * all commands have been sent
+   *
+   * Once this request is sent, the only permissible action is
+   * destroy.
+   */
+  void (*done)(struct wl_client *client, struct wl_resource *resource);
 };
-
 
 /**
  * @ingroup iface_lvr_svg_path
@@ -255,7 +253,7 @@ struct lvr_svg_path_interface {
  */
 #define LVR_SVG_PATH_DONE_SINCE_VERSION 1
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

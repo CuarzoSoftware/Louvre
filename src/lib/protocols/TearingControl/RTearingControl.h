@@ -4,31 +4,26 @@
 #include <LResource.h>
 #include <LWeak.h>
 
-class Louvre::Protocols::TearingControl::RTearingControl final : public LResource
-{
-public:
+class Louvre::Protocols::TearingControl::RTearingControl final
+    : public LResource {
+ public:
+  Wayland::RSurface *surfaceRes() const noexcept { return m_surfaceRes; }
 
-    Wayland::RSurface *surfaceRes() const noexcept
-    {
-        return m_surfaceRes;
-    }
+  bool preferVSync() const noexcept { return m_preferVSync; }
 
-    bool preferVSync() const noexcept
-    {
-        return m_preferVSync;
-    }
+  /******************** REQUESTS ********************/
 
-    /******************** REQUESTS ********************/
+  static void destroy(wl_client *client, wl_resource *resource) noexcept;
+  static void set_presentation_hint(wl_client *client, wl_resource *resource,
+                                    UInt32 hint) noexcept;
 
-    static void destroy(wl_client *client, wl_resource *resource) noexcept;
-    static void set_presentation_hint(wl_client *client, wl_resource *resource, UInt32 hint) noexcept;
-
-private:
-    friend class Louvre::Protocols::TearingControl::GTearingControlManager;
-    RTearingControl(Wayland::RSurface *surfaceRes, Int32 version, UInt32 id) noexcept;
-    ~RTearingControl() noexcept = default;
-    LWeak<Wayland::RSurface> m_surfaceRes;
-    bool m_preferVSync { true };
+ private:
+  friend class Louvre::Protocols::TearingControl::GTearingControlManager;
+  RTearingControl(Wayland::RSurface *surfaceRes, Int32 version,
+                  UInt32 id) noexcept;
+  ~RTearingControl() noexcept = default;
+  LWeak<Wayland::RSurface> m_surfaceRes;
+  bool m_preferVSync{true};
 };
 
-#endif // RTEARINGCONTROL_H
+#endif  // RTEARINGCONTROL_H

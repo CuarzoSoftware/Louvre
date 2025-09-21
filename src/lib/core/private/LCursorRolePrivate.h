@@ -5,9 +5,8 @@
 
 using namespace Louvre;
 
-struct LCursorRole::Params
-{
-    LSurface *surface;
+struct LCursorRole::Params {
+  LSurface *surface;
 };
 
-#endif // LCURSORROLEPRIVATE_H
+#endif  // LCURSORROLEPRIVATE_H

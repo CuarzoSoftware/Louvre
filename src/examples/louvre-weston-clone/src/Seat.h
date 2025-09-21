@@ -5,11 +5,10 @@
 
 using namespace Louvre;
 
-class Seat final : public LSeat
-{
-public:
-    using LSeat::LSeat;
-    void enabledChanged() override;
+class Seat final : public LSeat {
+ public:
+  using LSeat::LSeat;
+  void enabledChanged() override;
 };
 
-#endif // SEAT_H
+#endif  // SEAT_H

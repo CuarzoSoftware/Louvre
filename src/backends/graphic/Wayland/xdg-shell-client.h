@@ -3,11 +3,12 @@
 #ifndef XDG_SHELL_CLIENT_PROTOCOL_H
 #define XDG_SHELL_CLIENT_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-client.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -16,7 +17,8 @@ extern "C" {
  * @section page_ifaces_xdg_shell Interfaces
  * - @subpage page_iface_xdg_wm_base - create desktop-style surfaces
  * - @subpage page_iface_xdg_positioner - child surface positioner
- * - @subpage page_iface_xdg_surface - desktop user interface surface base interface
+ * - @subpage page_iface_xdg_surface - desktop user interface surface base
+ * interface
  * - @subpage page_iface_xdg_toplevel - toplevel surface
  * - @subpage page_iface_xdg_popup - short-lived, popup surfaces for menus
  * @section page_copyright_xdg_shell Copyright
@@ -369,34 +371,34 @@ extern const struct wl_interface xdg_popup_interface;
 #ifndef XDG_WM_BASE_ERROR_ENUM
 #define XDG_WM_BASE_ERROR_ENUM
 enum xdg_wm_base_error {
-	/**
-	 * given wl_surface has another role
-	 */
-	XDG_WM_BASE_ERROR_ROLE = 0,
-	/**
-	 * xdg_wm_base was destroyed before children
-	 */
-	XDG_WM_BASE_ERROR_DEFUNCT_SURFACES = 1,
-	/**
-	 * the client tried to map or destroy a non-topmost popup
-	 */
-	XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP = 2,
-	/**
-	 * the client specified an invalid popup parent surface
-	 */
-	XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT = 3,
-	/**
-	 * the client provided an invalid surface state
-	 */
-	XDG_WM_BASE_ERROR_INVALID_SURFACE_STATE = 4,
-	/**
-	 * the client provided an invalid positioner
-	 */
-	XDG_WM_BASE_ERROR_INVALID_POSITIONER = 5,
-	/**
-	 * the client didn’t respond to a ping event in time
-	 */
-	XDG_WM_BASE_ERROR_UNRESPONSIVE = 6,
+  /**
+   * given wl_surface has another role
+   */
+  XDG_WM_BASE_ERROR_ROLE = 0,
+  /**
+   * xdg_wm_base was destroyed before children
+   */
+  XDG_WM_BASE_ERROR_DEFUNCT_SURFACES = 1,
+  /**
+   * the client tried to map or destroy a non-topmost popup
+   */
+  XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP = 2,
+  /**
+   * the client specified an invalid popup parent surface
+   */
+  XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT = 3,
+  /**
+   * the client provided an invalid surface state
+   */
+  XDG_WM_BASE_ERROR_INVALID_SURFACE_STATE = 4,
+  /**
+   * the client provided an invalid positioner
+   */
+  XDG_WM_BASE_ERROR_INVALID_POSITIONER = 5,
+  /**
+   * the client didn’t respond to a ping event in time
+   */
+  XDG_WM_BASE_ERROR_UNRESPONSIVE = 6,
 };
 #endif /* XDG_WM_BASE_ERROR_ENUM */
 
@@ -405,39 +407,36 @@ enum xdg_wm_base_error {
  * @struct xdg_wm_base_listener
  */
 struct xdg_wm_base_listener {
-	/**
-	 * check if the client is alive
-	 *
-	 * The ping event asks the client if it's still alive. Pass the
-	 * serial specified in the event back to the compositor by sending
-	 * a "pong" request back with the specified serial. See
-	 * xdg_wm_base.pong.
-	 *
-	 * Compositors can use this to determine if the client is still
-	 * alive. It's unspecified what will happen if the client doesn't
-	 * respond to the ping request, or in what timeframe. Clients
-	 * should try to respond in a reasonable amount of time. The
-	 * “unresponsive” error is provided for compositors that wish
-	 * to disconnect unresponsive clients.
-	 *
-	 * A compositor is free to ping in any way it wants, but a client
-	 * must always respond to any xdg_wm_base object it created.
-	 * @param serial pass this to the pong request
-	 */
-	void (*ping)(void *data,
-		     struct xdg_wm_base *xdg_wm_base,
-		     uint32_t serial);
+  /**
+   * check if the client is alive
+   *
+   * The ping event asks the client if it's still alive. Pass the
+   * serial specified in the event back to the compositor by sending
+   * a "pong" request back with the specified serial. See
+   * xdg_wm_base.pong.
+   *
+   * Compositors can use this to determine if the client is still
+   * alive. It's unspecified what will happen if the client doesn't
+   * respond to the ping request, or in what timeframe. Clients
+   * should try to respond in a reasonable amount of time. The
+   * “unresponsive” error is provided for compositors that wish
+   * to disconnect unresponsive clients.
+   *
+   * A compositor is free to ping in any way it wants, but a client
+   * must always respond to any xdg_wm_base object it created.
+   * @param serial pass this to the pong request
+   */
+  void (*ping)(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
 };
 
 /**
  * @ingroup iface_xdg_wm_base
  */
-static inline int
-xdg_wm_base_add_listener(struct xdg_wm_base *xdg_wm_base,
-			 const struct xdg_wm_base_listener *listener, void *data)
-{
-	return wl_proxy_add_listener((struct wl_proxy *) xdg_wm_base,
-				     (void (**)(void)) listener, data);
+static inline int xdg_wm_base_add_listener(
+    struct xdg_wm_base *xdg_wm_base,
+    const struct xdg_wm_base_listener *listener, void *data) {
+  return wl_proxy_add_listener((struct wl_proxy *)xdg_wm_base,
+                               (void (**)(void))listener, data);
 }
 
 #define XDG_WM_BASE_DESTROY 0
@@ -468,23 +467,19 @@ xdg_wm_base_add_listener(struct xdg_wm_base *xdg_wm_base,
 #define XDG_WM_BASE_PONG_SINCE_VERSION 1
 
 /** @ingroup iface_xdg_wm_base */
-static inline void
-xdg_wm_base_set_user_data(struct xdg_wm_base *xdg_wm_base, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) xdg_wm_base, user_data);
+static inline void xdg_wm_base_set_user_data(struct xdg_wm_base *xdg_wm_base,
+                                             void *user_data) {
+  wl_proxy_set_user_data((struct wl_proxy *)xdg_wm_base, user_data);
 }
 
 /** @ingroup iface_xdg_wm_base */
-static inline void *
-xdg_wm_base_get_user_data(struct xdg_wm_base *xdg_wm_base)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) xdg_wm_base);
+static inline void *xdg_wm_base_get_user_data(struct xdg_wm_base *xdg_wm_base) {
+  return wl_proxy_get_user_data((struct wl_proxy *)xdg_wm_base);
 }
 
-static inline uint32_t
-xdg_wm_base_get_version(struct xdg_wm_base *xdg_wm_base)
-{
-	return wl_proxy_get_version((struct wl_proxy *) xdg_wm_base);
+static inline uint32_t xdg_wm_base_get_version(
+    struct xdg_wm_base *xdg_wm_base) {
+  return wl_proxy_get_version((struct wl_proxy *)xdg_wm_base);
 }
 
 /**
@@ -496,11 +491,11 @@ xdg_wm_base_get_version(struct xdg_wm_base *xdg_wm_base)
  * still alive created by this xdg_wm_base object instance is illegal
  * and will result in a defunct_surfaces error.
  */
-static inline void
-xdg_wm_base_destroy(struct xdg_wm_base *xdg_wm_base)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_wm_base,
-			 XDG_WM_BASE_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_wm_base), WL_MARSHAL_FLAG_DESTROY);
+static inline void xdg_wm_base_destroy(struct xdg_wm_base *xdg_wm_base) {
+  wl_proxy_marshal_flags((struct wl_proxy *)xdg_wm_base, XDG_WM_BASE_DESTROY,
+                         NULL,
+                         wl_proxy_get_version((struct wl_proxy *)xdg_wm_base),
+                         WL_MARSHAL_FLAG_DESTROY);
 }
 
 /**
@@ -510,15 +505,16 @@ xdg_wm_base_destroy(struct xdg_wm_base *xdg_wm_base)
  * surfaces relative to some parent surface. See the interface description
  * and xdg_surface.get_popup for details.
  */
-static inline struct xdg_positioner *
-xdg_wm_base_create_positioner(struct xdg_wm_base *xdg_wm_base)
-{
-	struct wl_proxy *id;
+static inline struct xdg_positioner *xdg_wm_base_create_positioner(
+    struct xdg_wm_base *xdg_wm_base) {
+  struct wl_proxy *id;
 
-	id = wl_proxy_marshal_flags((struct wl_proxy *) xdg_wm_base,
-			 XDG_WM_BASE_CREATE_POSITIONER, &xdg_positioner_interface, wl_proxy_get_version((struct wl_proxy *) xdg_wm_base), 0, NULL);
+  id = wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_wm_base, XDG_WM_BASE_CREATE_POSITIONER,
+      &xdg_positioner_interface,
+      wl_proxy_get_version((struct wl_proxy *)xdg_wm_base), 0, NULL);
 
-	return (struct xdg_positioner *) id;
+  return (struct xdg_positioner *)id;
 }
 
 /**
@@ -538,15 +534,16 @@ xdg_wm_base_create_positioner(struct xdg_wm_base *xdg_wm_base)
  * See the documentation of xdg_surface for more details about what an
  * xdg_surface is and how it is used.
  */
-static inline struct xdg_surface *
-xdg_wm_base_get_xdg_surface(struct xdg_wm_base *xdg_wm_base, struct wl_surface *surface)
-{
-	struct wl_proxy *id;
+static inline struct xdg_surface *xdg_wm_base_get_xdg_surface(
+    struct xdg_wm_base *xdg_wm_base, struct wl_surface *surface) {
+  struct wl_proxy *id;
 
-	id = wl_proxy_marshal_flags((struct wl_proxy *) xdg_wm_base,
-			 XDG_WM_BASE_GET_XDG_SURFACE, &xdg_surface_interface, wl_proxy_get_version((struct wl_proxy *) xdg_wm_base), 0, NULL, surface);
+  id = wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_wm_base, XDG_WM_BASE_GET_XDG_SURFACE,
+      &xdg_surface_interface,
+      wl_proxy_get_version((struct wl_proxy *)xdg_wm_base), 0, NULL, surface);
 
-	return (struct xdg_surface *) id;
+  return (struct xdg_surface *)id;
 }
 
 /**
@@ -556,50 +553,50 @@ xdg_wm_base_get_xdg_surface(struct xdg_wm_base *xdg_wm_base, struct wl_surface *
  * the client may be deemed unresponsive. See xdg_wm_base.ping
  * and xdg_wm_base.error.unresponsive.
  */
-static inline void
-xdg_wm_base_pong(struct xdg_wm_base *xdg_wm_base, uint32_t serial)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_wm_base,
-			 XDG_WM_BASE_PONG, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_wm_base), 0, serial);
+static inline void xdg_wm_base_pong(struct xdg_wm_base *xdg_wm_base,
+                                    uint32_t serial) {
+  wl_proxy_marshal_flags((struct wl_proxy *)xdg_wm_base, XDG_WM_BASE_PONG, NULL,
+                         wl_proxy_get_version((struct wl_proxy *)xdg_wm_base),
+                         0, serial);
 }
 
 #ifndef XDG_POSITIONER_ERROR_ENUM
 #define XDG_POSITIONER_ERROR_ENUM
 enum xdg_positioner_error {
-	/**
-	 * invalid input provided
-	 */
-	XDG_POSITIONER_ERROR_INVALID_INPUT = 0,
+  /**
+   * invalid input provided
+   */
+  XDG_POSITIONER_ERROR_INVALID_INPUT = 0,
 };
 #endif /* XDG_POSITIONER_ERROR_ENUM */
 
 #ifndef XDG_POSITIONER_ANCHOR_ENUM
 #define XDG_POSITIONER_ANCHOR_ENUM
 enum xdg_positioner_anchor {
-	XDG_POSITIONER_ANCHOR_NONE = 0,
-	XDG_POSITIONER_ANCHOR_TOP = 1,
-	XDG_POSITIONER_ANCHOR_BOTTOM = 2,
-	XDG_POSITIONER_ANCHOR_LEFT = 3,
-	XDG_POSITIONER_ANCHOR_RIGHT = 4,
-	XDG_POSITIONER_ANCHOR_TOP_LEFT = 5,
-	XDG_POSITIONER_ANCHOR_BOTTOM_LEFT = 6,
-	XDG_POSITIONER_ANCHOR_TOP_RIGHT = 7,
-	XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT = 8,
+  XDG_POSITIONER_ANCHOR_NONE = 0,
+  XDG_POSITIONER_ANCHOR_TOP = 1,
+  XDG_POSITIONER_ANCHOR_BOTTOM = 2,
+  XDG_POSITIONER_ANCHOR_LEFT = 3,
+  XDG_POSITIONER_ANCHOR_RIGHT = 4,
+  XDG_POSITIONER_ANCHOR_TOP_LEFT = 5,
+  XDG_POSITIONER_ANCHOR_BOTTOM_LEFT = 6,
+  XDG_POSITIONER_ANCHOR_TOP_RIGHT = 7,
+  XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT = 8,
 };
 #endif /* XDG_POSITIONER_ANCHOR_ENUM */
 
 #ifndef XDG_POSITIONER_GRAVITY_ENUM
 #define XDG_POSITIONER_GRAVITY_ENUM
 enum xdg_positioner_gravity {
-	XDG_POSITIONER_GRAVITY_NONE = 0,
-	XDG_POSITIONER_GRAVITY_TOP = 1,
-	XDG_POSITIONER_GRAVITY_BOTTOM = 2,
-	XDG_POSITIONER_GRAVITY_LEFT = 3,
-	XDG_POSITIONER_GRAVITY_RIGHT = 4,
-	XDG_POSITIONER_GRAVITY_TOP_LEFT = 5,
-	XDG_POSITIONER_GRAVITY_BOTTOM_LEFT = 6,
-	XDG_POSITIONER_GRAVITY_TOP_RIGHT = 7,
-	XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT = 8,
+  XDG_POSITIONER_GRAVITY_NONE = 0,
+  XDG_POSITIONER_GRAVITY_TOP = 1,
+  XDG_POSITIONER_GRAVITY_BOTTOM = 2,
+  XDG_POSITIONER_GRAVITY_LEFT = 3,
+  XDG_POSITIONER_GRAVITY_RIGHT = 4,
+  XDG_POSITIONER_GRAVITY_TOP_LEFT = 5,
+  XDG_POSITIONER_GRAVITY_BOTTOM_LEFT = 6,
+  XDG_POSITIONER_GRAVITY_TOP_RIGHT = 7,
+  XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT = 8,
 };
 #endif /* XDG_POSITIONER_GRAVITY_ENUM */
 
@@ -622,92 +619,92 @@ enum xdg_positioner_gravity {
  * Flip, 2) Slide, 3) Resize.
  */
 enum xdg_positioner_constraint_adjustment {
-	/**
-	 * don't move the child surface when constrained
-	 *
-	 * Don't alter the surface position even if it is constrained on
-	 * some axis, for example partially outside the edge of an output.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE = 0,
-	/**
-	 * move along the x axis until unconstrained
-	 *
-	 * Slide the surface along the x axis until it is no longer
-	 * constrained.
-	 *
-	 * First try to slide towards the direction of the gravity on the x
-	 * axis until either the edge in the opposite direction of the
-	 * gravity is unconstrained or the edge in the direction of the
-	 * gravity is constrained.
-	 *
-	 * Then try to slide towards the opposite direction of the gravity
-	 * on the x axis until either the edge in the direction of the
-	 * gravity is unconstrained or the edge in the opposite direction
-	 * of the gravity is constrained.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X = 1,
-	/**
-	 * move along the y axis until unconstrained
-	 *
-	 * Slide the surface along the y axis until it is no longer
-	 * constrained.
-	 *
-	 * First try to slide towards the direction of the gravity on the y
-	 * axis until either the edge in the opposite direction of the
-	 * gravity is unconstrained or the edge in the direction of the
-	 * gravity is constrained.
-	 *
-	 * Then try to slide towards the opposite direction of the gravity
-	 * on the y axis until either the edge in the direction of the
-	 * gravity is unconstrained or the edge in the opposite direction
-	 * of the gravity is constrained.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y = 2,
-	/**
-	 * invert the anchor and gravity on the x axis
-	 *
-	 * Invert the anchor and gravity on the x axis if the surface is
-	 * constrained on the x axis. For example, if the left edge of the
-	 * surface is constrained, the gravity is 'left' and the anchor is
-	 * 'left', change the gravity to 'right' and the anchor to 'right'.
-	 *
-	 * If the adjusted position also ends up being constrained, the
-	 * resulting position of the flip_x adjustment will be the one
-	 * before the adjustment.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X = 4,
-	/**
-	 * invert the anchor and gravity on the y axis
-	 *
-	 * Invert the anchor and gravity on the y axis if the surface is
-	 * constrained on the y axis. For example, if the bottom edge of
-	 * the surface is constrained, the gravity is 'bottom' and the
-	 * anchor is 'bottom', change the gravity to 'top' and the anchor
-	 * to 'top'.
-	 *
-	 * The adjusted position is calculated given the original anchor
-	 * rectangle and offset, but with the new flipped anchor and
-	 * gravity values.
-	 *
-	 * If the adjusted position also ends up being constrained, the
-	 * resulting position of the flip_y adjustment will be the one
-	 * before the adjustment.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y = 8,
-	/**
-	 * horizontally resize the surface
-	 *
-	 * Resize the surface horizontally so that it is completely
-	 * unconstrained.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X = 16,
-	/**
-	 * vertically resize the surface
-	 *
-	 * Resize the surface vertically so that it is completely
-	 * unconstrained.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y = 32,
+  /**
+   * don't move the child surface when constrained
+   *
+   * Don't alter the surface position even if it is constrained on
+   * some axis, for example partially outside the edge of an output.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE = 0,
+  /**
+   * move along the x axis until unconstrained
+   *
+   * Slide the surface along the x axis until it is no longer
+   * constrained.
+   *
+   * First try to slide towards the direction of the gravity on the x
+   * axis until either the edge in the opposite direction of the
+   * gravity is unconstrained or the edge in the direction of the
+   * gravity is constrained.
+   *
+   * Then try to slide towards the opposite direction of the gravity
+   * on the x axis until either the edge in the direction of the
+   * gravity is unconstrained or the edge in the opposite direction
+   * of the gravity is constrained.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X = 1,
+  /**
+   * move along the y axis until unconstrained
+   *
+   * Slide the surface along the y axis until it is no longer
+   * constrained.
+   *
+   * First try to slide towards the direction of the gravity on the y
+   * axis until either the edge in the opposite direction of the
+   * gravity is unconstrained or the edge in the direction of the
+   * gravity is constrained.
+   *
+   * Then try to slide towards the opposite direction of the gravity
+   * on the y axis until either the edge in the direction of the
+   * gravity is unconstrained or the edge in the opposite direction
+   * of the gravity is constrained.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y = 2,
+  /**
+   * invert the anchor and gravity on the x axis
+   *
+   * Invert the anchor and gravity on the x axis if the surface is
+   * constrained on the x axis. For example, if the left edge of the
+   * surface is constrained, the gravity is 'left' and the anchor is
+   * 'left', change the gravity to 'right' and the anchor to 'right'.
+   *
+   * If the adjusted position also ends up being constrained, the
+   * resulting position of the flip_x adjustment will be the one
+   * before the adjustment.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X = 4,
+  /**
+   * invert the anchor and gravity on the y axis
+   *
+   * Invert the anchor and gravity on the y axis if the surface is
+   * constrained on the y axis. For example, if the bottom edge of
+   * the surface is constrained, the gravity is 'bottom' and the
+   * anchor is 'bottom', change the gravity to 'top' and the anchor
+   * to 'top'.
+   *
+   * The adjusted position is calculated given the original anchor
+   * rectangle and offset, but with the new flipped anchor and
+   * gravity values.
+   *
+   * If the adjusted position also ends up being constrained, the
+   * resulting position of the flip_y adjustment will be the one
+   * before the adjustment.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y = 8,
+  /**
+   * horizontally resize the surface
+   *
+   * Resize the surface horizontally so that it is completely
+   * unconstrained.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X = 16,
+  /**
+   * vertically resize the surface
+   *
+   * Resize the surface vertically so that it is completely
+   * unconstrained.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y = 32,
 };
 #endif /* XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_ENUM */
 
@@ -721,7 +718,6 @@ enum xdg_positioner_constraint_adjustment {
 #define XDG_POSITIONER_SET_REACTIVE 7
 #define XDG_POSITIONER_SET_PARENT_SIZE 8
 #define XDG_POSITIONER_SET_PARENT_CONFIGURE 9
-
 
 /**
  * @ingroup iface_xdg_positioner
@@ -765,23 +761,20 @@ enum xdg_positioner_constraint_adjustment {
 #define XDG_POSITIONER_SET_PARENT_CONFIGURE_SINCE_VERSION 3
 
 /** @ingroup iface_xdg_positioner */
-static inline void
-xdg_positioner_set_user_data(struct xdg_positioner *xdg_positioner, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) xdg_positioner, user_data);
+static inline void xdg_positioner_set_user_data(
+    struct xdg_positioner *xdg_positioner, void *user_data) {
+  wl_proxy_set_user_data((struct wl_proxy *)xdg_positioner, user_data);
 }
 
 /** @ingroup iface_xdg_positioner */
-static inline void *
-xdg_positioner_get_user_data(struct xdg_positioner *xdg_positioner)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) xdg_positioner);
+static inline void *xdg_positioner_get_user_data(
+    struct xdg_positioner *xdg_positioner) {
+  return wl_proxy_get_user_data((struct wl_proxy *)xdg_positioner);
 }
 
-static inline uint32_t
-xdg_positioner_get_version(struct xdg_positioner *xdg_positioner)
-{
-	return wl_proxy_get_version((struct wl_proxy *) xdg_positioner);
+static inline uint32_t xdg_positioner_get_version(
+    struct xdg_positioner *xdg_positioner) {
+  return wl_proxy_get_version((struct wl_proxy *)xdg_positioner);
 }
 
 /**
@@ -789,11 +782,12 @@ xdg_positioner_get_version(struct xdg_positioner *xdg_positioner)
  *
  * Notify the compositor that the xdg_positioner will no longer be used.
  */
-static inline void
-xdg_positioner_destroy(struct xdg_positioner *xdg_positioner)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_positioner,
-			 XDG_POSITIONER_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_positioner), WL_MARSHAL_FLAG_DESTROY);
+static inline void xdg_positioner_destroy(
+    struct xdg_positioner *xdg_positioner) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_positioner, XDG_POSITIONER_DESTROY, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_positioner),
+      WL_MARSHAL_FLAG_DESTROY);
 }
 
 /**
@@ -805,11 +799,12 @@ xdg_positioner_destroy(struct xdg_positioner *xdg_positioner)
  *
  * If a zero or negative size is set the invalid_input error is raised.
  */
-static inline void
-xdg_positioner_set_size(struct xdg_positioner *xdg_positioner, int32_t width, int32_t height)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_positioner,
-			 XDG_POSITIONER_SET_SIZE, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_positioner), 0, width, height);
+static inline void xdg_positioner_set_size(
+    struct xdg_positioner *xdg_positioner, int32_t width, int32_t height) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_positioner, XDG_POSITIONER_SET_SIZE, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_positioner), 0, width,
+      height);
 }
 
 /**
@@ -826,11 +821,13 @@ xdg_positioner_set_size(struct xdg_positioner *xdg_positioner, int32_t width, in
  *
  * If a negative size is set the invalid_input error is raised.
  */
-static inline void
-xdg_positioner_set_anchor_rect(struct xdg_positioner *xdg_positioner, int32_t x, int32_t y, int32_t width, int32_t height)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_positioner,
-			 XDG_POSITIONER_SET_ANCHOR_RECT, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_positioner), 0, x, y, width, height);
+static inline void xdg_positioner_set_anchor_rect(
+    struct xdg_positioner *xdg_positioner, int32_t x, int32_t y, int32_t width,
+    int32_t height) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_positioner, XDG_POSITIONER_SET_ANCHOR_RECT, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_positioner), 0, x, y, width,
+      height);
 }
 
 /**
@@ -843,11 +840,11 @@ xdg_positioner_set_anchor_rect(struct xdg_positioner *xdg_positioner, int32_t x,
  * otherwise, the derived anchor point will be centered on the specified
  * edge, or in the center of the anchor rectangle if no edge is specified.
  */
-static inline void
-xdg_positioner_set_anchor(struct xdg_positioner *xdg_positioner, uint32_t anchor)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_positioner,
-			 XDG_POSITIONER_SET_ANCHOR, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_positioner), 0, anchor);
+static inline void xdg_positioner_set_anchor(
+    struct xdg_positioner *xdg_positioner, uint32_t anchor) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_positioner, XDG_POSITIONER_SET_ANCHOR, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_positioner), 0, anchor);
 }
 
 /**
@@ -861,11 +858,11 @@ xdg_positioner_set_anchor(struct xdg_positioner *xdg_positioner, uint32_t anchor
  * gravity specified. If the gravity is not in the ‘gravity’ enum, an
  * invalid_input error is raised.
  */
-static inline void
-xdg_positioner_set_gravity(struct xdg_positioner *xdg_positioner, uint32_t gravity)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_positioner,
-			 XDG_POSITIONER_SET_GRAVITY, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_positioner), 0, gravity);
+static inline void xdg_positioner_set_gravity(
+    struct xdg_positioner *xdg_positioner, uint32_t gravity) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_positioner, XDG_POSITIONER_SET_GRAVITY, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_positioner), 0, gravity);
 }
 
 /**
@@ -885,11 +882,13 @@ xdg_positioner_set_gravity(struct xdg_positioner *xdg_positioner, uint32_t gravi
  *
  * The default adjustment is none.
  */
-static inline void
-xdg_positioner_set_constraint_adjustment(struct xdg_positioner *xdg_positioner, uint32_t constraint_adjustment)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_positioner,
-			 XDG_POSITIONER_SET_CONSTRAINT_ADJUSTMENT, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_positioner), 0, constraint_adjustment);
+static inline void xdg_positioner_set_constraint_adjustment(
+    struct xdg_positioner *xdg_positioner, uint32_t constraint_adjustment) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_positioner,
+      XDG_POSITIONER_SET_CONSTRAINT_ADJUSTMENT, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_positioner), 0,
+      constraint_adjustment);
 }
 
 /**
@@ -907,11 +906,11 @@ xdg_positioner_set_constraint_adjustment(struct xdg_positioner *xdg_positioner, 
  * element, while aligning the user interface element of the parent surface
  * with some user interface element placed somewhere in the popup surface.
  */
-static inline void
-xdg_positioner_set_offset(struct xdg_positioner *xdg_positioner, int32_t x, int32_t y)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_positioner,
-			 XDG_POSITIONER_SET_OFFSET, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_positioner), 0, x, y);
+static inline void xdg_positioner_set_offset(
+    struct xdg_positioner *xdg_positioner, int32_t x, int32_t y) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_positioner, XDG_POSITIONER_SET_OFFSET, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_positioner), 0, x, y);
 }
 
 /**
@@ -924,11 +923,11 @@ xdg_positioner_set_offset(struct xdg_positioner *xdg_positioner, int32_t x, int3
  * xdg_popup.configure event is sent with updated geometry, followed by an
  * xdg_surface.configure event.
  */
-static inline void
-xdg_positioner_set_reactive(struct xdg_positioner *xdg_positioner)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_positioner,
-			 XDG_POSITIONER_SET_REACTIVE, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_positioner), 0);
+static inline void xdg_positioner_set_reactive(
+    struct xdg_positioner *xdg_positioner) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_positioner, XDG_POSITIONER_SET_REACTIVE, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_positioner), 0);
 }
 
 /**
@@ -942,11 +941,13 @@ xdg_positioner_set_reactive(struct xdg_positioner *xdg_positioner)
  *
  * The arguments are given in the surface-local coordinate space.
  */
-static inline void
-xdg_positioner_set_parent_size(struct xdg_positioner *xdg_positioner, int32_t parent_width, int32_t parent_height)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_positioner,
-			 XDG_POSITIONER_SET_PARENT_SIZE, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_positioner), 0, parent_width, parent_height);
+static inline void xdg_positioner_set_parent_size(
+    struct xdg_positioner *xdg_positioner, int32_t parent_width,
+    int32_t parent_height) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_positioner, XDG_POSITIONER_SET_PARENT_SIZE, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_positioner), 0, parent_width,
+      parent_height);
 }
 
 /**
@@ -957,40 +958,40 @@ xdg_positioner_set_parent_size(struct xdg_positioner *xdg_positioner, int32_t pa
  * with set_parent_size to determine what future state the popup should be
  * constrained using.
  */
-static inline void
-xdg_positioner_set_parent_configure(struct xdg_positioner *xdg_positioner, uint32_t serial)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_positioner,
-			 XDG_POSITIONER_SET_PARENT_CONFIGURE, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_positioner), 0, serial);
+static inline void xdg_positioner_set_parent_configure(
+    struct xdg_positioner *xdg_positioner, uint32_t serial) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_positioner, XDG_POSITIONER_SET_PARENT_CONFIGURE,
+      NULL, wl_proxy_get_version((struct wl_proxy *)xdg_positioner), 0, serial);
 }
 
 #ifndef XDG_SURFACE_ERROR_ENUM
 #define XDG_SURFACE_ERROR_ENUM
 enum xdg_surface_error {
-	/**
-	 * Surface was not fully constructed
-	 */
-	XDG_SURFACE_ERROR_NOT_CONSTRUCTED = 1,
-	/**
-	 * Surface was already constructed
-	 */
-	XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED = 2,
-	/**
-	 * Attaching a buffer to an unconfigured surface
-	 */
-	XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER = 3,
-	/**
-	 * Invalid serial number when acking a configure event
-	 */
-	XDG_SURFACE_ERROR_INVALID_SERIAL = 4,
-	/**
-	 * Width or height was zero or negative
-	 */
-	XDG_SURFACE_ERROR_INVALID_SIZE = 5,
-	/**
-	 * Surface was destroyed before its role object
-	 */
-	XDG_SURFACE_ERROR_DEFUNCT_ROLE_OBJECT = 6,
+  /**
+   * Surface was not fully constructed
+   */
+  XDG_SURFACE_ERROR_NOT_CONSTRUCTED = 1,
+  /**
+   * Surface was already constructed
+   */
+  XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED = 2,
+  /**
+   * Attaching a buffer to an unconfigured surface
+   */
+  XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER = 3,
+  /**
+   * Invalid serial number when acking a configure event
+   */
+  XDG_SURFACE_ERROR_INVALID_SERIAL = 4,
+  /**
+   * Width or height was zero or negative
+   */
+  XDG_SURFACE_ERROR_INVALID_SIZE = 5,
+  /**
+   * Surface was destroyed before its role object
+   */
+  XDG_SURFACE_ERROR_DEFUNCT_ROLE_OBJECT = 6,
 };
 #endif /* XDG_SURFACE_ERROR_ENUM */
 
@@ -999,44 +1000,42 @@ enum xdg_surface_error {
  * @struct xdg_surface_listener
  */
 struct xdg_surface_listener {
-	/**
-	 * suggest a surface change
-	 *
-	 * The configure event marks the end of a configure sequence. A
-	 * configure sequence is a set of one or more events configuring
-	 * the state of the xdg_surface, including the final
-	 * xdg_surface.configure event.
-	 *
-	 * Where applicable, xdg_surface surface roles will during a
-	 * configure sequence extend this event as a latched state sent as
-	 * events before the xdg_surface.configure event. Such events
-	 * should be considered to make up a set of atomically applied
-	 * configuration states, where the xdg_surface.configure commits
-	 * the accumulated state.
-	 *
-	 * Clients should arrange their surface for the new states, and
-	 * then send an ack_configure request with the serial sent in this
-	 * configure event at some point before committing the new surface.
-	 *
-	 * If the client receives multiple configure events before it can
-	 * respond to one, it is free to discard all but the last event it
-	 * received.
-	 * @param serial serial of the configure event
-	 */
-	void (*configure)(void *data,
-			  struct xdg_surface *xdg_surface,
-			  uint32_t serial);
+  /**
+   * suggest a surface change
+   *
+   * The configure event marks the end of a configure sequence. A
+   * configure sequence is a set of one or more events configuring
+   * the state of the xdg_surface, including the final
+   * xdg_surface.configure event.
+   *
+   * Where applicable, xdg_surface surface roles will during a
+   * configure sequence extend this event as a latched state sent as
+   * events before the xdg_surface.configure event. Such events
+   * should be considered to make up a set of atomically applied
+   * configuration states, where the xdg_surface.configure commits
+   * the accumulated state.
+   *
+   * Clients should arrange their surface for the new states, and
+   * then send an ack_configure request with the serial sent in this
+   * configure event at some point before committing the new surface.
+   *
+   * If the client receives multiple configure events before it can
+   * respond to one, it is free to discard all but the last event it
+   * received.
+   * @param serial serial of the configure event
+   */
+  void (*configure)(void *data, struct xdg_surface *xdg_surface,
+                    uint32_t serial);
 };
 
 /**
  * @ingroup iface_xdg_surface
  */
-static inline int
-xdg_surface_add_listener(struct xdg_surface *xdg_surface,
-			 const struct xdg_surface_listener *listener, void *data)
-{
-	return wl_proxy_add_listener((struct wl_proxy *) xdg_surface,
-				     (void (**)(void)) listener, data);
+static inline int xdg_surface_add_listener(
+    struct xdg_surface *xdg_surface,
+    const struct xdg_surface_listener *listener, void *data) {
+  return wl_proxy_add_listener((struct wl_proxy *)xdg_surface,
+                               (void (**)(void))listener, data);
 }
 
 #define XDG_SURFACE_DESTROY 0
@@ -1072,23 +1071,19 @@ xdg_surface_add_listener(struct xdg_surface *xdg_surface,
 #define XDG_SURFACE_ACK_CONFIGURE_SINCE_VERSION 1
 
 /** @ingroup iface_xdg_surface */
-static inline void
-xdg_surface_set_user_data(struct xdg_surface *xdg_surface, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) xdg_surface, user_data);
+static inline void xdg_surface_set_user_data(struct xdg_surface *xdg_surface,
+                                             void *user_data) {
+  wl_proxy_set_user_data((struct wl_proxy *)xdg_surface, user_data);
 }
 
 /** @ingroup iface_xdg_surface */
-static inline void *
-xdg_surface_get_user_data(struct xdg_surface *xdg_surface)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) xdg_surface);
+static inline void *xdg_surface_get_user_data(struct xdg_surface *xdg_surface) {
+  return wl_proxy_get_user_data((struct wl_proxy *)xdg_surface);
 }
 
-static inline uint32_t
-xdg_surface_get_version(struct xdg_surface *xdg_surface)
-{
-	return wl_proxy_get_version((struct wl_proxy *) xdg_surface);
+static inline uint32_t xdg_surface_get_version(
+    struct xdg_surface *xdg_surface) {
+  return wl_proxy_get_version((struct wl_proxy *)xdg_surface);
 }
 
 /**
@@ -1098,11 +1093,11 @@ xdg_surface_get_version(struct xdg_surface *xdg_surface)
  * after its role object has been destroyed, otherwise
  * a defunct_role_object error is raised.
  */
-static inline void
-xdg_surface_destroy(struct xdg_surface *xdg_surface)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_surface,
-			 XDG_SURFACE_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_surface), WL_MARSHAL_FLAG_DESTROY);
+static inline void xdg_surface_destroy(struct xdg_surface *xdg_surface) {
+  wl_proxy_marshal_flags((struct wl_proxy *)xdg_surface, XDG_SURFACE_DESTROY,
+                         NULL,
+                         wl_proxy_get_version((struct wl_proxy *)xdg_surface),
+                         WL_MARSHAL_FLAG_DESTROY);
 }
 
 /**
@@ -1114,15 +1109,16 @@ xdg_surface_destroy(struct xdg_surface *xdg_surface)
  * See the documentation of xdg_toplevel for more details about what an
  * xdg_toplevel is and how it is used.
  */
-static inline struct xdg_toplevel *
-xdg_surface_get_toplevel(struct xdg_surface *xdg_surface)
-{
-	struct wl_proxy *id;
+static inline struct xdg_toplevel *xdg_surface_get_toplevel(
+    struct xdg_surface *xdg_surface) {
+  struct wl_proxy *id;
 
-	id = wl_proxy_marshal_flags((struct wl_proxy *) xdg_surface,
-			 XDG_SURFACE_GET_TOPLEVEL, &xdg_toplevel_interface, wl_proxy_get_version((struct wl_proxy *) xdg_surface), 0, NULL);
+  id = wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_surface, XDG_SURFACE_GET_TOPLEVEL,
+      &xdg_toplevel_interface,
+      wl_proxy_get_version((struct wl_proxy *)xdg_surface), 0, NULL);
 
-	return (struct xdg_toplevel *) id;
+  return (struct xdg_toplevel *)id;
 }
 
 /**
@@ -1137,15 +1133,18 @@ xdg_surface_get_toplevel(struct xdg_surface *xdg_surface)
  * See the documentation of xdg_popup for more details about what an
  * xdg_popup is and how it is used.
  */
-static inline struct xdg_popup *
-xdg_surface_get_popup(struct xdg_surface *xdg_surface, struct xdg_surface *parent, struct xdg_positioner *positioner)
-{
-	struct wl_proxy *id;
+static inline struct xdg_popup *xdg_surface_get_popup(
+    struct xdg_surface *xdg_surface, struct xdg_surface *parent,
+    struct xdg_positioner *positioner) {
+  struct wl_proxy *id;
 
-	id = wl_proxy_marshal_flags((struct wl_proxy *) xdg_surface,
-			 XDG_SURFACE_GET_POPUP, &xdg_popup_interface, wl_proxy_get_version((struct wl_proxy *) xdg_surface), 0, NULL, parent, positioner);
+  id = wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_surface, XDG_SURFACE_GET_POPUP,
+      &xdg_popup_interface,
+      wl_proxy_get_version((struct wl_proxy *)xdg_surface), 0, NULL, parent,
+      positioner);
 
-	return (struct xdg_popup *) id;
+  return (struct xdg_popup *)id;
 }
 
 /**
@@ -1190,11 +1189,13 @@ xdg_surface_get_popup(struct xdg_surface *xdg_surface, struct xdg_surface *paren
  * greater than zero. Setting an invalid size will raise an
  * invalid_size error.
  */
-static inline void
-xdg_surface_set_window_geometry(struct xdg_surface *xdg_surface, int32_t x, int32_t y, int32_t width, int32_t height)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_surface,
-			 XDG_SURFACE_SET_WINDOW_GEOMETRY, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_surface), 0, x, y, width, height);
+static inline void xdg_surface_set_window_geometry(
+    struct xdg_surface *xdg_surface, int32_t x, int32_t y, int32_t width,
+    int32_t height) {
+  wl_proxy_marshal_flags((struct wl_proxy *)xdg_surface,
+                         XDG_SURFACE_SET_WINDOW_GEOMETRY, NULL,
+                         wl_proxy_get_version((struct wl_proxy *)xdg_surface),
+                         0, x, y, width, height);
 }
 
 /**
@@ -1233,28 +1234,28 @@ xdg_surface_set_window_geometry(struct xdg_surface *xdg_surface, int32_t x, int3
  * event identified by the last ack_configure request for the same
  * xdg_surface. Doing so will raise an invalid_serial error.
  */
-static inline void
-xdg_surface_ack_configure(struct xdg_surface *xdg_surface, uint32_t serial)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_surface,
-			 XDG_SURFACE_ACK_CONFIGURE, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_surface), 0, serial);
+static inline void xdg_surface_ack_configure(struct xdg_surface *xdg_surface,
+                                             uint32_t serial) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_surface, XDG_SURFACE_ACK_CONFIGURE, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_surface), 0, serial);
 }
 
 #ifndef XDG_TOPLEVEL_ERROR_ENUM
 #define XDG_TOPLEVEL_ERROR_ENUM
 enum xdg_toplevel_error {
-	/**
-	 * provided value is         not a valid variant of the resize_edge enum
-	 */
-	XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE = 0,
-	/**
-	 * invalid parent toplevel
-	 */
-	XDG_TOPLEVEL_ERROR_INVALID_PARENT = 1,
-	/**
-	 * client provided an invalid min or max size
-	 */
-	XDG_TOPLEVEL_ERROR_INVALID_SIZE = 2,
+  /**
+   * provided value is         not a valid variant of the resize_edge enum
+   */
+  XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE = 0,
+  /**
+   * invalid parent toplevel
+   */
+  XDG_TOPLEVEL_ERROR_INVALID_PARENT = 1,
+  /**
+   * client provided an invalid min or max size
+   */
+  XDG_TOPLEVEL_ERROR_INVALID_SIZE = 2,
 };
 #endif /* XDG_TOPLEVEL_ERROR_ENUM */
 
@@ -1268,15 +1269,15 @@ enum xdg_toplevel_error {
  * is being dragged in a resize operation.
  */
 enum xdg_toplevel_resize_edge {
-	XDG_TOPLEVEL_RESIZE_EDGE_NONE = 0,
-	XDG_TOPLEVEL_RESIZE_EDGE_TOP = 1,
-	XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM = 2,
-	XDG_TOPLEVEL_RESIZE_EDGE_LEFT = 4,
-	XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT = 5,
-	XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT = 6,
-	XDG_TOPLEVEL_RESIZE_EDGE_RIGHT = 8,
-	XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT = 9,
-	XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT = 10,
+  XDG_TOPLEVEL_RESIZE_EDGE_NONE = 0,
+  XDG_TOPLEVEL_RESIZE_EDGE_TOP = 1,
+  XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM = 2,
+  XDG_TOPLEVEL_RESIZE_EDGE_LEFT = 4,
+  XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT = 5,
+  XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT = 6,
+  XDG_TOPLEVEL_RESIZE_EDGE_RIGHT = 8,
+  XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT = 9,
+  XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT = 10,
 };
 #endif /* XDG_TOPLEVEL_RESIZE_EDGE_ENUM */
 
@@ -1295,101 +1296,101 @@ enum xdg_toplevel_resize_edge {
  * the next commit.
  */
 enum xdg_toplevel_state {
-	/**
-	 * the surface is maximized
-	 * the surface is maximized
-	 *
-	 * The surface is maximized. The window geometry specified in the
-	 * configure event must be obeyed by the client, or the
-	 * xdg_wm_base.invalid_surface_state error is raised.
-	 *
-	 * The client should draw without shadow or other decoration
-	 * outside of the window geometry.
-	 */
-	XDG_TOPLEVEL_STATE_MAXIMIZED = 1,
-	/**
-	 * the surface is fullscreen
-	 * the surface is fullscreen
-	 *
-	 * The surface is fullscreen. The window geometry specified in
-	 * the configure event is a maximum; the client cannot resize
-	 * beyond it. For a surface to cover the whole fullscreened area,
-	 * the geometry dimensions must be obeyed by the client. For more
-	 * details, see xdg_toplevel.set_fullscreen.
-	 */
-	XDG_TOPLEVEL_STATE_FULLSCREEN = 2,
-	/**
-	 * the surface is being resized
-	 * the surface is being resized
-	 *
-	 * The surface is being resized. The window geometry specified in
-	 * the configure event is a maximum; the client cannot resize
-	 * beyond it. Clients that have aspect ratio or cell sizing
-	 * configuration can use a smaller size, however.
-	 */
-	XDG_TOPLEVEL_STATE_RESIZING = 3,
-	/**
-	 * the surface is now activated
-	 * the surface is now activated
-	 *
-	 * Client window decorations should be painted as if the window
-	 * is active. Do not assume this means that the window actually has
-	 * keyboard or pointer focus.
-	 */
-	XDG_TOPLEVEL_STATE_ACTIVATED = 4,
-	/**
-	 * the surface’s left edge is tiled
-	 *
-	 * The window is currently in a tiled layout and the left edge is
-	 * considered to be adjacent to another part of the tiling grid.
-	 *
-	 * The client should draw without shadow or other decoration
-	 * outside of the window geometry on the left edge.
-	 * @since 2
-	 */
-	XDG_TOPLEVEL_STATE_TILED_LEFT = 5,
-	/**
-	 * the surface’s right edge is tiled
-	 *
-	 * The window is currently in a tiled layout and the right edge
-	 * is considered to be adjacent to another part of the tiling grid.
-	 *
-	 * The client should draw without shadow or other decoration
-	 * outside of the window geometry on the right edge.
-	 * @since 2
-	 */
-	XDG_TOPLEVEL_STATE_TILED_RIGHT = 6,
-	/**
-	 * the surface’s top edge is tiled
-	 *
-	 * The window is currently in a tiled layout and the top edge is
-	 * considered to be adjacent to another part of the tiling grid.
-	 *
-	 * The client should draw without shadow or other decoration
-	 * outside of the window geometry on the top edge.
-	 * @since 2
-	 */
-	XDG_TOPLEVEL_STATE_TILED_TOP = 7,
-	/**
-	 * the surface’s bottom edge is tiled
-	 *
-	 * The window is currently in a tiled layout and the bottom edge
-	 * is considered to be adjacent to another part of the tiling grid.
-	 *
-	 * The client should draw without shadow or other decoration
-	 * outside of the window geometry on the bottom edge.
-	 * @since 2
-	 */
-	XDG_TOPLEVEL_STATE_TILED_BOTTOM = 8,
-	/**
-	 * surface repaint is suspended
-	 *
-	 * The surface is currently not ordinarily being repainted; for
-	 * example because its content is occluded by another window, or
-	 * its outputs are switched off due to screen locking.
-	 * @since 6
-	 */
-	XDG_TOPLEVEL_STATE_SUSPENDED = 9,
+  /**
+   * the surface is maximized
+   * the surface is maximized
+   *
+   * The surface is maximized. The window geometry specified in the
+   * configure event must be obeyed by the client, or the
+   * xdg_wm_base.invalid_surface_state error is raised.
+   *
+   * The client should draw without shadow or other decoration
+   * outside of the window geometry.
+   */
+  XDG_TOPLEVEL_STATE_MAXIMIZED = 1,
+  /**
+   * the surface is fullscreen
+   * the surface is fullscreen
+   *
+   * The surface is fullscreen. The window geometry specified in
+   * the configure event is a maximum; the client cannot resize
+   * beyond it. For a surface to cover the whole fullscreened area,
+   * the geometry dimensions must be obeyed by the client. For more
+   * details, see xdg_toplevel.set_fullscreen.
+   */
+  XDG_TOPLEVEL_STATE_FULLSCREEN = 2,
+  /**
+   * the surface is being resized
+   * the surface is being resized
+   *
+   * The surface is being resized. The window geometry specified in
+   * the configure event is a maximum; the client cannot resize
+   * beyond it. Clients that have aspect ratio or cell sizing
+   * configuration can use a smaller size, however.
+   */
+  XDG_TOPLEVEL_STATE_RESIZING = 3,
+  /**
+   * the surface is now activated
+   * the surface is now activated
+   *
+   * Client window decorations should be painted as if the window
+   * is active. Do not assume this means that the window actually has
+   * keyboard or pointer focus.
+   */
+  XDG_TOPLEVEL_STATE_ACTIVATED = 4,
+  /**
+   * the surface’s left edge is tiled
+   *
+   * The window is currently in a tiled layout and the left edge is
+   * considered to be adjacent to another part of the tiling grid.
+   *
+   * The client should draw without shadow or other decoration
+   * outside of the window geometry on the left edge.
+   * @since 2
+   */
+  XDG_TOPLEVEL_STATE_TILED_LEFT = 5,
+  /**
+   * the surface’s right edge is tiled
+   *
+   * The window is currently in a tiled layout and the right edge
+   * is considered to be adjacent to another part of the tiling grid.
+   *
+   * The client should draw without shadow or other decoration
+   * outside of the window geometry on the right edge.
+   * @since 2
+   */
+  XDG_TOPLEVEL_STATE_TILED_RIGHT = 6,
+  /**
+   * the surface’s top edge is tiled
+   *
+   * The window is currently in a tiled layout and the top edge is
+   * considered to be adjacent to another part of the tiling grid.
+   *
+   * The client should draw without shadow or other decoration
+   * outside of the window geometry on the top edge.
+   * @since 2
+   */
+  XDG_TOPLEVEL_STATE_TILED_TOP = 7,
+  /**
+   * the surface’s bottom edge is tiled
+   *
+   * The window is currently in a tiled layout and the bottom edge
+   * is considered to be adjacent to another part of the tiling grid.
+   *
+   * The client should draw without shadow or other decoration
+   * outside of the window geometry on the bottom edge.
+   * @since 2
+   */
+  XDG_TOPLEVEL_STATE_TILED_BOTTOM = 8,
+  /**
+   * surface repaint is suspended
+   *
+   * The surface is currently not ordinarily being repainted; for
+   * example because its content is occluded by another window, or
+   * its outputs are switched off due to screen locking.
+   * @since 6
+   */
+  XDG_TOPLEVEL_STATE_SUSPENDED = 9,
 };
 /**
  * @ingroup iface_xdg_toplevel
@@ -1416,22 +1417,22 @@ enum xdg_toplevel_state {
 #ifndef XDG_TOPLEVEL_WM_CAPABILITIES_ENUM
 #define XDG_TOPLEVEL_WM_CAPABILITIES_ENUM
 enum xdg_toplevel_wm_capabilities {
-	/**
-	 * show_window_menu is available
-	 */
-	XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU = 1,
-	/**
-	 * set_maximized and unset_maximized are available
-	 */
-	XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE = 2,
-	/**
-	 * set_fullscreen and unset_fullscreen are available
-	 */
-	XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN = 3,
-	/**
-	 * set_minimized is available
-	 */
-	XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE = 4,
+  /**
+   * show_window_menu is available
+   */
+  XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU = 1,
+  /**
+   * set_maximized and unset_maximized are available
+   */
+  XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE = 2,
+  /**
+   * set_fullscreen and unset_fullscreen are available
+   */
+  XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN = 3,
+  /**
+   * set_minimized is available
+   */
+  XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE = 4,
 };
 #endif /* XDG_TOPLEVEL_WM_CAPABILITIES_ENUM */
 
@@ -1440,116 +1441,108 @@ enum xdg_toplevel_wm_capabilities {
  * @struct xdg_toplevel_listener
  */
 struct xdg_toplevel_listener {
-	/**
-	 * suggest a surface change
-	 *
-	 * This configure event asks the client to resize its toplevel
-	 * surface or to change its state. The configured state should not
-	 * be applied immediately. See xdg_surface.configure for details.
-	 *
-	 * The width and height arguments specify a hint to the window
-	 * about how its surface should be resized in window geometry
-	 * coordinates. See set_window_geometry.
-	 *
-	 * If the width or height arguments are zero, it means the client
-	 * should decide its own window dimension. This may happen when the
-	 * compositor needs to configure the state of the surface but
-	 * doesn't have any information about any previous or expected
-	 * dimension.
-	 *
-	 * The states listed in the event specify how the width/height
-	 * arguments should be interpreted, and possibly how it should be
-	 * drawn.
-	 *
-	 * Clients must send an ack_configure in response to this event.
-	 * See xdg_surface.configure and xdg_surface.ack_configure for
-	 * details.
-	 */
-	void (*configure)(void *data,
-			  struct xdg_toplevel *xdg_toplevel,
-			  int32_t width,
-			  int32_t height,
-			  struct wl_array *states);
-	/**
-	 * surface wants to be closed
-	 *
-	 * The close event is sent by the compositor when the user wants
-	 * the surface to be closed. This should be equivalent to the user
-	 * clicking the close button in client-side decorations, if your
-	 * application has any.
-	 *
-	 * This is only a request that the user intends to close the
-	 * window. The client may choose to ignore this request, or show a
-	 * dialog to ask the user to save their data, etc.
-	 */
-	void (*close)(void *data,
-		      struct xdg_toplevel *xdg_toplevel);
-	/**
-	 * recommended window geometry bounds
-	 *
-	 * The configure_bounds event may be sent prior to a
-	 * xdg_toplevel.configure event to communicate the bounds a window
-	 * geometry size is recommended to constrain to.
-	 *
-	 * The passed width and height are in surface coordinate space. If
-	 * width and height are 0, it means bounds is unknown and
-	 * equivalent to as if no configure_bounds event was ever sent for
-	 * this surface.
-	 *
-	 * The bounds can for example correspond to the size of a monitor
-	 * excluding any panels or other shell components, so that a
-	 * surface isn't created in a way that it cannot fit.
-	 *
-	 * The bounds may change at any point, and in such a case, a new
-	 * xdg_toplevel.configure_bounds will be sent, followed by
-	 * xdg_toplevel.configure and xdg_surface.configure.
-	 * @since 4
-	 */
-	void (*configure_bounds)(void *data,
-				 struct xdg_toplevel *xdg_toplevel,
-				 int32_t width,
-				 int32_t height);
-	/**
-	 * compositor capabilities
-	 *
-	 * This event advertises the capabilities supported by the
-	 * compositor. If a capability isn't supported, clients should hide
-	 * or disable the UI elements that expose this functionality. For
-	 * instance, if the compositor doesn't advertise support for
-	 * minimized toplevels, a button triggering the set_minimized
-	 * request should not be displayed.
-	 *
-	 * The compositor will ignore requests it doesn't support. For
-	 * instance, a compositor which doesn't advertise support for
-	 * minimized will ignore set_minimized requests.
-	 *
-	 * Compositors must send this event once before the first
-	 * xdg_surface.configure event. When the capabilities change,
-	 * compositors must send this event again and then send an
-	 * xdg_surface.configure event.
-	 *
-	 * The configured state should not be applied immediately. See
-	 * xdg_surface.configure for details.
-	 *
-	 * The capabilities are sent as an array of 32-bit unsigned
-	 * integers in native endianness.
-	 * @param capabilities array of 32-bit capabilities
-	 * @since 5
-	 */
-	void (*wm_capabilities)(void *data,
-				struct xdg_toplevel *xdg_toplevel,
-				struct wl_array *capabilities);
+  /**
+   * suggest a surface change
+   *
+   * This configure event asks the client to resize its toplevel
+   * surface or to change its state. The configured state should not
+   * be applied immediately. See xdg_surface.configure for details.
+   *
+   * The width and height arguments specify a hint to the window
+   * about how its surface should be resized in window geometry
+   * coordinates. See set_window_geometry.
+   *
+   * If the width or height arguments are zero, it means the client
+   * should decide its own window dimension. This may happen when the
+   * compositor needs to configure the state of the surface but
+   * doesn't have any information about any previous or expected
+   * dimension.
+   *
+   * The states listed in the event specify how the width/height
+   * arguments should be interpreted, and possibly how it should be
+   * drawn.
+   *
+   * Clients must send an ack_configure in response to this event.
+   * See xdg_surface.configure and xdg_surface.ack_configure for
+   * details.
+   */
+  void (*configure)(void *data, struct xdg_toplevel *xdg_toplevel,
+                    int32_t width, int32_t height, struct wl_array *states);
+  /**
+   * surface wants to be closed
+   *
+   * The close event is sent by the compositor when the user wants
+   * the surface to be closed. This should be equivalent to the user
+   * clicking the close button in client-side decorations, if your
+   * application has any.
+   *
+   * This is only a request that the user intends to close the
+   * window. The client may choose to ignore this request, or show a
+   * dialog to ask the user to save their data, etc.
+   */
+  void (*close)(void *data, struct xdg_toplevel *xdg_toplevel);
+  /**
+   * recommended window geometry bounds
+   *
+   * The configure_bounds event may be sent prior to a
+   * xdg_toplevel.configure event to communicate the bounds a window
+   * geometry size is recommended to constrain to.
+   *
+   * The passed width and height are in surface coordinate space. If
+   * width and height are 0, it means bounds is unknown and
+   * equivalent to as if no configure_bounds event was ever sent for
+   * this surface.
+   *
+   * The bounds can for example correspond to the size of a monitor
+   * excluding any panels or other shell components, so that a
+   * surface isn't created in a way that it cannot fit.
+   *
+   * The bounds may change at any point, and in such a case, a new
+   * xdg_toplevel.configure_bounds will be sent, followed by
+   * xdg_toplevel.configure and xdg_surface.configure.
+   * @since 4
+   */
+  void (*configure_bounds)(void *data, struct xdg_toplevel *xdg_toplevel,
+                           int32_t width, int32_t height);
+  /**
+   * compositor capabilities
+   *
+   * This event advertises the capabilities supported by the
+   * compositor. If a capability isn't supported, clients should hide
+   * or disable the UI elements that expose this functionality. For
+   * instance, if the compositor doesn't advertise support for
+   * minimized toplevels, a button triggering the set_minimized
+   * request should not be displayed.
+   *
+   * The compositor will ignore requests it doesn't support. For
+   * instance, a compositor which doesn't advertise support for
+   * minimized will ignore set_minimized requests.
+   *
+   * Compositors must send this event once before the first
+   * xdg_surface.configure event. When the capabilities change,
+   * compositors must send this event again and then send an
+   * xdg_surface.configure event.
+   *
+   * The configured state should not be applied immediately. See
+   * xdg_surface.configure for details.
+   *
+   * The capabilities are sent as an array of 32-bit unsigned
+   * integers in native endianness.
+   * @param capabilities array of 32-bit capabilities
+   * @since 5
+   */
+  void (*wm_capabilities)(void *data, struct xdg_toplevel *xdg_toplevel,
+                          struct wl_array *capabilities);
 };
 
 /**
  * @ingroup iface_xdg_toplevel
  */
-static inline int
-xdg_toplevel_add_listener(struct xdg_toplevel *xdg_toplevel,
-			  const struct xdg_toplevel_listener *listener, void *data)
-{
-	return wl_proxy_add_listener((struct wl_proxy *) xdg_toplevel,
-				     (void (**)(void)) listener, data);
+static inline int xdg_toplevel_add_listener(
+    struct xdg_toplevel *xdg_toplevel,
+    const struct xdg_toplevel_listener *listener, void *data) {
+  return wl_proxy_add_listener((struct wl_proxy *)xdg_toplevel,
+                               (void (**)(void))listener, data);
 }
 
 #define XDG_TOPLEVEL_DESTROY 0
@@ -1642,23 +1635,20 @@ xdg_toplevel_add_listener(struct xdg_toplevel *xdg_toplevel,
 #define XDG_TOPLEVEL_SET_MINIMIZED_SINCE_VERSION 1
 
 /** @ingroup iface_xdg_toplevel */
-static inline void
-xdg_toplevel_set_user_data(struct xdg_toplevel *xdg_toplevel, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) xdg_toplevel, user_data);
+static inline void xdg_toplevel_set_user_data(struct xdg_toplevel *xdg_toplevel,
+                                              void *user_data) {
+  wl_proxy_set_user_data((struct wl_proxy *)xdg_toplevel, user_data);
 }
 
 /** @ingroup iface_xdg_toplevel */
-static inline void *
-xdg_toplevel_get_user_data(struct xdg_toplevel *xdg_toplevel)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) xdg_toplevel);
+static inline void *xdg_toplevel_get_user_data(
+    struct xdg_toplevel *xdg_toplevel) {
+  return wl_proxy_get_user_data((struct wl_proxy *)xdg_toplevel);
 }
 
-static inline uint32_t
-xdg_toplevel_get_version(struct xdg_toplevel *xdg_toplevel)
-{
-	return wl_proxy_get_version((struct wl_proxy *) xdg_toplevel);
+static inline uint32_t xdg_toplevel_get_version(
+    struct xdg_toplevel *xdg_toplevel) {
+  return wl_proxy_get_version((struct wl_proxy *)xdg_toplevel);
 }
 
 /**
@@ -1667,11 +1657,11 @@ xdg_toplevel_get_version(struct xdg_toplevel *xdg_toplevel)
  * This request destroys the role surface and unmaps the surface;
  * see "Unmapping" behavior in interface section for details.
  */
-static inline void
-xdg_toplevel_destroy(struct xdg_toplevel *xdg_toplevel)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), WL_MARSHAL_FLAG_DESTROY);
+static inline void xdg_toplevel_destroy(struct xdg_toplevel *xdg_toplevel) {
+  wl_proxy_marshal_flags((struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_DESTROY,
+                         NULL,
+                         wl_proxy_get_version((struct wl_proxy *)xdg_toplevel),
+                         WL_MARSHAL_FLAG_DESTROY);
 }
 
 /**
@@ -1698,11 +1688,11 @@ xdg_toplevel_destroy(struct xdg_toplevel *xdg_toplevel)
  * descendants, and the parent must be different from the child toplevel,
  * otherwise the invalid_parent protocol error is raised.
  */
-static inline void
-xdg_toplevel_set_parent(struct xdg_toplevel *xdg_toplevel, struct xdg_toplevel *parent)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_SET_PARENT, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0, parent);
+static inline void xdg_toplevel_set_parent(struct xdg_toplevel *xdg_toplevel,
+                                           struct xdg_toplevel *parent) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_SET_PARENT, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0, parent);
 }
 
 /**
@@ -1716,11 +1706,11 @@ xdg_toplevel_set_parent(struct xdg_toplevel *xdg_toplevel, struct xdg_toplevel *
  *
  * The string must be encoded in UTF-8.
  */
-static inline void
-xdg_toplevel_set_title(struct xdg_toplevel *xdg_toplevel, const char *title)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_SET_TITLE, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0, title);
+static inline void xdg_toplevel_set_title(struct xdg_toplevel *xdg_toplevel,
+                                          const char *title) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_SET_TITLE, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0, title);
 }
 
 /**
@@ -1750,11 +1740,11 @@ xdg_toplevel_set_title(struct xdg_toplevel *xdg_toplevel, const char *title)
  *
  * [0] https://standards.freedesktop.org/desktop-entry-spec/
  */
-static inline void
-xdg_toplevel_set_app_id(struct xdg_toplevel *xdg_toplevel, const char *app_id)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_SET_APP_ID, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0, app_id);
+static inline void xdg_toplevel_set_app_id(struct xdg_toplevel *xdg_toplevel,
+                                           const char *app_id) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_SET_APP_ID, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0, app_id);
 }
 
 /**
@@ -1773,11 +1763,13 @@ xdg_toplevel_set_app_id(struct xdg_toplevel *xdg_toplevel, const char *app_id)
  * This request must be used in response to some sort of user action
  * like a button press, key press, or touch down event.
  */
-static inline void
-xdg_toplevel_show_window_menu(struct xdg_toplevel *xdg_toplevel, struct wl_seat *seat, uint32_t serial, int32_t x, int32_t y)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_SHOW_WINDOW_MENU, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0, seat, serial, x, y);
+static inline void xdg_toplevel_show_window_menu(
+    struct xdg_toplevel *xdg_toplevel, struct wl_seat *seat, uint32_t serial,
+    int32_t x, int32_t y) {
+  wl_proxy_marshal_flags((struct wl_proxy *)xdg_toplevel,
+                         XDG_TOPLEVEL_SHOW_WINDOW_MENU, NULL,
+                         wl_proxy_get_version((struct wl_proxy *)xdg_toplevel),
+                         0, seat, serial, x, y);
 }
 
 /**
@@ -1800,11 +1792,11 @@ xdg_toplevel_show_window_menu(struct xdg_toplevel *xdg_toplevel, struct wl_seat 
  * updating a pointer cursor, during the move. There is no guarantee
  * that the device focus will return when the move is completed.
  */
-static inline void
-xdg_toplevel_move(struct xdg_toplevel *xdg_toplevel, struct wl_seat *seat, uint32_t serial)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_MOVE, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0, seat, serial);
+static inline void xdg_toplevel_move(struct xdg_toplevel *xdg_toplevel,
+                                     struct wl_seat *seat, uint32_t serial) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_MOVE, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0, seat, serial);
 }
 
 /**
@@ -1842,11 +1834,13 @@ xdg_toplevel_move(struct xdg_toplevel *xdg_toplevel, struct wl_seat *seat, uint3
  * use this information to adapt its behavior, e.g. choose an appropriate
  * cursor image.
  */
-static inline void
-xdg_toplevel_resize(struct xdg_toplevel *xdg_toplevel, struct wl_seat *seat, uint32_t serial, uint32_t edges)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_RESIZE, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0, seat, serial, edges);
+static inline void xdg_toplevel_resize(struct xdg_toplevel *xdg_toplevel,
+                                       struct wl_seat *seat, uint32_t serial,
+                                       uint32_t edges) {
+  wl_proxy_marshal_flags((struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_RESIZE,
+                         NULL,
+                         wl_proxy_get_version((struct wl_proxy *)xdg_toplevel),
+                         0, seat, serial, edges);
 }
 
 /**
@@ -1887,11 +1881,11 @@ xdg_toplevel_resize(struct xdg_toplevel *xdg_toplevel, struct wl_seat *seat, uin
  * strictly negative values for width or height will result in a
  * invalid_size error.
  */
-static inline void
-xdg_toplevel_set_max_size(struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_SET_MAX_SIZE, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0, width, height);
+static inline void xdg_toplevel_set_max_size(struct xdg_toplevel *xdg_toplevel,
+                                             int32_t width, int32_t height) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_SET_MAX_SIZE, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0, width, height);
 }
 
 /**
@@ -1932,11 +1926,11 @@ xdg_toplevel_set_max_size(struct xdg_toplevel *xdg_toplevel, int32_t width, int3
  * strictly negative values for width and height will result in a
  * invalid_size error.
  */
-static inline void
-xdg_toplevel_set_min_size(struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_SET_MIN_SIZE, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0, width, height);
+static inline void xdg_toplevel_set_min_size(struct xdg_toplevel *xdg_toplevel,
+                                             int32_t width, int32_t height) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_SET_MIN_SIZE, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0, width, height);
 }
 
 /**
@@ -1962,11 +1956,11 @@ xdg_toplevel_set_min_size(struct xdg_toplevel *xdg_toplevel, int32_t width, int3
  * effect. It may alter the state the surface is returned to when
  * unmaximized unless overridden by the compositor.
  */
-static inline void
-xdg_toplevel_set_maximized(struct xdg_toplevel *xdg_toplevel)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_SET_MAXIMIZED, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0);
+static inline void xdg_toplevel_set_maximized(
+    struct xdg_toplevel *xdg_toplevel) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_SET_MAXIMIZED, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0);
 }
 
 /**
@@ -1994,11 +1988,11 @@ xdg_toplevel_set_maximized(struct xdg_toplevel *xdg_toplevel)
  * effect. It may alter the state the surface is returned to when
  * unmaximized unless overridden by the compositor.
  */
-static inline void
-xdg_toplevel_unset_maximized(struct xdg_toplevel *xdg_toplevel)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_UNSET_MAXIMIZED, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0);
+static inline void xdg_toplevel_unset_maximized(
+    struct xdg_toplevel *xdg_toplevel) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_UNSET_MAXIMIZED, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0);
 }
 
 /**
@@ -2028,11 +2022,11 @@ xdg_toplevel_unset_maximized(struct xdg_toplevel *xdg_toplevel)
  * up of subsurfaces, popups or similarly coupled surfaces) are not
  * visible below the fullscreened surface.
  */
-static inline void
-xdg_toplevel_set_fullscreen(struct xdg_toplevel *xdg_toplevel, struct wl_output *output)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_SET_FULLSCREEN, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0, output);
+static inline void xdg_toplevel_set_fullscreen(
+    struct xdg_toplevel *xdg_toplevel, struct wl_output *output) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_SET_FULLSCREEN, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0, output);
 }
 
 /**
@@ -2045,7 +2039,8 @@ xdg_toplevel_set_fullscreen(struct xdg_toplevel *xdg_toplevel, struct wl_output 
  * Whether this actually removes the fullscreen state of the client is
  * subject to compositor policies.
  *
- * Making a surface unfullscreen sets states for the surface based on the following:
+ * Making a surface unfullscreen sets states for the surface based on the
+ * following:
  * * the state(s) it may have had before becoming fullscreen
  * * any state(s) decided by the compositor
  * * any state(s) requested by the client while the surface was fullscreen
@@ -2056,11 +2051,11 @@ xdg_toplevel_set_fullscreen(struct xdg_toplevel *xdg_toplevel, struct wl_output 
  * The client must also acknowledge the configure when committing the new
  * content (see ack_configure).
  */
-static inline void
-xdg_toplevel_unset_fullscreen(struct xdg_toplevel *xdg_toplevel)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_UNSET_FULLSCREEN, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0);
+static inline void xdg_toplevel_unset_fullscreen(
+    struct xdg_toplevel *xdg_toplevel) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_UNSET_FULLSCREEN, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0);
 }
 
 /**
@@ -2075,20 +2070,20 @@ xdg_toplevel_unset_fullscreen(struct xdg_toplevel *xdg_toplevel)
  * also work with live previews on windows in Alt-Tab, Expose or
  * similar compositor features.
  */
-static inline void
-xdg_toplevel_set_minimized(struct xdg_toplevel *xdg_toplevel)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_toplevel,
-			 XDG_TOPLEVEL_SET_MINIMIZED, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_toplevel), 0);
+static inline void xdg_toplevel_set_minimized(
+    struct xdg_toplevel *xdg_toplevel) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_toplevel, XDG_TOPLEVEL_SET_MINIMIZED, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_toplevel), 0);
 }
 
 #ifndef XDG_POPUP_ERROR_ENUM
 #define XDG_POPUP_ERROR_ENUM
 enum xdg_popup_error {
-	/**
-	 * tried to grab after being mapped
-	 */
-	XDG_POPUP_ERROR_INVALID_GRAB = 0,
+  /**
+   * tried to grab after being mapped
+   */
+  XDG_POPUP_ERROR_INVALID_GRAB = 0,
 };
 #endif /* XDG_POPUP_ERROR_ENUM */
 
@@ -2097,79 +2092,71 @@ enum xdg_popup_error {
  * @struct xdg_popup_listener
  */
 struct xdg_popup_listener {
-	/**
-	 * configure the popup surface
-	 *
-	 * This event asks the popup surface to configure itself given
-	 * the configuration. The configured state should not be applied
-	 * immediately. See xdg_surface.configure for details.
-	 *
-	 * The x and y arguments represent the position the popup was
-	 * placed at given the xdg_positioner rule, relative to the upper
-	 * left corner of the window geometry of the parent surface.
-	 *
-	 * For version 2 or older, the configure event for an xdg_popup is
-	 * only ever sent once for the initial configuration. Starting with
-	 * version 3, it may be sent again if the popup is setup with an
-	 * xdg_positioner with set_reactive requested, or in response to
-	 * xdg_popup.reposition requests.
-	 * @param x x position relative to parent surface window geometry
-	 * @param y y position relative to parent surface window geometry
-	 * @param width window geometry width
-	 * @param height window geometry height
-	 */
-	void (*configure)(void *data,
-			  struct xdg_popup *xdg_popup,
-			  int32_t x,
-			  int32_t y,
-			  int32_t width,
-			  int32_t height);
-	/**
-	 * popup interaction is done
-	 *
-	 * The popup_done event is sent out when a popup is dismissed by
-	 * the compositor. The client should destroy the xdg_popup object
-	 * at this point.
-	 */
-	void (*popup_done)(void *data,
-			   struct xdg_popup *xdg_popup);
-	/**
-	 * signal the completion of a repositioned request
-	 *
-	 * The repositioned event is sent as part of a popup
-	 * configuration sequence, together with xdg_popup.configure and
-	 * lastly xdg_surface.configure to notify the completion of a
-	 * reposition request.
-	 *
-	 * The repositioned event is to notify about the completion of a
-	 * xdg_popup.reposition request. The token argument is the token
-	 * passed in the xdg_popup.reposition request.
-	 *
-	 * Immediately after this event is emitted, xdg_popup.configure and
-	 * xdg_surface.configure will be sent with the updated size and
-	 * position, as well as a new configure serial.
-	 *
-	 * The client should optionally update the content of the popup,
-	 * but must acknowledge the new popup configuration for the new
-	 * position to take effect. See xdg_surface.ack_configure for
-	 * details.
-	 * @param token reposition request token
-	 * @since 3
-	 */
-	void (*repositioned)(void *data,
-			     struct xdg_popup *xdg_popup,
-			     uint32_t token);
+  /**
+   * configure the popup surface
+   *
+   * This event asks the popup surface to configure itself given
+   * the configuration. The configured state should not be applied
+   * immediately. See xdg_surface.configure for details.
+   *
+   * The x and y arguments represent the position the popup was
+   * placed at given the xdg_positioner rule, relative to the upper
+   * left corner of the window geometry of the parent surface.
+   *
+   * For version 2 or older, the configure event for an xdg_popup is
+   * only ever sent once for the initial configuration. Starting with
+   * version 3, it may be sent again if the popup is setup with an
+   * xdg_positioner with set_reactive requested, or in response to
+   * xdg_popup.reposition requests.
+   * @param x x position relative to parent surface window geometry
+   * @param y y position relative to parent surface window geometry
+   * @param width window geometry width
+   * @param height window geometry height
+   */
+  void (*configure)(void *data, struct xdg_popup *xdg_popup, int32_t x,
+                    int32_t y, int32_t width, int32_t height);
+  /**
+   * popup interaction is done
+   *
+   * The popup_done event is sent out when a popup is dismissed by
+   * the compositor. The client should destroy the xdg_popup object
+   * at this point.
+   */
+  void (*popup_done)(void *data, struct xdg_popup *xdg_popup);
+  /**
+   * signal the completion of a repositioned request
+   *
+   * The repositioned event is sent as part of a popup
+   * configuration sequence, together with xdg_popup.configure and
+   * lastly xdg_surface.configure to notify the completion of a
+   * reposition request.
+   *
+   * The repositioned event is to notify about the completion of a
+   * xdg_popup.reposition request. The token argument is the token
+   * passed in the xdg_popup.reposition request.
+   *
+   * Immediately after this event is emitted, xdg_popup.configure and
+   * xdg_surface.configure will be sent with the updated size and
+   * position, as well as a new configure serial.
+   *
+   * The client should optionally update the content of the popup,
+   * but must acknowledge the new popup configuration for the new
+   * position to take effect. See xdg_surface.ack_configure for
+   * details.
+   * @param token reposition request token
+   * @since 3
+   */
+  void (*repositioned)(void *data, struct xdg_popup *xdg_popup, uint32_t token);
 };
 
 /**
  * @ingroup iface_xdg_popup
  */
-static inline int
-xdg_popup_add_listener(struct xdg_popup *xdg_popup,
-		       const struct xdg_popup_listener *listener, void *data)
-{
-	return wl_proxy_add_listener((struct wl_proxy *) xdg_popup,
-				     (void (**)(void)) listener, data);
+static inline int xdg_popup_add_listener(
+    struct xdg_popup *xdg_popup, const struct xdg_popup_listener *listener,
+    void *data) {
+  return wl_proxy_add_listener((struct wl_proxy *)xdg_popup,
+                               (void (**)(void))listener, data);
 }
 
 #define XDG_POPUP_DESTROY 0
@@ -2203,23 +2190,18 @@ xdg_popup_add_listener(struct xdg_popup *xdg_popup,
 #define XDG_POPUP_REPOSITION_SINCE_VERSION 3
 
 /** @ingroup iface_xdg_popup */
-static inline void
-xdg_popup_set_user_data(struct xdg_popup *xdg_popup, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) xdg_popup, user_data);
+static inline void xdg_popup_set_user_data(struct xdg_popup *xdg_popup,
+                                           void *user_data) {
+  wl_proxy_set_user_data((struct wl_proxy *)xdg_popup, user_data);
 }
 
 /** @ingroup iface_xdg_popup */
-static inline void *
-xdg_popup_get_user_data(struct xdg_popup *xdg_popup)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) xdg_popup);
+static inline void *xdg_popup_get_user_data(struct xdg_popup *xdg_popup) {
+  return wl_proxy_get_user_data((struct wl_proxy *)xdg_popup);
 }
 
-static inline uint32_t
-xdg_popup_get_version(struct xdg_popup *xdg_popup)
-{
-	return wl_proxy_get_version((struct wl_proxy *) xdg_popup);
+static inline uint32_t xdg_popup_get_version(struct xdg_popup *xdg_popup) {
+  return wl_proxy_get_version((struct wl_proxy *)xdg_popup);
 }
 
 /**
@@ -2231,11 +2213,10 @@ xdg_popup_get_version(struct xdg_popup *xdg_popup)
  * If this xdg_popup is not the "topmost" popup, the
  * xdg_wm_base.not_the_topmost_popup protocol error will be sent.
  */
-static inline void
-xdg_popup_destroy(struct xdg_popup *xdg_popup)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_popup,
-			 XDG_POPUP_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_popup), WL_MARSHAL_FLAG_DESTROY);
+static inline void xdg_popup_destroy(struct xdg_popup *xdg_popup) {
+  wl_proxy_marshal_flags((struct wl_proxy *)xdg_popup, XDG_POPUP_DESTROY, NULL,
+                         wl_proxy_get_version((struct wl_proxy *)xdg_popup),
+                         WL_MARSHAL_FLAG_DESTROY);
 }
 
 /**
@@ -2279,11 +2260,11 @@ xdg_popup_destroy(struct xdg_popup *xdg_popup)
  * "owner-events" grab in X11 parlance), while the top most grabbing popup
  * will always have keyboard focus.
  */
-static inline void
-xdg_popup_grab(struct xdg_popup *xdg_popup, struct wl_seat *seat, uint32_t serial)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_popup,
-			 XDG_POPUP_GRAB, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_popup), 0, seat, serial);
+static inline void xdg_popup_grab(struct xdg_popup *xdg_popup,
+                                  struct wl_seat *seat, uint32_t serial) {
+  wl_proxy_marshal_flags((struct wl_proxy *)xdg_popup, XDG_POPUP_GRAB, NULL,
+                         wl_proxy_get_version((struct wl_proxy *)xdg_popup), 0,
+                         seat, serial);
 }
 
 /**
@@ -2313,14 +2294,15 @@ xdg_popup_grab(struct xdg_popup *xdg_popup, struct wl_seat *seat, uint32_t seria
  * resized, but not in response to a configure event, the client should
  * send an xdg_positioner.set_parent_size request.
  */
-static inline void
-xdg_popup_reposition(struct xdg_popup *xdg_popup, struct xdg_positioner *positioner, uint32_t token)
-{
-	wl_proxy_marshal_flags((struct wl_proxy *) xdg_popup,
-			 XDG_POPUP_REPOSITION, NULL, wl_proxy_get_version((struct wl_proxy *) xdg_popup), 0, positioner, token);
+static inline void xdg_popup_reposition(struct xdg_popup *xdg_popup,
+                                        struct xdg_positioner *positioner,
+                                        uint32_t token) {
+  wl_proxy_marshal_flags(
+      (struct wl_proxy *)xdg_popup, XDG_POPUP_REPOSITION, NULL,
+      wl_proxy_get_version((struct wl_proxy *)xdg_popup), 0, positioner, token);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

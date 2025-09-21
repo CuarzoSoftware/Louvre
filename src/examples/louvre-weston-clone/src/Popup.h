@@ -5,11 +5,10 @@
 
 using namespace Louvre;
 
-class Popup final : public LPopupRole
-{
-public:
-    using LPopupRole::LPopupRole;
-    void configureRequest() override;
+class Popup final : public LPopupRole {
+ public:
+  using LPopupRole::LPopupRole;
+  void configureRequest() override;
 };
 
-#endif // POPUP_H
+#endif  // POPUP_H

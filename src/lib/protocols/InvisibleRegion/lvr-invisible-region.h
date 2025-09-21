@@ -3,11 +3,12 @@
 #ifndef LVR_INVISIBLE_REGION_SERVER_PROTOCOL_H
 #define LVR_INVISIBLE_REGION_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -20,8 +21,8 @@ struct wl_resource;
  *
  * @section page_desc_lvr_invisible_region Description
  *
- * Warning: This protocol is experimental, and backward-incompatible changes may be 
- * made in the future.
+ * Warning: This protocol is experimental, and backward-incompatible changes may
+ * be made in the future.
  *
  * @section page_ifaces_lvr_invisible_region Interfaces
  * - @subpage page_iface_lvr_invisible_region_manager - invisible region manager
@@ -67,7 +68,8 @@ struct wl_surface;
  * See @ref iface_lvr_invisible_region_manager.
  */
 /**
- * @defgroup iface_lvr_invisible_region_manager The lvr_invisible_region_manager interface
+ * @defgroup iface_lvr_invisible_region_manager The lvr_invisible_region_manager
+ * interface
  *
  * This interface allows a compositor to announce support for invisible regions.
  */
@@ -79,21 +81,22 @@ extern const struct wl_interface lvr_invisible_region_manager_interface;
  * @page page_iface_lvr_invisible_region lvr_invisible_region
  * @section page_iface_lvr_invisible_region_desc Description
  *
- * This extension builds upon existing regions exposed in wl_surface, such as 
+ * This extension builds upon existing regions exposed in wl_surface, such as
  * damage, opaque, and input regions.
  *
- * Clients may use this extension to inform the compositor which parts of the 
- * surface are fully transparent (alpha = 0), allowing the compositor to optimize 
- * rendering by skipping these regions.
+ * Clients may use this extension to inform the compositor which parts of the
+ * surface are fully transparent (alpha = 0), allowing the compositor to
+ * optimize rendering by skipping these regions.
  *
- * Clients must not assume that the compositor will always skip rendering the region 
- * and should still ensure that the actual content is invisible if that is the 
- * intended result.
+ * Clients must not assume that the compositor will always skip rendering the
+ * region and should still ensure that the actual content is invisible if that
+ * is the intended result.
  *
- * The invisible region does not affect damage handling. If new parts of the surface 
- * become invisible and are marked as such, the client must still damage them as usual.
+ * The invisible region does not affect damage handling. If new parts of the
+ * surface become invisible and are marked as such, the client must still damage
+ * them as usual.
  *
- * If the invisible region intersects the opaque region, the overlapping area is 
+ * If the invisible region intersects the opaque region, the overlapping area is
  * also treated as invisible.
  * @section page_iface_lvr_invisible_region_api API
  * See @ref iface_lvr_invisible_region.
@@ -101,21 +104,22 @@ extern const struct wl_interface lvr_invisible_region_manager_interface;
 /**
  * @defgroup iface_lvr_invisible_region The lvr_invisible_region interface
  *
- * This extension builds upon existing regions exposed in wl_surface, such as 
+ * This extension builds upon existing regions exposed in wl_surface, such as
  * damage, opaque, and input regions.
  *
- * Clients may use this extension to inform the compositor which parts of the 
- * surface are fully transparent (alpha = 0), allowing the compositor to optimize 
- * rendering by skipping these regions.
+ * Clients may use this extension to inform the compositor which parts of the
+ * surface are fully transparent (alpha = 0), allowing the compositor to
+ * optimize rendering by skipping these regions.
  *
- * Clients must not assume that the compositor will always skip rendering the region 
- * and should still ensure that the actual content is invisible if that is the 
- * intended result.
+ * Clients must not assume that the compositor will always skip rendering the
+ * region and should still ensure that the actual content is invisible if that
+ * is the intended result.
  *
- * The invisible region does not affect damage handling. If new parts of the surface 
- * become invisible and are marked as such, the client must still damage them as usual.
+ * The invisible region does not affect damage handling. If new parts of the
+ * surface become invisible and are marked as such, the client must still damage
+ * them as usual.
  *
- * If the invisible region intersects the opaque region, the overlapping area is 
+ * If the invisible region intersects the opaque region, the overlapping area is
  * also treated as invisible.
  */
 extern const struct wl_interface lvr_invisible_region_interface;
@@ -124,10 +128,10 @@ extern const struct wl_interface lvr_invisible_region_interface;
 #ifndef LVR_INVISIBLE_REGION_MANAGER_ERROR_ENUM
 #define LVR_INVISIBLE_REGION_MANAGER_ERROR_ENUM
 enum lvr_invisible_region_manager_error {
-	/**
-	 * the surface already has an associated lvr_invisible_region object
-	 */
-	LVR_INVISIBLE_REGION_MANAGER_ERROR_ALREADY_CONSTRUCTED = 0,
+  /**
+   * the surface already has an associated lvr_invisible_region object
+   */
+  LVR_INVISIBLE_REGION_MANAGER_ERROR_ALREADY_CONSTRUCTED = 0,
 };
 /**
  * @ingroup iface_lvr_invisible_region_manager
@@ -136,14 +140,13 @@ enum lvr_invisible_region_manager_error {
  * @return true on success, false on error.
  * @ref lvr_invisible_region_manager_error
  */
-static inline bool
-lvr_invisible_region_manager_error_is_valid(uint32_t value, uint32_t version) {
-	switch (value) {
-	case LVR_INVISIBLE_REGION_MANAGER_ERROR_ALREADY_CONSTRUCTED:
-		return version >= 1;
-	default:
-		return false;
-	}
+static inline bool lvr_invisible_region_manager_error_is_valid(
+    uint32_t value, uint32_t version) {
+  switch (value) {
+    case LVR_INVISIBLE_REGION_MANAGER_ERROR_ALREADY_CONSTRUCTED:
+      return version >= 1;
+    default: return false;
+  }
 }
 #endif /* LVR_INVISIBLE_REGION_MANAGER_ERROR_ENUM */
 
@@ -152,26 +155,23 @@ lvr_invisible_region_manager_error_is_valid(uint32_t value, uint32_t version) {
  * @struct lvr_invisible_region_manager_interface
  */
 struct lvr_invisible_region_manager_interface {
-	/**
-	 * destroy the invisible region manager object
-	 *
-	 * This doesn't destroy objects created with the manager.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * create a new invisible region object
-	 *
-	 * The surface must not already have an associated
-	 * lvr_invisible_region object, otherwise, the already_constructed
-	 * error will be emitted.
-	 */
-	void (*get_invisible_region)(struct wl_client *client,
-				     struct wl_resource *resource,
-				     uint32_t id,
-				     struct wl_resource *surface);
+  /**
+   * destroy the invisible region manager object
+   *
+   * This doesn't destroy objects created with the manager.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * create a new invisible region object
+   *
+   * The surface must not already have an associated
+   * lvr_invisible_region object, otherwise, the already_constructed
+   * error will be emitted.
+   */
+  void (*get_invisible_region)(struct wl_client *client,
+                               struct wl_resource *resource, uint32_t id,
+                               struct wl_resource *surface);
 };
-
 
 /**
  * @ingroup iface_lvr_invisible_region_manager
@@ -185,10 +185,10 @@ struct lvr_invisible_region_manager_interface {
 #ifndef LVR_INVISIBLE_REGION_ERROR_ENUM
 #define LVR_INVISIBLE_REGION_ERROR_ENUM
 enum lvr_invisible_region_error {
-	/**
-	 * surface destroyed before its lvr_invisible_region object
-	 */
-	LVR_INVISIBLE_REGION_ERROR_DESTROYED_SURFACE = 0,
+  /**
+   * surface destroyed before its lvr_invisible_region object
+   */
+  LVR_INVISIBLE_REGION_ERROR_DESTROYED_SURFACE = 0,
 };
 /**
  * @ingroup iface_lvr_invisible_region
@@ -197,14 +197,12 @@ enum lvr_invisible_region_error {
  * @return true on success, false on error.
  * @ref lvr_invisible_region_error
  */
-static inline bool
-lvr_invisible_region_error_is_valid(uint32_t value, uint32_t version) {
-	switch (value) {
-	case LVR_INVISIBLE_REGION_ERROR_DESTROYED_SURFACE:
-		return version >= 1;
-	default:
-		return false;
-	}
+static inline bool lvr_invisible_region_error_is_valid(uint32_t value,
+                                                       uint32_t version) {
+  switch (value) {
+    case LVR_INVISIBLE_REGION_ERROR_DESTROYED_SURFACE: return version >= 1;
+    default: return false;
+  }
 }
 #endif /* LVR_INVISIBLE_REGION_ERROR_ENUM */
 
@@ -213,38 +211,35 @@ lvr_invisible_region_error_is_valid(uint32_t value, uint32_t version) {
  * @struct lvr_invisible_region_interface
  */
 struct lvr_invisible_region_interface {
-	/**
-	 * destroy the invisible region object
-	 *
-	 * Switch back to a mode with an empty invisible region at the
-	 * next commit.
-	 *
-	 * Must be destroyed before its associated surface otherwise the
-	 * destroyed_surface error will be emitted.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * set the invisible region
-	 *
-	 * The region is defined in local surface coordinates. The
-	 * compositor will clip any portion that extends beyond the surface
-	 * bounds.
-	 *
-	 * If the region is null, the entire surface is treated as
-	 * invisible. Note that this does not imply the surface is
-	 * unmapped.
-	 *
-	 * The region is double-buffered and changes take effect upon the
-	 * next commit.
-	 *
-	 * The initial value is an empty region (non-null).
-	 */
-	void (*set_region)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   struct wl_resource *region);
+  /**
+   * destroy the invisible region object
+   *
+   * Switch back to a mode with an empty invisible region at the
+   * next commit.
+   *
+   * Must be destroyed before its associated surface otherwise the
+   * destroyed_surface error will be emitted.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * set the invisible region
+   *
+   * The region is defined in local surface coordinates. The
+   * compositor will clip any portion that extends beyond the surface
+   * bounds.
+   *
+   * If the region is null, the entire surface is treated as
+   * invisible. Note that this does not imply the surface is
+   * unmapped.
+   *
+   * The region is double-buffered and changes take effect upon the
+   * next commit.
+   *
+   * The initial value is an empty region (non-null).
+   */
+  void (*set_region)(struct wl_client *client, struct wl_resource *resource,
+                     struct wl_resource *region);
 };
-
 
 /**
  * @ingroup iface_lvr_invisible_region
@@ -255,7 +250,7 @@ struct lvr_invisible_region_interface {
  */
 #define LVR_INVISIBLE_REGION_SET_REGION_SINCE_VERSION 1
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

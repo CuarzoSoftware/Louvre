@@ -3,11 +3,12 @@
 #ifndef POINTER_CONSTRAINTS_UNSTABLE_V1_SERVER_PROTOCOL_H
 #define POINTER_CONSTRAINTS_UNSTABLE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -15,8 +16,9 @@ struct wl_client;
 struct wl_resource;
 
 /**
- * @page page_pointer_constraints_unstable_v1 The pointer_constraints_unstable_v1 protocol
- * protocol for constraining pointer motions
+ * @page page_pointer_constraints_unstable_v1 The
+ * pointer_constraints_unstable_v1 protocol protocol for constraining pointer
+ * motions
  *
  * @section page_desc_pointer_constraints_unstable_v1 Description
  *
@@ -40,8 +42,10 @@ struct wl_resource;
  * reset.
  *
  * @section page_ifaces_pointer_constraints_unstable_v1 Interfaces
- * - @subpage page_iface_zwp_pointer_constraints_v1 - constrain the movement of a pointer
- * - @subpage page_iface_zwp_locked_pointer_v1 - receive relative pointer motion events
+ * - @subpage page_iface_zwp_pointer_constraints_v1 - constrain the movement of
+ * a pointer
+ * - @subpage page_iface_zwp_locked_pointer_v1 - receive relative pointer motion
+ * events
  * - @subpage page_iface_zwp_confined_pointer_v1 - confined pointer object
  * @section page_copyright_pointer_constraints_unstable_v1 Copyright
  * <pre>
@@ -99,7 +103,8 @@ struct zwp_pointer_constraints_v1;
  * See @ref iface_zwp_pointer_constraints_v1.
  */
 /**
- * @defgroup iface_zwp_pointer_constraints_v1 The zwp_pointer_constraints_v1 interface
+ * @defgroup iface_zwp_pointer_constraints_v1 The zwp_pointer_constraints_v1
+ * interface
  *
  * The global interface exposing pointer constraining functionality. It
  * exposes two requests: lock_pointer for locking the pointer to its
@@ -236,10 +241,10 @@ extern const struct wl_interface zwp_confined_pointer_v1_interface;
  * requests.
  */
 enum zwp_pointer_constraints_v1_error {
-	/**
-	 * pointer constraint already requested on that surface
-	 */
-	ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED = 1,
+  /**
+   * pointer constraint already requested on that surface
+   */
+  ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED = 1,
 };
 #endif /* ZWP_POINTER_CONSTRAINTS_V1_ERROR_ENUM */
 
@@ -254,24 +259,24 @@ enum zwp_pointer_constraints_v1_error {
  * lifetimes should be managed.
  */
 enum zwp_pointer_constraints_v1_lifetime {
-	/**
-	 * the pointer constraint is defunct once deactivated
-	 *
-	 * A oneshot pointer constraint will never reactivate once it has
-	 * been deactivated. See the corresponding deactivation event
-	 * (wp_locked_pointer.unlocked and wp_confined_pointer.unconfined)
-	 * for details.
-	 */
-	ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT = 1,
-	/**
-	 * the pointer constraint may reactivate
-	 *
-	 * A persistent pointer constraint may again reactivate once it
-	 * has been deactivated. See the corresponding deactivation event
-	 * (wp_locked_pointer.unlocked and wp_confined_pointer.unconfined)
-	 * for details.
-	 */
-	ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT = 2,
+  /**
+   * the pointer constraint is defunct once deactivated
+   *
+   * A oneshot pointer constraint will never reactivate once it has
+   * been deactivated. See the corresponding deactivation event
+   * (wp_locked_pointer.unlocked and wp_confined_pointer.unconfined)
+   * for details.
+   */
+  ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT = 1,
+  /**
+   * the pointer constraint may reactivate
+   *
+   * A persistent pointer constraint may again reactivate once it
+   * has been deactivated. See the corresponding deactivation event
+   * (wp_locked_pointer.unlocked and wp_confined_pointer.unconfined)
+   * for details.
+   */
+  ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT = 2,
 };
 #endif /* ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ENUM */
 
@@ -280,102 +285,95 @@ enum zwp_pointer_constraints_v1_lifetime {
  * @struct zwp_pointer_constraints_v1_interface
  */
 struct zwp_pointer_constraints_v1_interface {
-	/**
-	 * destroy the pointer constraints manager object
-	 *
-	 * Used by the client to notify the server that it will no longer
-	 * use this pointer constraints object.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * lock pointer to a position
-	 *
-	 * The lock_pointer request lets the client request to disable
-	 * movements of the virtual pointer (i.e. the cursor), effectively
-	 * locking the pointer to a position. This request may not take
-	 * effect immediately; in the future, when the compositor deems
-	 * implementation-specific constraints are satisfied, the pointer
-	 * lock will be activated and the compositor sends a locked event.
-	 *
-	 * The protocol provides no guarantee that the constraints are ever
-	 * satisfied, and does not require the compositor to send an error
-	 * if the constraints cannot ever be satisfied. It is thus possible
-	 * to request a lock that will never activate.
-	 *
-	 * There may not be another pointer constraint of any kind
-	 * requested or active on the surface for any of the wl_pointer
-	 * objects of the seat of the passed pointer when requesting a
-	 * lock. If there is, an error will be raised. See general pointer
-	 * lock documentation for more details.
-	 *
-	 * The intersection of the region passed with this request and the
-	 * input region of the surface is used to determine where the
-	 * pointer must be in order for the lock to activate. It is up to
-	 * the compositor whether to warp the pointer or require some kind
-	 * of user interaction for the lock to activate. If the region is
-	 * null the surface input region is used.
-	 *
-	 * A surface may receive pointer focus without the lock being
-	 * activated.
-	 *
-	 * The request creates a new object wp_locked_pointer which is used
-	 * to interact with the lock as well as receive updates about its
-	 * state. See the the description of wp_locked_pointer for further
-	 * information.
-	 *
-	 * Note that while a pointer is locked, the wl_pointer objects of
-	 * the corresponding seat will not emit any wl_pointer.motion
-	 * events, but relative motion events will still be emitted via
-	 * wp_relative_pointer objects of the same seat. wl_pointer.axis
-	 * and wl_pointer.button events are unaffected.
-	 * @param surface surface to lock pointer to
-	 * @param pointer the pointer that should be locked
-	 * @param region region of surface
-	 * @param lifetime lock lifetime
-	 */
-	void (*lock_pointer)(struct wl_client *client,
-			     struct wl_resource *resource,
-			     uint32_t id,
-			     struct wl_resource *surface,
-			     struct wl_resource *pointer,
-			     struct wl_resource *region,
-			     uint32_t lifetime);
-	/**
-	 * confine pointer to a region
-	 *
-	 * The confine_pointer request lets the client request to confine
-	 * the pointer cursor to a given region. This request may not take
-	 * effect immediately; in the future, when the compositor deems
-	 * implementation- specific constraints are satisfied, the pointer
-	 * confinement will be activated and the compositor sends a
-	 * confined event.
-	 *
-	 * The intersection of the region passed with this request and the
-	 * input region of the surface is used to determine where the
-	 * pointer must be in order for the confinement to activate. It is
-	 * up to the compositor whether to warp the pointer or require some
-	 * kind of user interaction for the confinement to activate. If the
-	 * region is null the surface input region is used.
-	 *
-	 * The request will create a new object wp_confined_pointer which
-	 * is used to interact with the confinement as well as receive
-	 * updates about its state. See the the description of
-	 * wp_confined_pointer for further information.
-	 * @param surface surface to lock pointer to
-	 * @param pointer the pointer that should be confined
-	 * @param region region of surface
-	 * @param lifetime confinement lifetime
-	 */
-	void (*confine_pointer)(struct wl_client *client,
-				struct wl_resource *resource,
-				uint32_t id,
-				struct wl_resource *surface,
-				struct wl_resource *pointer,
-				struct wl_resource *region,
-				uint32_t lifetime);
+  /**
+   * destroy the pointer constraints manager object
+   *
+   * Used by the client to notify the server that it will no longer
+   * use this pointer constraints object.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * lock pointer to a position
+   *
+   * The lock_pointer request lets the client request to disable
+   * movements of the virtual pointer (i.e. the cursor), effectively
+   * locking the pointer to a position. This request may not take
+   * effect immediately; in the future, when the compositor deems
+   * implementation-specific constraints are satisfied, the pointer
+   * lock will be activated and the compositor sends a locked event.
+   *
+   * The protocol provides no guarantee that the constraints are ever
+   * satisfied, and does not require the compositor to send an error
+   * if the constraints cannot ever be satisfied. It is thus possible
+   * to request a lock that will never activate.
+   *
+   * There may not be another pointer constraint of any kind
+   * requested or active on the surface for any of the wl_pointer
+   * objects of the seat of the passed pointer when requesting a
+   * lock. If there is, an error will be raised. See general pointer
+   * lock documentation for more details.
+   *
+   * The intersection of the region passed with this request and the
+   * input region of the surface is used to determine where the
+   * pointer must be in order for the lock to activate. It is up to
+   * the compositor whether to warp the pointer or require some kind
+   * of user interaction for the lock to activate. If the region is
+   * null the surface input region is used.
+   *
+   * A surface may receive pointer focus without the lock being
+   * activated.
+   *
+   * The request creates a new object wp_locked_pointer which is used
+   * to interact with the lock as well as receive updates about its
+   * state. See the the description of wp_locked_pointer for further
+   * information.
+   *
+   * Note that while a pointer is locked, the wl_pointer objects of
+   * the corresponding seat will not emit any wl_pointer.motion
+   * events, but relative motion events will still be emitted via
+   * wp_relative_pointer objects of the same seat. wl_pointer.axis
+   * and wl_pointer.button events are unaffected.
+   * @param surface surface to lock pointer to
+   * @param pointer the pointer that should be locked
+   * @param region region of surface
+   * @param lifetime lock lifetime
+   */
+  void (*lock_pointer)(struct wl_client *client, struct wl_resource *resource,
+                       uint32_t id, struct wl_resource *surface,
+                       struct wl_resource *pointer, struct wl_resource *region,
+                       uint32_t lifetime);
+  /**
+   * confine pointer to a region
+   *
+   * The confine_pointer request lets the client request to confine
+   * the pointer cursor to a given region. This request may not take
+   * effect immediately; in the future, when the compositor deems
+   * implementation- specific constraints are satisfied, the pointer
+   * confinement will be activated and the compositor sends a
+   * confined event.
+   *
+   * The intersection of the region passed with this request and the
+   * input region of the surface is used to determine where the
+   * pointer must be in order for the confinement to activate. It is
+   * up to the compositor whether to warp the pointer or require some
+   * kind of user interaction for the confinement to activate. If the
+   * region is null the surface input region is used.
+   *
+   * The request will create a new object wp_confined_pointer which
+   * is used to interact with the confinement as well as receive
+   * updates about its state. See the the description of
+   * wp_confined_pointer for further information.
+   * @param surface surface to lock pointer to
+   * @param pointer the pointer that should be confined
+   * @param region region of surface
+   * @param lifetime confinement lifetime
+   */
+  void (*confine_pointer)(struct wl_client *client,
+                          struct wl_resource *resource, uint32_t id,
+                          struct wl_resource *surface,
+                          struct wl_resource *pointer,
+                          struct wl_resource *region, uint32_t lifetime);
 };
-
 
 /**
  * @ingroup iface_zwp_pointer_constraints_v1
@@ -395,50 +393,47 @@ struct zwp_pointer_constraints_v1_interface {
  * @struct zwp_locked_pointer_v1_interface
  */
 struct zwp_locked_pointer_v1_interface {
-	/**
-	 * destroy the locked pointer object
-	 *
-	 * Destroy the locked pointer object. If applicable, the
-	 * compositor will unlock the pointer.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * set the pointer cursor position hint
-	 *
-	 * Set the cursor position hint relative to the top left corner
-	 * of the surface.
-	 *
-	 * If the client is drawing its own cursor, it should update the
-	 * position hint to the position of its own cursor. A compositor
-	 * may use this information to warp the pointer upon unlock in
-	 * order to avoid pointer jumps.
-	 *
-	 * The cursor position hint is double buffered. The new hint will
-	 * only take effect when the associated surface gets it pending
-	 * state applied. See wl_surface.commit for details.
-	 * @param surface_x surface-local x coordinate
-	 * @param surface_y surface-local y coordinate
-	 */
-	void (*set_cursor_position_hint)(struct wl_client *client,
-					 struct wl_resource *resource,
-					 wl_fixed_t surface_x,
-					 wl_fixed_t surface_y);
-	/**
-	 * set a new lock region
-	 *
-	 * Set a new region used to lock the pointer.
-	 *
-	 * The new lock region is double-buffered. The new lock region will
-	 * only take effect when the associated surface gets its pending
-	 * state applied. See wl_surface.commit for details.
-	 *
-	 * For details about the lock region, see wp_locked_pointer.
-	 * @param region region of surface
-	 */
-	void (*set_region)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   struct wl_resource *region);
+  /**
+   * destroy the locked pointer object
+   *
+   * Destroy the locked pointer object. If applicable, the
+   * compositor will unlock the pointer.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * set the pointer cursor position hint
+   *
+   * Set the cursor position hint relative to the top left corner
+   * of the surface.
+   *
+   * If the client is drawing its own cursor, it should update the
+   * position hint to the position of its own cursor. A compositor
+   * may use this information to warp the pointer upon unlock in
+   * order to avoid pointer jumps.
+   *
+   * The cursor position hint is double buffered. The new hint will
+   * only take effect when the associated surface gets it pending
+   * state applied. See wl_surface.commit for details.
+   * @param surface_x surface-local x coordinate
+   * @param surface_y surface-local y coordinate
+   */
+  void (*set_cursor_position_hint)(struct wl_client *client,
+                                   struct wl_resource *resource,
+                                   wl_fixed_t surface_x, wl_fixed_t surface_y);
+  /**
+   * set a new lock region
+   *
+   * Set a new region used to lock the pointer.
+   *
+   * The new lock region is double-buffered. The new lock region will
+   * only take effect when the associated surface gets its pending
+   * state applied. See wl_surface.commit for details.
+   *
+   * For details about the lock region, see wp_locked_pointer.
+   * @param region region of surface
+   */
+  void (*set_region)(struct wl_client *client, struct wl_resource *resource,
+                     struct wl_resource *region);
 };
 
 #define ZWP_LOCKED_POINTER_V1_LOCKED 0
@@ -471,10 +466,9 @@ struct zwp_locked_pointer_v1_interface {
  * Sends an locked event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwp_locked_pointer_v1_send_locked(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWP_LOCKED_POINTER_V1_LOCKED);
+static inline void zwp_locked_pointer_v1_send_locked(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWP_LOCKED_POINTER_V1_LOCKED);
 }
 
 /**
@@ -482,10 +476,9 @@ zwp_locked_pointer_v1_send_locked(struct wl_resource *resource_)
  * Sends an unlocked event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwp_locked_pointer_v1_send_unlocked(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWP_LOCKED_POINTER_V1_UNLOCKED);
+static inline void zwp_locked_pointer_v1_send_unlocked(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWP_LOCKED_POINTER_V1_UNLOCKED);
 }
 
 /**
@@ -493,38 +486,36 @@ zwp_locked_pointer_v1_send_unlocked(struct wl_resource *resource_)
  * @struct zwp_confined_pointer_v1_interface
  */
 struct zwp_confined_pointer_v1_interface {
-	/**
-	 * destroy the confined pointer object
-	 *
-	 * Destroy the confined pointer object. If applicable, the
-	 * compositor will unconfine the pointer.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * set a new confine region
-	 *
-	 * Set a new region used to confine the pointer.
-	 *
-	 * The new confine region is double-buffered. The new confine
-	 * region will only take effect when the associated surface gets
-	 * its pending state applied. See wl_surface.commit for details.
-	 *
-	 * If the confinement is active when the new confinement region is
-	 * applied and the pointer ends up outside of newly applied region,
-	 * the pointer may warped to a position within the new confinement
-	 * region. If warped, a wl_pointer.motion event will be emitted,
-	 * but no wp_relative_pointer.relative_motion event.
-	 *
-	 * The compositor may also, instead of using the new region,
-	 * unconfine the pointer.
-	 *
-	 * For details about the confine region, see wp_confined_pointer.
-	 * @param region region of surface
-	 */
-	void (*set_region)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   struct wl_resource *region);
+  /**
+   * destroy the confined pointer object
+   *
+   * Destroy the confined pointer object. If applicable, the
+   * compositor will unconfine the pointer.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * set a new confine region
+   *
+   * Set a new region used to confine the pointer.
+   *
+   * The new confine region is double-buffered. The new confine
+   * region will only take effect when the associated surface gets
+   * its pending state applied. See wl_surface.commit for details.
+   *
+   * If the confinement is active when the new confinement region is
+   * applied and the pointer ends up outside of newly applied region,
+   * the pointer may warped to a position within the new confinement
+   * region. If warped, a wl_pointer.motion event will be emitted,
+   * but no wp_relative_pointer.relative_motion event.
+   *
+   * The compositor may also, instead of using the new region,
+   * unconfine the pointer.
+   *
+   * For details about the confine region, see wp_confined_pointer.
+   * @param region region of surface
+   */
+  void (*set_region)(struct wl_client *client, struct wl_resource *resource,
+                     struct wl_resource *region);
 };
 
 #define ZWP_CONFINED_POINTER_V1_CONFINED 0
@@ -553,10 +544,9 @@ struct zwp_confined_pointer_v1_interface {
  * Sends an confined event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwp_confined_pointer_v1_send_confined(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWP_CONFINED_POINTER_V1_CONFINED);
+static inline void zwp_confined_pointer_v1_send_confined(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWP_CONFINED_POINTER_V1_CONFINED);
 }
 
 /**
@@ -564,13 +554,12 @@ zwp_confined_pointer_v1_send_confined(struct wl_resource *resource_)
  * Sends an unconfined event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwp_confined_pointer_v1_send_unconfined(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWP_CONFINED_POINTER_V1_UNCONFINED);
+static inline void zwp_confined_pointer_v1_send_unconfined(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWP_CONFINED_POINTER_V1_UNCONFINED);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

@@ -4,33 +4,30 @@
 #include <LResource.h>
 #include <LWeak.h>
 
-class Louvre::Protocols::ImageCaptureSource::RImageCaptureSource final : public LResource
-{
-public:
+class Louvre::Protocols::ImageCaptureSource::RImageCaptureSource final
+    : public LResource {
+ public:
+  LImageCaptureSourceType type() const noexcept { return m_type; }
 
-    LImageCaptureSourceType type() const noexcept
-    {
-        return m_type;
-    }
+  LResource *source() const noexcept { return m_source.get(); }
 
-    LResource *source() const noexcept
-    {
-        return m_source.get();
-    }
+  /******************** REQUESTS ********************/
 
-    /******************** REQUESTS ********************/
+  static void destroy(wl_client *client, wl_resource *resource) noexcept;
 
-    static void destroy(wl_client *client, wl_resource *resource) noexcept;
+ private:
+  friend class Louvre::Protocols::ImageCaptureSource::
+      GOutputImageCaptureSourceManager;
+  friend class Louvre::Protocols::ImageCaptureSource::
+      GForeignToplevelImageCaptureSourceManager;
 
-private:
-    friend class Louvre::Protocols::ImageCaptureSource::GOutputImageCaptureSourceManager;
-    friend class Louvre::Protocols::ImageCaptureSource::GForeignToplevelImageCaptureSourceManager;
+  RImageCaptureSource(LClient *client, Int32 version, UInt32 id,
+                      LImageCaptureSourceType type, LResource *source) noexcept;
+  ~RImageCaptureSource() = default;
 
-    RImageCaptureSource(LClient *client, Int32 version, UInt32 id, LImageCaptureSourceType type, LResource *source) noexcept;
-    ~RImageCaptureSource() = default;
-
-    LWeak<LResource> m_source; // Wayland::GOutput or ForeignToplevelList::RForeignToplevelHandle
-    LImageCaptureSourceType m_type;
+  LWeak<LResource> m_source;  // Wayland::GOutput or
+                              // ForeignToplevelList::RForeignToplevelHandle
+  LImageCaptureSourceType m_type;
 };
 
-#endif // RIMAGECAPTURESOURCE_H
+#endif  // RIMAGECAPTURESOURCE_H

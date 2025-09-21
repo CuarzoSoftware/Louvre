@@ -5,13 +5,12 @@
 
 using namespace Louvre;
 
-class LayerRole final : public LLayerRole
-{
-public:
-    LayerRole(const void *params) noexcept;
-    void configureRequest() override;
+class LayerRole final : public LLayerRole {
+ public:
+  LayerRole(const void *params) noexcept;
+  void configureRequest() override;
 
-    bool isShelf { false };
+  bool isShelf{false};
 };
 
-#endif // LAYERROLE_H
+#endif  // LAYERROLE_H

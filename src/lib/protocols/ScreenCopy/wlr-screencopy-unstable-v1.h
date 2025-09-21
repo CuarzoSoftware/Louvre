@@ -3,11 +3,12 @@
 #ifndef WLR_SCREENCOPY_UNSTABLE_V1_SERVER_PROTOCOL_H
 #define WLR_SCREENCOPY_UNSTABLE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -33,7 +34,8 @@ struct wl_resource;
  * interface version number is reset.
  *
  * @section page_ifaces_wlr_screencopy_unstable_v1 Interfaces
- * - @subpage page_iface_zwlr_screencopy_manager_v1 - manager to inform clients and begin capturing
+ * - @subpage page_iface_zwlr_screencopy_manager_v1 - manager to inform clients
+ * and begin capturing
  * - @subpage page_iface_zwlr_screencopy_frame_v1 - a frame ready for copy
  * @section page_copyright_wlr_screencopy_unstable_v1 Copyright
  * <pre>
@@ -78,7 +80,8 @@ struct zwlr_screencopy_manager_v1;
  * See @ref iface_zwlr_screencopy_manager_v1.
  */
 /**
- * @defgroup iface_zwlr_screencopy_manager_v1 The zwlr_screencopy_manager_v1 interface
+ * @defgroup iface_zwlr_screencopy_manager_v1 The zwlr_screencopy_manager_v1
+ * interface
  *
  * This object is a manager which offers requests to start capturing from a
  * source.
@@ -111,7 +114,8 @@ extern const struct wl_interface zwlr_screencopy_manager_v1_interface;
  * See @ref iface_zwlr_screencopy_frame_v1.
  */
 /**
- * @defgroup iface_zwlr_screencopy_frame_v1 The zwlr_screencopy_frame_v1 interface
+ * @defgroup iface_zwlr_screencopy_frame_v1 The zwlr_screencopy_frame_v1
+ * interface
  *
  * This object represents a single frame.
  *
@@ -138,46 +142,38 @@ extern const struct wl_interface zwlr_screencopy_frame_v1_interface;
  * @struct zwlr_screencopy_manager_v1_interface
  */
 struct zwlr_screencopy_manager_v1_interface {
-	/**
-	 * capture an output
-	 *
-	 * Capture the next frame of an entire output.
-	 * @param overlay_cursor composite cursor onto the frame
-	 */
-	void (*capture_output)(struct wl_client *client,
-			       struct wl_resource *resource,
-			       uint32_t frame,
-			       int32_t overlay_cursor,
-			       struct wl_resource *output);
-	/**
-	 * capture an output's region
-	 *
-	 * Capture the next frame of an output's region.
-	 *
-	 * The region is given in output logical coordinates, see
-	 * xdg_output.logical_size. The region will be clipped to the
-	 * output's extents.
-	 * @param overlay_cursor composite cursor onto the frame
-	 */
-	void (*capture_output_region)(struct wl_client *client,
-				      struct wl_resource *resource,
-				      uint32_t frame,
-				      int32_t overlay_cursor,
-				      struct wl_resource *output,
-				      int32_t x,
-				      int32_t y,
-				      int32_t width,
-				      int32_t height);
-	/**
-	 * destroy the manager
-	 *
-	 * All objects created by the manager will still remain valid,
-	 * until their appropriate destroy request has been called.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * capture an output
+   *
+   * Capture the next frame of an entire output.
+   * @param overlay_cursor composite cursor onto the frame
+   */
+  void (*capture_output)(struct wl_client *client, struct wl_resource *resource,
+                         uint32_t frame, int32_t overlay_cursor,
+                         struct wl_resource *output);
+  /**
+   * capture an output's region
+   *
+   * Capture the next frame of an output's region.
+   *
+   * The region is given in output logical coordinates, see
+   * xdg_output.logical_size. The region will be clipped to the
+   * output's extents.
+   * @param overlay_cursor composite cursor onto the frame
+   */
+  void (*capture_output_region)(struct wl_client *client,
+                                struct wl_resource *resource, uint32_t frame,
+                                int32_t overlay_cursor,
+                                struct wl_resource *output, int32_t x,
+                                int32_t y, int32_t width, int32_t height);
+  /**
+   * destroy the manager
+   *
+   * All objects created by the manager will still remain valid,
+   * until their appropriate destroy request has been called.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
-
 
 /**
  * @ingroup iface_zwlr_screencopy_manager_v1
@@ -195,24 +191,24 @@ struct zwlr_screencopy_manager_v1_interface {
 #ifndef ZWLR_SCREENCOPY_FRAME_V1_ERROR_ENUM
 #define ZWLR_SCREENCOPY_FRAME_V1_ERROR_ENUM
 enum zwlr_screencopy_frame_v1_error {
-	/**
-	 * the object has already been used to copy a wl_buffer
-	 */
-	ZWLR_SCREENCOPY_FRAME_V1_ERROR_ALREADY_USED = 0,
-	/**
-	 * buffer attributes are invalid
-	 */
-	ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER = 1,
+  /**
+   * the object has already been used to copy a wl_buffer
+   */
+  ZWLR_SCREENCOPY_FRAME_V1_ERROR_ALREADY_USED = 0,
+  /**
+   * buffer attributes are invalid
+   */
+  ZWLR_SCREENCOPY_FRAME_V1_ERROR_INVALID_BUFFER = 1,
 };
 #endif /* ZWLR_SCREENCOPY_FRAME_V1_ERROR_ENUM */
 
 #ifndef ZWLR_SCREENCOPY_FRAME_V1_FLAGS_ENUM
 #define ZWLR_SCREENCOPY_FRAME_V1_FLAGS_ENUM
 enum zwlr_screencopy_frame_v1_flags {
-	/**
-	 * contents are y-inverted
-	 */
-	ZWLR_SCREENCOPY_FRAME_V1_FLAGS_Y_INVERT = 1,
+  /**
+   * contents are y-inverted
+   */
+  ZWLR_SCREENCOPY_FRAME_V1_FLAGS_Y_INVERT = 1,
 };
 #endif /* ZWLR_SCREENCOPY_FRAME_V1_FLAGS_ENUM */
 
@@ -221,37 +217,35 @@ enum zwlr_screencopy_frame_v1_flags {
  * @struct zwlr_screencopy_frame_v1_interface
  */
 struct zwlr_screencopy_frame_v1_interface {
-	/**
-	 * copy the frame
-	 *
-	 * Copy the frame to the supplied buffer. The buffer must have a
-	 * the correct size, see zwlr_screencopy_frame_v1.buffer and
-	 * zwlr_screencopy_frame_v1.linux_dmabuf. The buffer needs to have
-	 * a supported format.
-	 *
-	 * If the frame is successfully copied, a "flags" and a "ready"
-	 * events are sent. Otherwise, a "failed" event is sent.
-	 */
-	void (*copy)(struct wl_client *client,
-		     struct wl_resource *resource,
-		     struct wl_resource *buffer);
-	/**
-	 * delete this object, used or not
-	 *
-	 * Destroys the frame. This request can be sent at any time by
-	 * the client.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * copy the frame when it's damaged
-	 *
-	 * Same as copy, except it waits until there is damage to copy.
-	 * @since 2
-	 */
-	void (*copy_with_damage)(struct wl_client *client,
-				 struct wl_resource *resource,
-				 struct wl_resource *buffer);
+  /**
+   * copy the frame
+   *
+   * Copy the frame to the supplied buffer. The buffer must have a
+   * the correct size, see zwlr_screencopy_frame_v1.buffer and
+   * zwlr_screencopy_frame_v1.linux_dmabuf. The buffer needs to have
+   * a supported format.
+   *
+   * If the frame is successfully copied, a "flags" and a "ready"
+   * events are sent. Otherwise, a "failed" event is sent.
+   */
+  void (*copy)(struct wl_client *client, struct wl_resource *resource,
+               struct wl_resource *buffer);
+  /**
+   * delete this object, used or not
+   *
+   * Destroys the frame. This request can be sent at any time by
+   * the client.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * copy the frame when it's damaged
+   *
+   * Same as copy, except it waits until there is damage to copy.
+   * @since 2
+   */
+  void (*copy_with_damage)(struct wl_client *client,
+                           struct wl_resource *resource,
+                           struct wl_resource *buffer);
 };
 
 #define ZWLR_SCREENCOPY_FRAME_V1_BUFFER 0
@@ -313,10 +307,11 @@ struct zwlr_screencopy_frame_v1_interface {
  * @param height buffer height
  * @param stride buffer stride
  */
-static inline void
-zwlr_screencopy_frame_v1_send_buffer(struct wl_resource *resource_, uint32_t format, uint32_t width, uint32_t height, uint32_t stride)
-{
-	wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_BUFFER, format, width, height, stride);
+static inline void zwlr_screencopy_frame_v1_send_buffer(
+    struct wl_resource *resource_, uint32_t format, uint32_t width,
+    uint32_t height, uint32_t stride) {
+  wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_BUFFER, format,
+                         width, height, stride);
 }
 
 /**
@@ -325,10 +320,9 @@ zwlr_screencopy_frame_v1_send_buffer(struct wl_resource *resource_, uint32_t for
  * @param resource_ The client's resource
  * @param flags frame flags
  */
-static inline void
-zwlr_screencopy_frame_v1_send_flags(struct wl_resource *resource_, uint32_t flags)
-{
-	wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_FLAGS, flags);
+static inline void zwlr_screencopy_frame_v1_send_flags(
+    struct wl_resource *resource_, uint32_t flags) {
+  wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_FLAGS, flags);
 }
 
 /**
@@ -339,10 +333,11 @@ zwlr_screencopy_frame_v1_send_flags(struct wl_resource *resource_, uint32_t flag
  * @param tv_sec_lo low 32 bits of the seconds part of the timestamp
  * @param tv_nsec nanoseconds part of the timestamp
  */
-static inline void
-zwlr_screencopy_frame_v1_send_ready(struct wl_resource *resource_, uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec)
-{
-	wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_READY, tv_sec_hi, tv_sec_lo, tv_nsec);
+static inline void zwlr_screencopy_frame_v1_send_ready(
+    struct wl_resource *resource_, uint32_t tv_sec_hi, uint32_t tv_sec_lo,
+    uint32_t tv_nsec) {
+  wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_READY, tv_sec_hi,
+                         tv_sec_lo, tv_nsec);
 }
 
 /**
@@ -350,10 +345,9 @@ zwlr_screencopy_frame_v1_send_ready(struct wl_resource *resource_, uint32_t tv_s
  * Sends an failed event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_screencopy_frame_v1_send_failed(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_FAILED);
+static inline void zwlr_screencopy_frame_v1_send_failed(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_FAILED);
 }
 
 /**
@@ -365,10 +359,11 @@ zwlr_screencopy_frame_v1_send_failed(struct wl_resource *resource_)
  * @param width current width
  * @param height current height
  */
-static inline void
-zwlr_screencopy_frame_v1_send_damage(struct wl_resource *resource_, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-{
-	wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_DAMAGE, x, y, width, height);
+static inline void zwlr_screencopy_frame_v1_send_damage(
+    struct wl_resource *resource_, uint32_t x, uint32_t y, uint32_t width,
+    uint32_t height) {
+  wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_DAMAGE, x, y,
+                         width, height);
 }
 
 /**
@@ -379,10 +374,11 @@ zwlr_screencopy_frame_v1_send_damage(struct wl_resource *resource_, uint32_t x, 
  * @param width buffer width
  * @param height buffer height
  */
-static inline void
-zwlr_screencopy_frame_v1_send_linux_dmabuf(struct wl_resource *resource_, uint32_t format, uint32_t width, uint32_t height)
-{
-	wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_LINUX_DMABUF, format, width, height);
+static inline void zwlr_screencopy_frame_v1_send_linux_dmabuf(
+    struct wl_resource *resource_, uint32_t format, uint32_t width,
+    uint32_t height) {
+  wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_LINUX_DMABUF,
+                         format, width, height);
 }
 
 /**
@@ -390,13 +386,12 @@ zwlr_screencopy_frame_v1_send_linux_dmabuf(struct wl_resource *resource_, uint32
  * Sends an buffer_done event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_screencopy_frame_v1_send_buffer_done(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_BUFFER_DONE);
+static inline void zwlr_screencopy_frame_v1_send_buffer_done(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_SCREENCOPY_FRAME_V1_BUFFER_DONE);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

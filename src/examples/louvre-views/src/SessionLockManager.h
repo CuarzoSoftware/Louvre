@@ -5,13 +5,12 @@
 
 using namespace Louvre;
 
-class SessionLockManager final : public LSessionLockManager
-{
-public:
-    SessionLockManager(const void *params) : LSessionLockManager(params) {}
+class SessionLockManager final : public LSessionLockManager {
+ public:
+  SessionLockManager(const void *params) : LSessionLockManager(params) {}
 
-    bool lockRequest(LClient *) override { return true; }
-    void stateChanged() override;
+  bool lockRequest(LClient *) override { return true; }
+  void stateChanged() override;
 };
 
-#endif // SESSIONLOCKMANAGER_H
+#endif  // SESSIONLOCKMANAGER_H

@@ -4,31 +4,26 @@
 #include <LResource.h>
 #include <LWeak.h>
 
-class Louvre::Protocols::GammaControl::RGammaControl final : public LResource
-{
-public:
+class Louvre::Protocols::GammaControl::RGammaControl final : public LResource {
+ public:
+  Wayland::GOutput *outputRes() const noexcept { return m_outputRes; }
 
-    Wayland::GOutput *outputRes() const noexcept
-    {
-        return m_outputRes;
-    }
+  /******************** REQUESTS ********************/
 
-    /******************** REQUESTS ********************/
+  static void destroy(wl_client *client, wl_resource *resource);
+  static void set_gamma(wl_client *client, wl_resource *resource, Int32 fd);
 
-    static void destroy(wl_client *client, wl_resource *resource);
-    static void set_gamma(wl_client *client, wl_resource *resource, Int32 fd);
+  /******************** EVENTS ********************/
 
-    /******************** EVENTS ********************/
+  // Since 1
+  void gammaSize(UInt32 size) noexcept;
+  void failed() noexcept;
 
-    // Since 1
-    void gammaSize(UInt32 size) noexcept;
-    void failed() noexcept;
-
-private:
-    friend class Louvre::Protocols::GammaControl::GGammaControlManager;
-    RGammaControl(Wayland::GOutput *outputRes, Int32 version, UInt32 id) noexcept;
-    ~RGammaControl();
-    LWeak<Wayland::GOutput> m_outputRes;
+ private:
+  friend class Louvre::Protocols::GammaControl::GGammaControlManager;
+  RGammaControl(Wayland::GOutput *outputRes, Int32 version, UInt32 id) noexcept;
+  ~RGammaControl();
+  LWeak<Wayland::GOutput> m_outputRes;
 };
 
-#endif // RGAMMACONTROL_H
+#endif  // RGAMMACONTROL_H

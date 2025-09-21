@@ -1,9 +1,10 @@
 #ifndef LTEST_H
 #define LTEST_H
 
-#include <string>
 #include <LLog.h>
 #include <LObject.h>
+
+#include <string>
 
 using namespace Louvre;
 
@@ -13,5 +14,4 @@ void LSetTestName(const std::string &testName);
 const std::string &LGetTestName();
 void LAssert(const std::string &desc, bool condition);
 
-
-#endif // LTEST_H
+#endif  // LTEST_H

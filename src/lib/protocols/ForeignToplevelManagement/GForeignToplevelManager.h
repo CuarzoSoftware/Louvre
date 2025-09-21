@@ -3,41 +3,37 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::ForeignToplevelManagement::GForeignToplevelManager final : public LResource
-{
-public:
+class Louvre::Protocols::ForeignToplevelManagement::GForeignToplevelManager
+    final : public LResource {
+ public:
+  /*
+   * Checks if stop() has been requested.
+   *
+   * If true:
+   * - Further client requests will be ignored.
+   * - New toplevel objects won't be announced.
+   * - Changes from already announced toplevels will still be notified.
+   */
+  bool stopped() const noexcept { return m_stopped; }
 
-    /*
-     * Checks if stop() has been requested.
-     *
-     * If true:
-     * - Further client requests will be ignored.
-     * - New toplevel objects won't be announced.
-     * - Changes from already announced toplevels will still be notified.
-     */
-    bool stopped() const noexcept
-    {
-        return m_stopped;
-    }
+  /******************** REQUESTS ********************/
 
-    /******************** REQUESTS ********************/
+  static void stop(wl_client *client, wl_resource *resource) noexcept;
 
-    static void stop(wl_client *client, wl_resource *resource) noexcept;
+  /******************** EVENTS ********************/
 
-    /******************** EVENTS ********************/
+  /* Creates a new LToplevelController */
+  void toplevel(LToplevelRole &toplevelRole);
 
-    /* Creates a new LToplevelController */
-    void toplevel(LToplevelRole &toplevelRole);
+  /* Notify and destroy the resource */
+  const std::vector<GForeignToplevelManager *>::iterator finished();
 
-    /* Notify and destroy the resource */
-    const std::vector<GForeignToplevelManager*>::iterator finished();
-
-private:
-    bool m_stopped { false };
-    bool m_finished { false };
-    LGLOBAL_INTERFACE
-    GForeignToplevelManager(wl_client *client, Int32 version, UInt32 id) noexcept;
-    ~GForeignToplevelManager() noexcept;
+ private:
+  bool m_stopped{false};
+  bool m_finished{false};
+  LGLOBAL_INTERFACE
+  GForeignToplevelManager(wl_client *client, Int32 version, UInt32 id) noexcept;
+  ~GForeignToplevelManager() noexcept;
 };
 
-#endif // GFOREIGNTOPLEVELMANAGER_H
+#endif  // GFOREIGNTOPLEVELMANAGER_H

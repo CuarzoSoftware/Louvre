@@ -1,58 +1,56 @@
-#include <private/LCursorRolePrivate.h>
-#include <private/LSurfacePrivate.h>
-#include <private/LPointerPrivate.h>
-#include <private/LClientPrivate.h>
-#include <LDND.h>
-#include <LCursorRole.h>
 #include <LClientCursor.h>
-#include <LSurface.h>
 #include <LCompositor.h>
 #include <LCursor.h>
+#include <LCursorRole.h>
+#include <LDND.h>
 #include <LSeat.h>
+#include <LSurface.h>
+#include <private/LClientPrivate.h>
+#include <private/LCursorRolePrivate.h>
+#include <private/LPointerPrivate.h>
+#include <private/LSurfacePrivate.h>
 
 using namespace Louvre;
 
-LCursorRole::LCursorRole(const void *params) noexcept :
-    LBaseSurfaceRole(FactoryObjectType,
-        static_cast<const Params*>(params)->surface->surfaceResource(),
-        static_cast<const Params*>(params)->surface,
-        LSurface::Role::Cursor)
-{
-    surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ReceiveInput);
+LCursorRole::LCursorRole(const void *params) noexcept
+    : LBaseSurfaceRole(
+          FactoryObjectType,
+          static_cast<const Params *>(params)->surface->surfaceResource(),
+          static_cast<const Params *>(params)->surface,
+          LSurface::Role::Cursor) {
+  surface()->imp()->stateFlags.remove(LSurface::LSurfacePrivate::ReceiveInput);
 
-    for (LOutput *output : cursor()->intersectedOutputs())
-        surface()->sendOutputEnterEvent(output);
+  for (LOutput *output : cursor()->intersectedOutputs())
+    surface()->sendOutputEnterEvent(output);
 }
 
-LCursorRole::~LCursorRole()
-{
-    validateDestructor();
+LCursorRole::~LCursorRole() {
+  validateDestructor();
 
-    if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
-        cursor()->useDefault();
+  if (cursor()->clientCursor() &&
+      cursor()->clientCursor()->cursorRole() == this)
+    cursor()->useDefault();
 }
 
-void LCursorRole::handleSurfaceCommit(CommitOrigin origin)
-{
-    L_UNUSED(origin);
+void LCursorRole::handleSurfaceCommit(CommitOrigin origin) {
+  L_UNUSED(origin);
 
-    m_currentHotspot -= m_pendingHotspotOffset;
-    m_pendingHotspotOffset = 0;
-    m_currentHotspotB = m_currentHotspot * surface()->bufferScale();
+  m_currentHotspot -= m_pendingHotspotOffset;
+  m_pendingHotspotOffset = 0;
+  m_currentHotspotB = m_currentHotspot * surface()->bufferScale();
 
-    hotspotChanged();
+  hotspotChanged();
 
-    surface()->imp()->setMapped(surface()->hasBuffer());
+  surface()->imp()->setMapped(surface()->hasBuffer());
 
-    if (cursor()->clientCursor() && cursor()->clientCursor()->cursorRole() == this)
-    {
-        client()->imp()->lastCursorRequest.m_visible = surface()->mapped();
-        cursor()->setCursor(*cursor()->clientCursor());
-    }
+  if (cursor()->clientCursor() &&
+      cursor()->clientCursor()->cursorRole() == this) {
+    client()->imp()->lastCursorRequest.m_visible = surface()->mapped();
+    cursor()->setCursor(*cursor()->clientCursor());
+  }
 }
 
-void LCursorRole::handleSurfaceOffset(Int32 x, Int32 y)
-{
-    m_pendingHotspotOffset.setX(x);
-    m_pendingHotspotOffset.setY(y);
+void LCursorRole::handleSurfaceOffset(Int32 x, Int32 y) {
+  m_pendingHotspotOffset.setX(x);
+  m_pendingHotspotOffset.setY(y);
 }

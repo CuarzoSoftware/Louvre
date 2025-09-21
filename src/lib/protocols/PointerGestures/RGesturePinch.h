@@ -4,31 +4,29 @@
 #include <LResource.h>
 #include <LWeak.h>
 
-class Louvre::Protocols::PointerGestures::RGesturePinch final : public LResource
-{
-public:
+class Louvre::Protocols::PointerGestures::RGesturePinch final
+    : public LResource {
+ public:
+  Wayland::RPointer *pointerRes() const noexcept { return m_pointerRes; }
 
-    Wayland::RPointer *pointerRes() const noexcept
-    {
-        return m_pointerRes;
-    }
+  /******************** REQUESTS ********************/
 
-    /******************** REQUESTS ********************/
+  static void destroy(wl_client *client, wl_resource *resource) noexcept;
 
-    static void destroy(wl_client *client, wl_resource *resource) noexcept;
+  /******************** EVENTS ********************/
 
-    /******************** EVENTS ********************/
+  // Since 1
+  void begin(const LPointerPinchBeginEvent &event,
+             Wayland::RSurface *surfaceRes) noexcept;
+  void update(const LPointerPinchUpdateEvent &event) noexcept;
+  void end(const LPointerPinchEndEvent &event) noexcept;
 
-    // Since 1
-    void begin(const LPointerPinchBeginEvent &event, Wayland::RSurface *surfaceRes) noexcept;
-    void update(const LPointerPinchUpdateEvent &event) noexcept;
-    void end(const LPointerPinchEndEvent &event) noexcept;
-
-private:
-    friend class Louvre::Protocols::PointerGestures::GPointerGestures;
-    RGesturePinch(Wayland::RPointer *pointerRes, Int32 id, UInt32 version) noexcept;
-    ~RGesturePinch() noexcept;
-    LWeak<Wayland::RPointer> m_pointerRes;
+ private:
+  friend class Louvre::Protocols::PointerGestures::GPointerGestures;
+  RGesturePinch(Wayland::RPointer *pointerRes, Int32 id,
+                UInt32 version) noexcept;
+  ~RGesturePinch() noexcept;
+  LWeak<Wayland::RPointer> m_pointerRes;
 };
 
-#endif // RGESTUREPINCH_H
+#endif  // RGESTUREPINCH_H

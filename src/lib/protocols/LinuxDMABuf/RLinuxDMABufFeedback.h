@@ -3,29 +3,28 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::LinuxDMABuf::RLinuxDMABufFeedback final : public LResource
-{
-public:
+class Louvre::Protocols::LinuxDMABuf::RLinuxDMABufFeedback final
+    : public LResource {
+ public:
+  /******************** REQUESTS ********************/
 
-    /******************** REQUESTS ********************/
+  static void destroy(wl_client *, wl_resource *resource) noexcept;
 
-    static void destroy(wl_client *, wl_resource *resource) noexcept;
+  /******************** EVENTS ********************/
 
-    /******************** EVENTS ********************/
+  // Since 1
+  void done() noexcept;
+  void formatTable(Int32 fd, UInt32 size) noexcept;
+  void mainDevice(wl_array *devices) noexcept;
+  void trancheDone() noexcept;
+  void trancheTargetDevice(wl_array *devices) noexcept;
+  void trancheFormats(wl_array *indices) noexcept;
+  void trancheFlags(UInt32 flags) noexcept;
 
-    // Since 1
-    void done() noexcept;
-    void formatTable(Int32 fd, UInt32 size) noexcept;
-    void mainDevice(wl_array *devices) noexcept;
-    void trancheDone() noexcept;
-    void trancheTargetDevice(wl_array *devices) noexcept;
-    void trancheFormats(wl_array *indices) noexcept;
-    void trancheFlags(UInt32 flags) noexcept;
-
-private:
-    friend class Louvre::Protocols::LinuxDMABuf::GLinuxDMABuf;
-    RLinuxDMABufFeedback(GLinuxDMABuf *linuxDMABufRes, UInt32 id) noexcept;
-    ~RLinuxDMABufFeedback() noexcept = default;
+ private:
+  friend class Louvre::Protocols::LinuxDMABuf::GLinuxDMABuf;
+  RLinuxDMABufFeedback(GLinuxDMABuf *linuxDMABufRes, UInt32 id) noexcept;
+  ~RLinuxDMABufFeedback() noexcept = default;
 };
 
-#endif // RLINUXDMABUFFEEDBACK_H
+#endif  // RLINUXDMABUFFEEDBACK_H

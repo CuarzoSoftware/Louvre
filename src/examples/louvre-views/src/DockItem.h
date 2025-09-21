@@ -8,18 +8,17 @@ class Dock;
 
 using namespace Louvre;
 
-class DockItem final : public LTextureView
-{
-public:
-    DockItem(class Surface *surface, Dock *dock) noexcept;
-    ~DockItem();
+class DockItem final : public LTextureView {
+ public:
+  DockItem(class Surface *surface, Dock *dock) noexcept;
+  ~DockItem();
 
-    void pointerEnterEvent(const LPointerEnterEvent &) override;
-    void pointerLeaveEvent(const LPointerLeaveEvent &) override;
-    void pointerButtonEvent(const LPointerButtonEvent &event) override;
+  void pointerEnterEvent(const LPointerEnterEvent &) override;
+  void pointerLeaveEvent(const LPointerLeaveEvent &) override;
+  void pointerButtonEvent(const LPointerButtonEvent &event) override;
 
-    Dock *dock = nullptr;
-    class Surface *surface = nullptr;
+  Dock *dock = nullptr;
+  class Surface *surface = nullptr;
 };
 
-#endif // DOCKITEM_H
+#endif  // DOCKITEM_H

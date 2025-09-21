@@ -3,11 +3,12 @@
 #ifndef RELATIVE_POINTER_UNSTABLE_V1_SERVER_PROTOCOL_H
 #define RELATIVE_POINTER_UNSTABLE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -15,8 +16,8 @@ struct wl_client;
 struct wl_resource;
 
 /**
- * @page page_relative_pointer_unstable_v1 The relative_pointer_unstable_v1 protocol
- * protocol for relative pointer motion events
+ * @page page_relative_pointer_unstable_v1 The relative_pointer_unstable_v1
+ * protocol protocol for relative pointer motion events
  *
  * @section page_desc_relative_pointer_unstable_v1 Description
  *
@@ -44,7 +45,8 @@ struct wl_resource;
  * reset.
  *
  * @section page_ifaces_relative_pointer_unstable_v1 Interfaces
- * - @subpage page_iface_zwp_relative_pointer_manager_v1 - get relative pointer objects
+ * - @subpage page_iface_zwp_relative_pointer_manager_v1 - get relative pointer
+ * objects
  * - @subpage page_iface_zwp_relative_pointer_v1 - relative pointer object
  * @section page_copyright_relative_pointer_unstable_v1 Copyright
  * <pre>
@@ -79,7 +81,8 @@ struct zwp_relative_pointer_v1;
 #ifndef ZWP_RELATIVE_POINTER_MANAGER_V1_INTERFACE
 #define ZWP_RELATIVE_POINTER_MANAGER_V1_INTERFACE
 /**
- * @page page_iface_zwp_relative_pointer_manager_v1 zwp_relative_pointer_manager_v1
+ * @page page_iface_zwp_relative_pointer_manager_v1
+ * zwp_relative_pointer_manager_v1
  * @section page_iface_zwp_relative_pointer_manager_v1_desc Description
  *
  * A global interface used for getting the relative pointer object for a
@@ -88,7 +91,8 @@ struct zwp_relative_pointer_v1;
  * See @ref iface_zwp_relative_pointer_manager_v1.
  */
 /**
- * @defgroup iface_zwp_relative_pointer_manager_v1 The zwp_relative_pointer_manager_v1 interface
+ * @defgroup iface_zwp_relative_pointer_manager_v1 The
+ * zwp_relative_pointer_manager_v1 interface
  *
  * A global interface used for getting the relative pointer object for a
  * given pointer.
@@ -124,26 +128,23 @@ extern const struct wl_interface zwp_relative_pointer_v1_interface;
  * @struct zwp_relative_pointer_manager_v1_interface
  */
 struct zwp_relative_pointer_manager_v1_interface {
-	/**
-	 * destroy the relative pointer manager object
-	 *
-	 * Used by the client to notify the server that it will no longer
-	 * use this relative pointer manager object.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * get a relative pointer object
-	 *
-	 * Create a relative pointer interface given a wl_pointer object.
-	 * See the wp_relative_pointer interface for more details.
-	 */
-	void (*get_relative_pointer)(struct wl_client *client,
-				     struct wl_resource *resource,
-				     uint32_t id,
-				     struct wl_resource *pointer);
+  /**
+   * destroy the relative pointer manager object
+   *
+   * Used by the client to notify the server that it will no longer
+   * use this relative pointer manager object.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * get a relative pointer object
+   *
+   * Create a relative pointer interface given a wl_pointer object.
+   * See the wp_relative_pointer interface for more details.
+   */
+  void (*get_relative_pointer)(struct wl_client *client,
+                               struct wl_resource *resource, uint32_t id,
+                               struct wl_resource *pointer);
 };
-
 
 /**
  * @ingroup iface_zwp_relative_pointer_manager_v1
@@ -159,13 +160,12 @@ struct zwp_relative_pointer_manager_v1_interface {
  * @struct zwp_relative_pointer_v1_interface
  */
 struct zwp_relative_pointer_v1_interface {
-	/**
-	 * release the relative pointer object
-	 *
-	 * 
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * release the relative pointer object
+   *
+   *
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZWP_RELATIVE_POINTER_V1_RELATIVE_MOTION 0
@@ -184,20 +184,24 @@ struct zwp_relative_pointer_v1_interface {
  * @ingroup iface_zwp_relative_pointer_v1
  * Sends an relative_motion event to the client owning the resource.
  * @param resource_ The client's resource
- * @param utime_hi high 32 bits of a 64 bit timestamp with microsecond granularity
- * @param utime_lo low 32 bits of a 64 bit timestamp with microsecond granularity
+ * @param utime_hi high 32 bits of a 64 bit timestamp with microsecond
+ * granularity
+ * @param utime_lo low 32 bits of a 64 bit timestamp with microsecond
+ * granularity
  * @param dx the x component of the motion vector
  * @param dy the y component of the motion vector
  * @param dx_unaccel the x component of the unaccelerated motion vector
  * @param dy_unaccel the y component of the unaccelerated motion vector
  */
-static inline void
-zwp_relative_pointer_v1_send_relative_motion(struct wl_resource *resource_, uint32_t utime_hi, uint32_t utime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel)
-{
-	wl_resource_post_event(resource_, ZWP_RELATIVE_POINTER_V1_RELATIVE_MOTION, utime_hi, utime_lo, dx, dy, dx_unaccel, dy_unaccel);
+static inline void zwp_relative_pointer_v1_send_relative_motion(
+    struct wl_resource *resource_, uint32_t utime_hi, uint32_t utime_lo,
+    wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel,
+    wl_fixed_t dy_unaccel) {
+  wl_resource_post_event(resource_, ZWP_RELATIVE_POINTER_V1_RELATIVE_MOTION,
+                         utime_hi, utime_lo, dx, dy, dx_unaccel, dy_unaccel);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

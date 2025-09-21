@@ -3,11 +3,12 @@
 #ifndef CONTENT_TYPE_V1_SERVER_PROTOCOL_H
 #define CONTENT_TYPE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -17,7 +18,8 @@ struct wl_resource;
 /**
  * @page page_content_type_v1 The content_type_v1 protocol
  * @section page_ifaces_content_type_v1 Interfaces
- * - @subpage page_iface_wp_content_type_manager_v1 - surface content type manager
+ * - @subpage page_iface_wp_content_type_manager_v1 - surface content type
+ * manager
  * - @subpage page_iface_wp_content_type_v1 - content type object for a surface
  * @section page_copyright_content_type_v1 Copyright
  * <pre>
@@ -66,7 +68,8 @@ struct wp_content_type_v1;
  * See @ref iface_wp_content_type_manager_v1.
  */
 /**
- * @defgroup iface_wp_content_type_manager_v1 The wp_content_type_manager_v1 interface
+ * @defgroup iface_wp_content_type_manager_v1 The wp_content_type_manager_v1
+ * interface
  *
  * This interface allows a client to describe the kind of content a surface
  * will display, to allow the compositor to optimize its behavior for it.
@@ -111,10 +114,10 @@ extern const struct wl_interface wp_content_type_v1_interface;
 #ifndef WP_CONTENT_TYPE_MANAGER_V1_ERROR_ENUM
 #define WP_CONTENT_TYPE_MANAGER_V1_ERROR_ENUM
 enum wp_content_type_manager_v1_error {
-	/**
-	 * wl_surface already has a content type object
-	 */
-	WP_CONTENT_TYPE_MANAGER_V1_ERROR_ALREADY_CONSTRUCTED = 0,
+  /**
+   * wl_surface already has a content type object
+   */
+  WP_CONTENT_TYPE_MANAGER_V1_ERROR_ALREADY_CONSTRUCTED = 0,
 };
 #endif /* WP_CONTENT_TYPE_MANAGER_V1_ERROR_ENUM */
 
@@ -123,29 +126,26 @@ enum wp_content_type_manager_v1_error {
  * @struct wp_content_type_manager_v1_interface
  */
 struct wp_content_type_manager_v1_interface {
-	/**
-	 * destroy the content type manager object
-	 *
-	 * Destroy the content type manager. This doesn't destroy objects
-	 * created with the manager.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * create a new toplevel decoration object
-	 *
-	 * Create a new content type object associated with the given
-	 * surface.
-	 *
-	 * Creating a wp_content_type_v1 from a wl_surface which already
-	 * has one attached is a client error: already_constructed.
-	 */
-	void (*get_surface_content_type)(struct wl_client *client,
-					 struct wl_resource *resource,
-					 uint32_t id,
-					 struct wl_resource *surface);
+  /**
+   * destroy the content type manager object
+   *
+   * Destroy the content type manager. This doesn't destroy objects
+   * created with the manager.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * create a new toplevel decoration object
+   *
+   * Create a new content type object associated with the given
+   * surface.
+   *
+   * Creating a wp_content_type_v1 from a wl_surface which already
+   * has one attached is a client error: already_constructed.
+   */
+  void (*get_surface_content_type)(struct wl_client *client,
+                                   struct wl_resource *resource, uint32_t id,
+                                   struct wl_resource *surface);
 };
-
 
 /**
  * @ingroup iface_wp_content_type_manager_v1
@@ -165,37 +165,37 @@ struct wp_content_type_manager_v1_interface {
  * These values describe the available content types for a surface.
  */
 enum wp_content_type_v1_type {
-	/**
-	 * no content type applies
-	 *
-	 * The content type none means that either the application has no
-	 * data about the content type, or that the content doesn't fit
-	 * into one of the other categories.
-	 */
-	WP_CONTENT_TYPE_V1_TYPE_NONE = 0,
-	/**
-	 * photo content type
-	 *
-	 * The content type photo describes content derived from digital
-	 * still pictures and may be presented with minimal processing.
-	 */
-	WP_CONTENT_TYPE_V1_TYPE_PHOTO = 1,
-	/**
-	 * video content type
-	 *
-	 * The content type video describes a video or animation and may
-	 * be presented with more accurate timing to avoid stutter. Where
-	 * scaling is needed, scaling methods more appropriate for video
-	 * may be used.
-	 */
-	WP_CONTENT_TYPE_V1_TYPE_VIDEO = 2,
-	/**
-	 * game content type
-	 *
-	 * The content type game describes a running game. Its content
-	 * may be presented with reduced latency.
-	 */
-	WP_CONTENT_TYPE_V1_TYPE_GAME = 3,
+  /**
+   * no content type applies
+   *
+   * The content type none means that either the application has no
+   * data about the content type, or that the content doesn't fit
+   * into one of the other categories.
+   */
+  WP_CONTENT_TYPE_V1_TYPE_NONE = 0,
+  /**
+   * photo content type
+   *
+   * The content type photo describes content derived from digital
+   * still pictures and may be presented with minimal processing.
+   */
+  WP_CONTENT_TYPE_V1_TYPE_PHOTO = 1,
+  /**
+   * video content type
+   *
+   * The content type video describes a video or animation and may
+   * be presented with more accurate timing to avoid stutter. Where
+   * scaling is needed, scaling methods more appropriate for video
+   * may be used.
+   */
+  WP_CONTENT_TYPE_V1_TYPE_VIDEO = 2,
+  /**
+   * game content type
+   *
+   * The content type game describes a running game. Its content
+   * may be presented with reduced latency.
+   */
+  WP_CONTENT_TYPE_V1_TYPE_GAME = 3,
 };
 #endif /* WP_CONTENT_TYPE_V1_TYPE_ENUM */
 
@@ -204,36 +204,33 @@ enum wp_content_type_v1_type {
  * @struct wp_content_type_v1_interface
  */
 struct wp_content_type_v1_interface {
-	/**
-	 * destroy the content type object
-	 *
-	 * Switch back to not specifying the content type of this
-	 * surface. This is equivalent to setting the content type to none,
-	 * including double buffering semantics. See set_content_type for
-	 * details.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * specify the content type
-	 *
-	 * Set the surface content type. This informs the compositor that
-	 * the client believes it is displaying buffers matching this
-	 * content type.
-	 *
-	 * This is purely a hint for the compositor, which can be used to
-	 * adjust its behavior or hardware settings to fit the presented
-	 * content best.
-	 *
-	 * The content type is double-buffered state, see wl_surface.commit
-	 * for details.
-	 * @param content_type the content type
-	 */
-	void (*set_content_type)(struct wl_client *client,
-				 struct wl_resource *resource,
-				 uint32_t content_type);
+  /**
+   * destroy the content type object
+   *
+   * Switch back to not specifying the content type of this
+   * surface. This is equivalent to setting the content type to none,
+   * including double buffering semantics. See set_content_type for
+   * details.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * specify the content type
+   *
+   * Set the surface content type. This informs the compositor that
+   * the client believes it is displaying buffers matching this
+   * content type.
+   *
+   * This is purely a hint for the compositor, which can be used to
+   * adjust its behavior or hardware settings to fit the presented
+   * content best.
+   *
+   * The content type is double-buffered state, see wl_surface.commit
+   * for details.
+   * @param content_type the content type
+   */
+  void (*set_content_type)(struct wl_client *client,
+                           struct wl_resource *resource, uint32_t content_type);
 };
-
 
 /**
  * @ingroup iface_wp_content_type_v1
@@ -244,7 +241,7 @@ struct wp_content_type_v1_interface {
  */
 #define WP_CONTENT_TYPE_V1_SET_CONTENT_TYPE_SINCE_VERSION 1
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

@@ -3,24 +3,24 @@
 
 #include <LResource.h>
 
-class Louvre::Protocols::PresentationTime::GPresentation final : public LResource
-{
-public:
+class Louvre::Protocols::PresentationTime::GPresentation final
+    : public LResource {
+ public:
+  /******************** REQUESTS ********************/
 
-    /******************** REQUESTS ********************/
+  static void destroy(wl_client *client, wl_resource *resource) noexcept;
+  static void feedback(wl_client *client, wl_resource *resource,
+                       wl_resource *surface, UInt32 id) noexcept;
 
-    static void destroy(wl_client *client, wl_resource *resource) noexcept;
-    static void feedback(wl_client *client, wl_resource *resource, wl_resource *surface, UInt32 id) noexcept;
+  /******************** EVENTS ********************/
 
-    /******************** EVENTS ********************/
+  // Since 1
+  void clockId(UInt32 clockId) noexcept;
 
-    // Since 1
-    void clockId(UInt32 clockId) noexcept;
-
-private:
-    LGLOBAL_INTERFACE
-    GPresentation(wl_client *client, Int32 version, UInt32 id) noexcept;
-    ~GPresentation() noexcept;
+ private:
+  LGLOBAL_INTERFACE
+  GPresentation(wl_client *client, Int32 version, UInt32 id) noexcept;
+  ~GPresentation() noexcept;
 };
 
-#endif // GPRESENTATION_H
+#endif  // GPRESENTATION_H

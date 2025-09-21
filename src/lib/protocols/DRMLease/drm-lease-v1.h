@@ -3,11 +3,12 @@
 #ifndef DRM_LEASE_V1_SERVER_PROTOCOL_H
 #define DRM_LEASE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -145,7 +146,8 @@ extern const struct wl_interface wp_drm_lease_device_v1_interface;
  * See @ref iface_wp_drm_lease_connector_v1.
  */
 /**
- * @defgroup iface_wp_drm_lease_connector_v1 The wp_drm_lease_connector_v1 interface
+ * @defgroup iface_wp_drm_lease_connector_v1 The wp_drm_lease_connector_v1
+ * interface
  *
  * Represents a DRM connector which is available for lease. These objects are
  * created via wp_drm_lease_device_v1.connector events, and should be passed
@@ -217,29 +219,27 @@ extern const struct wl_interface wp_drm_lease_v1_interface;
  * @struct wp_drm_lease_device_v1_interface
  */
 struct wp_drm_lease_device_v1_interface {
-	/**
-	 * create a lease request object
-	 *
-	 * Creates a lease request object.
-	 *
-	 * See the documentation for wp_drm_lease_request_v1 for details.
-	 */
-	void (*create_lease_request)(struct wl_client *client,
-				     struct wl_resource *resource,
-				     uint32_t id);
-	/**
-	 * release this object
-	 *
-	 * Indicates the client no longer wishes to use this object. In
-	 * response the compositor will immediately send the released event
-	 * and destroy this object. It can however not guarantee that the
-	 * client won't receive connector events before the released event.
-	 * The client must not send any requests after this one, doing so
-	 * will raise a wl_display error. Existing connectors, lease
-	 * request and leases will not be affected.
-	 */
-	void (*release)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * create a lease request object
+   *
+   * Creates a lease request object.
+   *
+   * See the documentation for wp_drm_lease_request_v1 for details.
+   */
+  void (*create_lease_request)(struct wl_client *client,
+                               struct wl_resource *resource, uint32_t id);
+  /**
+   * release this object
+   *
+   * Indicates the client no longer wishes to use this object. In
+   * response the compositor will immediately send the released event
+   * and destroy this object. It can however not guarantee that the
+   * client won't receive connector events before the released event.
+   * The client must not send any requests after this one, doing so
+   * will raise a wl_display error. Existing connectors, lease
+   * request and leases will not be affected.
+   */
+  void (*release)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WP_DRM_LEASE_DEVICE_V1_DRM_FD 0
@@ -279,10 +279,9 @@ struct wp_drm_lease_device_v1_interface {
  * @param resource_ The client's resource
  * @param fd DRM file descriptor
  */
-static inline void
-wp_drm_lease_device_v1_send_drm_fd(struct wl_resource *resource_, int32_t fd)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_DEVICE_V1_DRM_FD, fd);
+static inline void wp_drm_lease_device_v1_send_drm_fd(
+    struct wl_resource *resource_, int32_t fd) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_DEVICE_V1_DRM_FD, fd);
 }
 
 /**
@@ -290,10 +289,9 @@ wp_drm_lease_device_v1_send_drm_fd(struct wl_resource *resource_, int32_t fd)
  * Sends an connector event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wp_drm_lease_device_v1_send_connector(struct wl_resource *resource_, struct wl_resource *id)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_DEVICE_V1_CONNECTOR, id);
+static inline void wp_drm_lease_device_v1_send_connector(
+    struct wl_resource *resource_, struct wl_resource *id) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_DEVICE_V1_CONNECTOR, id);
 }
 
 /**
@@ -301,10 +299,9 @@ wp_drm_lease_device_v1_send_connector(struct wl_resource *resource_, struct wl_r
  * Sends an done event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wp_drm_lease_device_v1_send_done(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_DEVICE_V1_DONE);
+static inline void wp_drm_lease_device_v1_send_done(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_DEVICE_V1_DONE);
 }
 
 /**
@@ -312,10 +309,9 @@ wp_drm_lease_device_v1_send_done(struct wl_resource *resource_)
  * Sends an released event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wp_drm_lease_device_v1_send_released(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_DEVICE_V1_RELEASED);
+static inline void wp_drm_lease_device_v1_send_released(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_DEVICE_V1_RELEASED);
 }
 
 /**
@@ -323,17 +319,16 @@ wp_drm_lease_device_v1_send_released(struct wl_resource *resource_)
  * @struct wp_drm_lease_connector_v1_interface
  */
 struct wp_drm_lease_connector_v1_interface {
-	/**
-	 * destroy connector
-	 *
-	 * The client may send this request to indicate that it will not
-	 * use this connector. Clients are encouraged to send this after
-	 * receiving the "withdrawn" event so that the server can release
-	 * the resources associated with this connector offer. Neither
-	 * existing lease requests nor leases will be affected.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroy connector
+   *
+   * The client may send this request to indicate that it will not
+   * use this connector. Clients are encouraged to send this after
+   * receiving the "withdrawn" event so that the server can release
+   * the resources associated with this connector offer. Neither
+   * existing lease requests nor leases will be affected.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WP_DRM_LEASE_CONNECTOR_V1_NAME 0
@@ -374,10 +369,9 @@ struct wp_drm_lease_connector_v1_interface {
  * @param resource_ The client's resource
  * @param name connector name
  */
-static inline void
-wp_drm_lease_connector_v1_send_name(struct wl_resource *resource_, const char *name)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_CONNECTOR_V1_NAME, name);
+static inline void wp_drm_lease_connector_v1_send_name(
+    struct wl_resource *resource_, const char *name) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_CONNECTOR_V1_NAME, name);
 }
 
 /**
@@ -386,10 +380,10 @@ wp_drm_lease_connector_v1_send_name(struct wl_resource *resource_, const char *n
  * @param resource_ The client's resource
  * @param description connector description
  */
-static inline void
-wp_drm_lease_connector_v1_send_description(struct wl_resource *resource_, const char *description)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_CONNECTOR_V1_DESCRIPTION, description);
+static inline void wp_drm_lease_connector_v1_send_description(
+    struct wl_resource *resource_, const char *description) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_CONNECTOR_V1_DESCRIPTION,
+                         description);
 }
 
 /**
@@ -398,10 +392,10 @@ wp_drm_lease_connector_v1_send_description(struct wl_resource *resource_, const 
  * @param resource_ The client's resource
  * @param connector_id DRM connector ID
  */
-static inline void
-wp_drm_lease_connector_v1_send_connector_id(struct wl_resource *resource_, uint32_t connector_id)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_CONNECTOR_V1_CONNECTOR_ID, connector_id);
+static inline void wp_drm_lease_connector_v1_send_connector_id(
+    struct wl_resource *resource_, uint32_t connector_id) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_CONNECTOR_V1_CONNECTOR_ID,
+                         connector_id);
 }
 
 /**
@@ -409,10 +403,9 @@ wp_drm_lease_connector_v1_send_connector_id(struct wl_resource *resource_, uint3
  * Sends an done event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wp_drm_lease_connector_v1_send_done(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_CONNECTOR_V1_DONE);
+static inline void wp_drm_lease_connector_v1_send_done(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_CONNECTOR_V1_DONE);
 }
 
 /**
@@ -420,27 +413,26 @@ wp_drm_lease_connector_v1_send_done(struct wl_resource *resource_)
  * Sends an withdrawn event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wp_drm_lease_connector_v1_send_withdrawn(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_CONNECTOR_V1_WITHDRAWN);
+static inline void wp_drm_lease_connector_v1_send_withdrawn(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_CONNECTOR_V1_WITHDRAWN);
 }
 
 #ifndef WP_DRM_LEASE_REQUEST_V1_ERROR_ENUM
 #define WP_DRM_LEASE_REQUEST_V1_ERROR_ENUM
 enum wp_drm_lease_request_v1_error {
-	/**
-	 * requested a connector from a different lease device
-	 */
-	WP_DRM_LEASE_REQUEST_V1_ERROR_WRONG_DEVICE = 0,
-	/**
-	 * requested a connector twice
-	 */
-	WP_DRM_LEASE_REQUEST_V1_ERROR_DUPLICATE_CONNECTOR = 1,
-	/**
-	 * requested a lease without requesting a connector
-	 */
-	WP_DRM_LEASE_REQUEST_V1_ERROR_EMPTY_LEASE = 2,
+  /**
+   * requested a connector from a different lease device
+   */
+  WP_DRM_LEASE_REQUEST_V1_ERROR_WRONG_DEVICE = 0,
+  /**
+   * requested a connector twice
+   */
+  WP_DRM_LEASE_REQUEST_V1_ERROR_DUPLICATE_CONNECTOR = 1,
+  /**
+   * requested a lease without requesting a connector
+   */
+  WP_DRM_LEASE_REQUEST_V1_ERROR_EMPTY_LEASE = 2,
 };
 /**
  * @ingroup iface_wp_drm_lease_request_v1
@@ -449,18 +441,14 @@ enum wp_drm_lease_request_v1_error {
  * @return true on success, false on error.
  * @ref wp_drm_lease_request_v1_error
  */
-static inline bool
-wp_drm_lease_request_v1_error_is_valid(uint32_t value, uint32_t version) {
-	switch (value) {
-	case WP_DRM_LEASE_REQUEST_V1_ERROR_WRONG_DEVICE:
-		return version >= 1;
-	case WP_DRM_LEASE_REQUEST_V1_ERROR_DUPLICATE_CONNECTOR:
-		return version >= 1;
-	case WP_DRM_LEASE_REQUEST_V1_ERROR_EMPTY_LEASE:
-		return version >= 1;
-	default:
-		return false;
-	}
+static inline bool wp_drm_lease_request_v1_error_is_valid(uint32_t value,
+                                                          uint32_t version) {
+  switch (value) {
+    case WP_DRM_LEASE_REQUEST_V1_ERROR_WRONG_DEVICE: return version >= 1;
+    case WP_DRM_LEASE_REQUEST_V1_ERROR_DUPLICATE_CONNECTOR: return version >= 1;
+    case WP_DRM_LEASE_REQUEST_V1_ERROR_EMPTY_LEASE: return version >= 1;
+    default: return false;
+  }
 }
 #endif /* WP_DRM_LEASE_REQUEST_V1_ERROR_ENUM */
 
@@ -469,40 +457,38 @@ wp_drm_lease_request_v1_error_is_valid(uint32_t value, uint32_t version) {
  * @struct wp_drm_lease_request_v1_interface
  */
 struct wp_drm_lease_request_v1_interface {
-	/**
-	 * request a connector for this lease
-	 *
-	 * Indicates that the client would like to lease the given
-	 * connector. This is only used as a suggestion, the compositor may
-	 * choose to include any resources in the lease it issues, or
-	 * change the set of leased resources at any time. Compositors are
-	 * however encouraged to include the requested connector and other
-	 * resources necessary to drive the connected output in the lease.
-	 *
-	 * Requesting a connector that was created from a different lease
-	 * device than this lease request raises the wrong_device error.
-	 * Requesting a connector twice will raise the duplicate_connector
-	 * error.
-	 */
-	void (*request_connector)(struct wl_client *client,
-				  struct wl_resource *resource,
-				  struct wl_resource *connector);
-	/**
-	 * submit the lease request
-	 *
-	 * Submits the lease request and creates a new wp_drm_lease_v1
-	 * object. After calling submit the compositor will immediately
-	 * destroy this object, issuing any more requests will cause a
-	 * wl_display error. The compositor doesn't make any guarantees
-	 * about the events of the lease object, clients cannot expect an
-	 * immediate response. Not requesting any connectors before
-	 * submitting the lease request will raise the empty_lease error.
-	 */
-	void (*submit)(struct wl_client *client,
-		       struct wl_resource *resource,
-		       uint32_t id);
+  /**
+   * request a connector for this lease
+   *
+   * Indicates that the client would like to lease the given
+   * connector. This is only used as a suggestion, the compositor may
+   * choose to include any resources in the lease it issues, or
+   * change the set of leased resources at any time. Compositors are
+   * however encouraged to include the requested connector and other
+   * resources necessary to drive the connected output in the lease.
+   *
+   * Requesting a connector that was created from a different lease
+   * device than this lease request raises the wrong_device error.
+   * Requesting a connector twice will raise the duplicate_connector
+   * error.
+   */
+  void (*request_connector)(struct wl_client *client,
+                            struct wl_resource *resource,
+                            struct wl_resource *connector);
+  /**
+   * submit the lease request
+   *
+   * Submits the lease request and creates a new wp_drm_lease_v1
+   * object. After calling submit the compositor will immediately
+   * destroy this object, issuing any more requests will cause a
+   * wl_display error. The compositor doesn't make any guarantees
+   * about the events of the lease object, clients cannot expect an
+   * immediate response. Not requesting any connectors before
+   * submitting the lease request will raise the empty_lease error.
+   */
+  void (*submit)(struct wl_client *client, struct wl_resource *resource,
+                 uint32_t id);
 };
-
 
 /**
  * @ingroup iface_wp_drm_lease_request_v1
@@ -518,20 +504,19 @@ struct wp_drm_lease_request_v1_interface {
  * @struct wp_drm_lease_v1_interface
  */
 struct wp_drm_lease_v1_interface {
-	/**
-	 * destroys the lease object
-	 *
-	 * The client should send this to indicate that it no longer
-	 * wishes to use this lease. The compositor should use
-	 * drmModeRevokeLease on the appropriate file descriptor, if
-	 * necessary.
-	 *
-	 * Upon destruction, the compositor should advertise the connector
-	 * for leasing again by sending the connector event through the
-	 * wp_drm_lease_device_v1 interface.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
+  /**
+   * destroys the lease object
+   *
+   * The client should send this to indicate that it no longer
+   * wishes to use this lease. The compositor should use
+   * drmModeRevokeLease on the appropriate file descriptor, if
+   * necessary.
+   *
+   * Upon destruction, the compositor should advertise the connector
+   * for leasing again by sending the connector event through the
+   * wp_drm_lease_device_v1 interface.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define WP_DRM_LEASE_V1_LEASE_FD 0
@@ -557,10 +542,9 @@ struct wp_drm_lease_v1_interface {
  * @param resource_ The client's resource
  * @param leased_fd leased DRM file descriptor
  */
-static inline void
-wp_drm_lease_v1_send_lease_fd(struct wl_resource *resource_, int32_t leased_fd)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_V1_LEASE_FD, leased_fd);
+static inline void wp_drm_lease_v1_send_lease_fd(struct wl_resource *resource_,
+                                                 int32_t leased_fd) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_V1_LEASE_FD, leased_fd);
 }
 
 /**
@@ -568,13 +552,12 @@ wp_drm_lease_v1_send_lease_fd(struct wl_resource *resource_, int32_t leased_fd)
  * Sends an finished event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-wp_drm_lease_v1_send_finished(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, WP_DRM_LEASE_V1_FINISHED);
+static inline void wp_drm_lease_v1_send_finished(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, WP_DRM_LEASE_V1_FINISHED);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

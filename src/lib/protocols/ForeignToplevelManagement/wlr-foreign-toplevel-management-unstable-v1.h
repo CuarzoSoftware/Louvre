@@ -3,11 +3,12 @@
 #ifndef WLR_FOREIGN_TOPLEVEL_MANAGEMENT_UNSTABLE_V1_SERVER_PROTOCOL_H
 #define WLR_FOREIGN_TOPLEVEL_MANAGEMENT_UNSTABLE_V1_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -15,9 +16,11 @@ struct wl_client;
 struct wl_resource;
 
 /**
- * @page page_wlr_foreign_toplevel_management_unstable_v1 The wlr_foreign_toplevel_management_unstable_v1 protocol
+ * @page page_wlr_foreign_toplevel_management_unstable_v1 The
+ * wlr_foreign_toplevel_management_unstable_v1 protocol
  * @section page_ifaces_wlr_foreign_toplevel_management_unstable_v1 Interfaces
- * - @subpage page_iface_zwlr_foreign_toplevel_manager_v1 - list and control opened apps
+ * - @subpage page_iface_zwlr_foreign_toplevel_manager_v1 - list and control
+ * opened apps
  * - @subpage page_iface_zwlr_foreign_toplevel_handle_v1 - an opened toplevel
  * @section page_copyright_wlr_foreign_toplevel_management_unstable_v1 Copyright
  * <pre>
@@ -55,7 +58,8 @@ struct zwlr_foreign_toplevel_manager_v1;
 #ifndef ZWLR_FOREIGN_TOPLEVEL_MANAGER_V1_INTERFACE
 #define ZWLR_FOREIGN_TOPLEVEL_MANAGER_V1_INTERFACE
 /**
- * @page page_iface_zwlr_foreign_toplevel_manager_v1 zwlr_foreign_toplevel_manager_v1
+ * @page page_iface_zwlr_foreign_toplevel_manager_v1
+ * zwlr_foreign_toplevel_manager_v1
  * @section page_iface_zwlr_foreign_toplevel_manager_v1_desc Description
  *
  * The purpose of this protocol is to enable the creation of taskbars
@@ -68,7 +72,8 @@ struct zwlr_foreign_toplevel_manager_v1;
  * See @ref iface_zwlr_foreign_toplevel_manager_v1.
  */
 /**
- * @defgroup iface_zwlr_foreign_toplevel_manager_v1 The zwlr_foreign_toplevel_manager_v1 interface
+ * @defgroup iface_zwlr_foreign_toplevel_manager_v1 The
+ * zwlr_foreign_toplevel_manager_v1 interface
  *
  * The purpose of this protocol is to enable the creation of taskbars
  * and docks by providing them with a list of opened applications and
@@ -82,7 +87,8 @@ extern const struct wl_interface zwlr_foreign_toplevel_manager_v1_interface;
 #ifndef ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_INTERFACE
 #define ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_INTERFACE
 /**
- * @page page_iface_zwlr_foreign_toplevel_handle_v1 zwlr_foreign_toplevel_handle_v1
+ * @page page_iface_zwlr_foreign_toplevel_handle_v1
+ * zwlr_foreign_toplevel_handle_v1
  * @section page_iface_zwlr_foreign_toplevel_handle_v1_desc Description
  *
  * A zwlr_foreign_toplevel_handle_v1 object represents an opened toplevel
@@ -94,7 +100,8 @@ extern const struct wl_interface zwlr_foreign_toplevel_manager_v1_interface;
  * See @ref iface_zwlr_foreign_toplevel_handle_v1.
  */
 /**
- * @defgroup iface_zwlr_foreign_toplevel_handle_v1 The zwlr_foreign_toplevel_handle_v1 interface
+ * @defgroup iface_zwlr_foreign_toplevel_handle_v1 The
+ * zwlr_foreign_toplevel_handle_v1 interface
  *
  * A zwlr_foreign_toplevel_handle_v1 object represents an opened toplevel
  * window. Each app may have multiple opened toplevels.
@@ -110,17 +117,16 @@ extern const struct wl_interface zwlr_foreign_toplevel_handle_v1_interface;
  * @struct zwlr_foreign_toplevel_manager_v1_interface
  */
 struct zwlr_foreign_toplevel_manager_v1_interface {
-	/**
-	 * stop sending events
-	 *
-	 * Indicates the client no longer wishes to receive events for
-	 * new toplevels. However the compositor may emit further
-	 * toplevel_created events, until the finished event is emitted.
-	 *
-	 * The client must not send any more requests after this one.
-	 */
-	void (*stop)(struct wl_client *client,
-		     struct wl_resource *resource);
+  /**
+   * stop sending events
+   *
+   * Indicates the client no longer wishes to receive events for
+   * new toplevels. However the compositor may emit further
+   * toplevel_created events, until the finished event is emitted.
+   *
+   * The client must not send any more requests after this one.
+   */
+  void (*stop)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define ZWLR_FOREIGN_TOPLEVEL_MANAGER_V1_TOPLEVEL 0
@@ -145,10 +151,10 @@ struct zwlr_foreign_toplevel_manager_v1_interface {
  * Sends an toplevel event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_foreign_toplevel_manager_v1_send_toplevel(struct wl_resource *resource_, struct wl_resource *toplevel)
-{
-	wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_MANAGER_V1_TOPLEVEL, toplevel);
+static inline void zwlr_foreign_toplevel_manager_v1_send_toplevel(
+    struct wl_resource *resource_, struct wl_resource *toplevel) {
+  wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_MANAGER_V1_TOPLEVEL,
+                         toplevel);
 }
 
 /**
@@ -156,10 +162,9 @@ zwlr_foreign_toplevel_manager_v1_send_toplevel(struct wl_resource *resource_, st
  * Sends an finished event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_foreign_toplevel_manager_v1_send_finished(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_MANAGER_V1_FINISHED);
+static inline void zwlr_foreign_toplevel_manager_v1_send_finished(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_MANAGER_V1_FINISHED);
 }
 
 #ifndef ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_ENUM
@@ -172,23 +177,23 @@ zwlr_foreign_toplevel_manager_v1_send_finished(struct wl_resource *resource_)
  * as the states with the same names defined in xdg-toplevel
  */
 enum zwlr_foreign_toplevel_handle_v1_state {
-	/**
-	 * the toplevel is maximized
-	 */
-	ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_MAXIMIZED = 0,
-	/**
-	 * the toplevel is minimized
-	 */
-	ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_MINIMIZED = 1,
-	/**
-	 * the toplevel is active
-	 */
-	ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_ACTIVATED = 2,
-	/**
-	 * the toplevel is fullscreen
-	 * @since 2
-	 */
-	ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN = 3,
+  /**
+   * the toplevel is maximized
+   */
+  ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_MAXIMIZED = 0,
+  /**
+   * the toplevel is minimized
+   */
+  ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_MINIMIZED = 1,
+  /**
+   * the toplevel is active
+   */
+  ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_ACTIVATED = 2,
+  /**
+   * the toplevel is fullscreen
+   * @since 2
+   */
+  ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE_FULLSCREEN = 3,
 };
 /**
  * @ingroup iface_zwlr_foreign_toplevel_handle_v1
@@ -199,10 +204,10 @@ enum zwlr_foreign_toplevel_handle_v1_state {
 #ifndef ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_ERROR_ENUM
 #define ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_ERROR_ENUM
 enum zwlr_foreign_toplevel_handle_v1_error {
-	/**
-	 * the provided rectangle is invalid
-	 */
-	ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_ERROR_INVALID_RECTANGLE = 0,
+  /**
+   * the provided rectangle is invalid
+   */
+  ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_ERROR_INVALID_RECTANGLE = 0,
 };
 #endif /* ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_ERROR_ENUM */
 
@@ -211,123 +216,113 @@ enum zwlr_foreign_toplevel_handle_v1_error {
  * @struct zwlr_foreign_toplevel_handle_v1_interface
  */
 struct zwlr_foreign_toplevel_handle_v1_interface {
-	/**
-	 * requests that the toplevel be maximized
-	 *
-	 * Requests that the toplevel be maximized. If the maximized
-	 * state actually changes, this will be indicated by the state
-	 * event.
-	 */
-	void (*set_maximized)(struct wl_client *client,
-			      struct wl_resource *resource);
-	/**
-	 * requests that the toplevel be unmaximized
-	 *
-	 * Requests that the toplevel be unmaximized. If the maximized
-	 * state actually changes, this will be indicated by the state
-	 * event.
-	 */
-	void (*unset_maximized)(struct wl_client *client,
-				struct wl_resource *resource);
-	/**
-	 * requests that the toplevel be minimized
-	 *
-	 * Requests that the toplevel be minimized. If the minimized
-	 * state actually changes, this will be indicated by the state
-	 * event.
-	 */
-	void (*set_minimized)(struct wl_client *client,
-			      struct wl_resource *resource);
-	/**
-	 * requests that the toplevel be unminimized
-	 *
-	 * Requests that the toplevel be unminimized. If the minimized
-	 * state actually changes, this will be indicated by the state
-	 * event.
-	 */
-	void (*unset_minimized)(struct wl_client *client,
-				struct wl_resource *resource);
-	/**
-	 * activate the toplevel
-	 *
-	 * Request that this toplevel be activated on the given seat.
-	 * There is no guarantee the toplevel will be actually activated.
-	 */
-	void (*activate)(struct wl_client *client,
-			 struct wl_resource *resource,
-			 struct wl_resource *seat);
-	/**
-	 * request that the toplevel be closed
-	 *
-	 * Send a request to the toplevel to close itself. The compositor
-	 * would typically use a shell-specific method to carry out this
-	 * request, for example by sending the xdg_toplevel.close event.
-	 * However, this gives no guarantees the toplevel will actually be
-	 * destroyed. If and when this happens, the
-	 * zwlr_foreign_toplevel_handle_v1.closed event will be emitted.
-	 */
-	void (*close)(struct wl_client *client,
-		      struct wl_resource *resource);
-	/**
-	 * the rectangle which represents the toplevel
-	 *
-	 * The rectangle of the surface specified in this request
-	 * corresponds to the place where the app using this protocol
-	 * represents the given toplevel. It can be used by the compositor
-	 * as a hint for some operations, e.g minimizing. The client is
-	 * however not required to set this, in which case the compositor
-	 * is free to decide some default value.
-	 *
-	 * If the client specifies more than one rectangle, only the last
-	 * one is considered.
-	 *
-	 * The dimensions are given in surface-local coordinates. Setting
-	 * width=height=0 removes the already-set rectangle.
-	 */
-	void (*set_rectangle)(struct wl_client *client,
-			      struct wl_resource *resource,
-			      struct wl_resource *surface,
-			      int32_t x,
-			      int32_t y,
-			      int32_t width,
-			      int32_t height);
-	/**
-	 * destroy the zwlr_foreign_toplevel_handle_v1 object
-	 *
-	 * Destroys the zwlr_foreign_toplevel_handle_v1 object.
-	 *
-	 * This request should be called either when the client does not
-	 * want to use the toplevel anymore or after the closed event to
-	 * finalize the destruction of the object.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * request that the toplevel be fullscreened
-	 *
-	 * Requests that the toplevel be fullscreened on the given
-	 * output. If the fullscreen state and/or the outputs the toplevel
-	 * is visible on actually change, this will be indicated by the
-	 * state and output_enter/leave events.
-	 *
-	 * The output parameter is only a hint to the compositor. Also, if
-	 * output is NULL, the compositor should decide which output the
-	 * toplevel will be fullscreened on, if at all.
-	 * @since 2
-	 */
-	void (*set_fullscreen)(struct wl_client *client,
-			       struct wl_resource *resource,
-			       struct wl_resource *output);
-	/**
-	 * request that the toplevel be unfullscreened
-	 *
-	 * Requests that the toplevel be unfullscreened. If the
-	 * fullscreen state actually changes, this will be indicated by the
-	 * state event.
-	 * @since 2
-	 */
-	void (*unset_fullscreen)(struct wl_client *client,
-				 struct wl_resource *resource);
+  /**
+   * requests that the toplevel be maximized
+   *
+   * Requests that the toplevel be maximized. If the maximized
+   * state actually changes, this will be indicated by the state
+   * event.
+   */
+  void (*set_maximized)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * requests that the toplevel be unmaximized
+   *
+   * Requests that the toplevel be unmaximized. If the maximized
+   * state actually changes, this will be indicated by the state
+   * event.
+   */
+  void (*unset_maximized)(struct wl_client *client,
+                          struct wl_resource *resource);
+  /**
+   * requests that the toplevel be minimized
+   *
+   * Requests that the toplevel be minimized. If the minimized
+   * state actually changes, this will be indicated by the state
+   * event.
+   */
+  void (*set_minimized)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * requests that the toplevel be unminimized
+   *
+   * Requests that the toplevel be unminimized. If the minimized
+   * state actually changes, this will be indicated by the state
+   * event.
+   */
+  void (*unset_minimized)(struct wl_client *client,
+                          struct wl_resource *resource);
+  /**
+   * activate the toplevel
+   *
+   * Request that this toplevel be activated on the given seat.
+   * There is no guarantee the toplevel will be actually activated.
+   */
+  void (*activate)(struct wl_client *client, struct wl_resource *resource,
+                   struct wl_resource *seat);
+  /**
+   * request that the toplevel be closed
+   *
+   * Send a request to the toplevel to close itself. The compositor
+   * would typically use a shell-specific method to carry out this
+   * request, for example by sending the xdg_toplevel.close event.
+   * However, this gives no guarantees the toplevel will actually be
+   * destroyed. If and when this happens, the
+   * zwlr_foreign_toplevel_handle_v1.closed event will be emitted.
+   */
+  void (*close)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * the rectangle which represents the toplevel
+   *
+   * The rectangle of the surface specified in this request
+   * corresponds to the place where the app using this protocol
+   * represents the given toplevel. It can be used by the compositor
+   * as a hint for some operations, e.g minimizing. The client is
+   * however not required to set this, in which case the compositor
+   * is free to decide some default value.
+   *
+   * If the client specifies more than one rectangle, only the last
+   * one is considered.
+   *
+   * The dimensions are given in surface-local coordinates. Setting
+   * width=height=0 removes the already-set rectangle.
+   */
+  void (*set_rectangle)(struct wl_client *client, struct wl_resource *resource,
+                        struct wl_resource *surface, int32_t x, int32_t y,
+                        int32_t width, int32_t height);
+  /**
+   * destroy the zwlr_foreign_toplevel_handle_v1 object
+   *
+   * Destroys the zwlr_foreign_toplevel_handle_v1 object.
+   *
+   * This request should be called either when the client does not
+   * want to use the toplevel anymore or after the closed event to
+   * finalize the destruction of the object.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * request that the toplevel be fullscreened
+   *
+   * Requests that the toplevel be fullscreened on the given
+   * output. If the fullscreen state and/or the outputs the toplevel
+   * is visible on actually change, this will be indicated by the
+   * state and output_enter/leave events.
+   *
+   * The output parameter is only a hint to the compositor. Also, if
+   * output is NULL, the compositor should decide which output the
+   * toplevel will be fullscreened on, if at all.
+   * @since 2
+   */
+  void (*set_fullscreen)(struct wl_client *client, struct wl_resource *resource,
+                         struct wl_resource *output);
+  /**
+   * request that the toplevel be unfullscreened
+   *
+   * Requests that the toplevel be unfullscreened. If the
+   * fullscreen state actually changes, this will be indicated by the
+   * state event.
+   * @since 2
+   */
+  void (*unset_fullscreen)(struct wl_client *client,
+                           struct wl_resource *resource);
 };
 
 #define ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_TITLE 0
@@ -418,10 +413,10 @@ struct zwlr_foreign_toplevel_handle_v1_interface {
  * Sends an title event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_foreign_toplevel_handle_v1_send_title(struct wl_resource *resource_, const char *title)
-{
-	wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_TITLE, title);
+static inline void zwlr_foreign_toplevel_handle_v1_send_title(
+    struct wl_resource *resource_, const char *title) {
+  wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_TITLE,
+                         title);
 }
 
 /**
@@ -429,10 +424,10 @@ zwlr_foreign_toplevel_handle_v1_send_title(struct wl_resource *resource_, const 
  * Sends an app_id event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_foreign_toplevel_handle_v1_send_app_id(struct wl_resource *resource_, const char *app_id)
-{
-	wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_APP_ID, app_id);
+static inline void zwlr_foreign_toplevel_handle_v1_send_app_id(
+    struct wl_resource *resource_, const char *app_id) {
+  wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_APP_ID,
+                         app_id);
 }
 
 /**
@@ -440,10 +435,10 @@ zwlr_foreign_toplevel_handle_v1_send_app_id(struct wl_resource *resource_, const
  * Sends an output_enter event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_foreign_toplevel_handle_v1_send_output_enter(struct wl_resource *resource_, struct wl_resource *output)
-{
-	wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_OUTPUT_ENTER, output);
+static inline void zwlr_foreign_toplevel_handle_v1_send_output_enter(
+    struct wl_resource *resource_, struct wl_resource *output) {
+  wl_resource_post_event(resource_,
+                         ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_OUTPUT_ENTER, output);
 }
 
 /**
@@ -451,10 +446,10 @@ zwlr_foreign_toplevel_handle_v1_send_output_enter(struct wl_resource *resource_,
  * Sends an output_leave event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_foreign_toplevel_handle_v1_send_output_leave(struct wl_resource *resource_, struct wl_resource *output)
-{
-	wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_OUTPUT_LEAVE, output);
+static inline void zwlr_foreign_toplevel_handle_v1_send_output_leave(
+    struct wl_resource *resource_, struct wl_resource *output) {
+  wl_resource_post_event(resource_,
+                         ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_OUTPUT_LEAVE, output);
 }
 
 /**
@@ -462,10 +457,10 @@ zwlr_foreign_toplevel_handle_v1_send_output_leave(struct wl_resource *resource_,
  * Sends an state event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_foreign_toplevel_handle_v1_send_state(struct wl_resource *resource_, struct wl_array *state)
-{
-	wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE, state);
+static inline void zwlr_foreign_toplevel_handle_v1_send_state(
+    struct wl_resource *resource_, struct wl_array *state) {
+  wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_STATE,
+                         state);
 }
 
 /**
@@ -473,10 +468,9 @@ zwlr_foreign_toplevel_handle_v1_send_state(struct wl_resource *resource_, struct
  * Sends an done event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_foreign_toplevel_handle_v1_send_done(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_DONE);
+static inline void zwlr_foreign_toplevel_handle_v1_send_done(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_DONE);
 }
 
 /**
@@ -484,10 +478,9 @@ zwlr_foreign_toplevel_handle_v1_send_done(struct wl_resource *resource_)
  * Sends an closed event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_foreign_toplevel_handle_v1_send_closed(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_CLOSED);
+static inline void zwlr_foreign_toplevel_handle_v1_send_closed(
+    struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_CLOSED);
 }
 
 /**
@@ -495,13 +488,13 @@ zwlr_foreign_toplevel_handle_v1_send_closed(struct wl_resource *resource_)
  * Sends an parent event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-zwlr_foreign_toplevel_handle_v1_send_parent(struct wl_resource *resource_, struct wl_resource *parent)
-{
-	wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_PARENT, parent);
+static inline void zwlr_foreign_toplevel_handle_v1_send_parent(
+    struct wl_resource *resource_, struct wl_resource *parent) {
+  wl_resource_post_event(resource_, ZWLR_FOREIGN_TOPLEVEL_HANDLE_V1_PARENT,
+                         parent);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

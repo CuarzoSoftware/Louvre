@@ -1,231 +1,225 @@
+#include "Pointer.h"
+
+#include <LClient.h>
+#include <LClientCursor.h>
+#include <LCursor.h>
+#include <LCursorRole.h>
+#include <LDND.h>
+#include <LLog.h>
+#include <LOutput.h>
+#include <LScene.h>
+#include <LSeat.h>
+#include <LSurface.h>
+#include <LSurfaceView.h>
+#include <LTime.h>
 #include <LToplevelMoveSession.h>
 #include <LToplevelResizeSession.h>
-#include <LClientCursor.h>
-#include <LScene.h>
-#include <LCursor.h>
-#include <LXCursor.h>
 #include <LView.h>
-#include <LCursorRole.h>
-#include <LLog.h>
-#include <LTime.h>
-#include <LSurfaceView.h>
-#include <LSurface.h>
-#include <LOutput.h>
-#include <LSeat.h>
-#include <LClient.h>
-#include <LDND.h>
+#include <LXCursor.h>
 
 #include "App.h"
-#include "Global.h"
-#include "Pointer.h"
+#include "Client.h"
 #include "Compositor.h"
+#include "Global.h"
+#include "Output.h"
 #include "Surface.h"
 #include "Toplevel.h"
 #include "ToplevelView.h"
-#include "Client.h"
-#include "Output.h"
 
 Pointer::Pointer(const void *params) : LPointer(params) {}
 
-void Pointer::pointerMoveEvent(const LPointerMoveEvent &event)
-{
-    G::scene()->handlePointerMoveEvent(event);
+void Pointer::pointerMoveEvent(const LPointerMoveEvent &event) {
+  G::scene()->handlePointerMoveEvent(event);
 
-    if (!seat()->toplevelMoveSessions().empty())
-        cursor()->repaintOutputs(false);
+  if (!seat()->toplevelMoveSessions().empty()) cursor()->repaintOutputs(false);
 
-    for (Output *o : (const std::vector<Output*>&)cursor()->intersectedOutputs())
-        if (o->zoom != 1.f)
-            o->repaint();
+  for (Output *o :
+       (const std::vector<Output *> &)cursor()->intersectedOutputs())
+    if (o->zoom != 1.f) o->repaint();
 
-    if (cursorOwner)
-        return;
+  if (cursorOwner) return;
 
-    if (seat()->dnd()->dragging())
-    {
-        cursor()->setCursor(seat()->dnd()->origin()->client()->lastCursorRequest());
-        return;
+  if (seat()->dnd()->dragging()) {
+    cursor()->setCursor(seat()->dnd()->origin()->client()->lastCursorRequest());
+    return;
+  }
+
+  for (auto *moveSession : seat()->toplevelMoveSessions()) {
+    if (moveSession->triggeringEvent().type() != LEvent::Type::Touch) {
+      if (moveSession->toplevel()->decorationMode() ==
+          LToplevelRole::ClientSide)
+        cursor()->setCursor(
+            moveSession->toplevel()->client()->lastCursorRequest());
+      return;
     }
+  }
 
-    for (auto *moveSession : seat()->toplevelMoveSessions())
-    {
-        if (moveSession->triggeringEvent().type() != LEvent::Type::Touch)
-        {
-            if (moveSession->toplevel()->decorationMode() == LToplevelRole::ClientSide)
-                cursor()->setCursor(moveSession->toplevel()->client()->lastCursorRequest());
-            return;
-        }
+  for (auto *resizeSession : seat()->toplevelResizeSessions()) {
+    if (resizeSession->triggeringEvent().type() != LEvent::Type::Touch) {
+      if (resizeSession->toplevel()->decorationMode() ==
+          LToplevelRole::ClientSide)
+        cursor()->setCursor(
+            resizeSession->toplevel()->client()->lastCursorRequest());
+      return;
     }
+  }
 
-    for (auto *resizeSession : seat()->toplevelResizeSessions())
-    {
-        if (resizeSession->triggeringEvent().type() != LEvent::Type::Touch)
-        {
-            if (resizeSession->toplevel()->decorationMode() == LToplevelRole::ClientSide)
-                cursor()->setCursor(resizeSession->toplevel()->client()->lastCursorRequest());
-            return;
-        }
-    }
+  if (G::scene()->pointerFocus().empty()) return;
 
-    if (G::scene()->pointerFocus().empty())
-        return;
+  if (G::scene()->pointerFocus().front()->userData() == WallpaperType) {
+    cursor()->setVisible(true);
+    cursor()->useDefault();
+    return;
+  }
 
-    if (G::scene()->pointerFocus().front()->userData() == WallpaperType)
-    {
-        cursor()->setVisible(true);
-        cursor()->useDefault();
-        return;
-    }
-
-    if (G::scene()->pointerFocus().front()->type() == LView::SurfaceType)
-        cursor()->setCursor(static_cast<LSurfaceView*>(G::scene()->pointerFocus().back())->surface()->client()->lastCursorRequest());
+  if (G::scene()->pointerFocus().front()->type() == LView::SurfaceType)
+    cursor()->setCursor(
+        static_cast<LSurfaceView *>(G::scene()->pointerFocus().back())
+            ->surface()
+            ->client()
+            ->lastCursorRequest());
 }
 
-bool Pointer::maybeMoveOrResize(const LPointerButtonEvent &event)
-{
-    if (!focus()
-        || event.state() != LPointerButtonEvent::Pressed
-        || !seat()->keyboard()->isKeyCodePressed(KEY_LEFTMETA)
-        || !(event.button() == LPointerButtonEvent::Left || event.button() == LPointerButtonEvent::Right))
-        return false;
+bool Pointer::maybeMoveOrResize(const LPointerButtonEvent &event) {
+  if (!focus() || event.state() != LPointerButtonEvent::Pressed ||
+      !seat()->keyboard()->isKeyCodePressed(KEY_LEFTMETA) ||
+      !(event.button() == LPointerButtonEvent::Left ||
+        event.button() == LPointerButtonEvent::Right))
+    return false;
 
-    Toplevel *toplevel { focus()->toplevel() ?
-        static_cast<Toplevel*>(focus()->toplevel()) :
-        static_cast<Surface*>(focus())->closestToplevelParent() };
+  Toplevel *toplevel{
+      focus()->toplevel()
+          ? static_cast<Toplevel *>(focus()->toplevel())
+          : static_cast<Surface *>(focus())->closestToplevelParent()};
 
-    if (!toplevel || toplevel->fullscreen() || toplevel->resizeSession().isActive() || toplevel->moveSession().isActive())
-        return false;
+  if (!toplevel || toplevel->fullscreen() ||
+      toplevel->resizeSession().isActive() ||
+      toplevel->moveSession().isActive())
+    return false;
 
-    const LPointF mpos { cursor()->pos() };
-    LView *view { toplevel->surf()->getView() };
-    LBitset<LEdge> anchor { 0 };
-    LXCursor *cursor { G::cursors().move };
+  const LPointF mpos{cursor()->pos()};
+  LView *view{toplevel->surf()->getView()};
+  LBitset<LEdge> anchor{0};
+  LXCursor *cursor{G::cursors().move};
 
-    // Meta + Right Click to resize window
-    if (event.button() == LPointerButtonEvent::Right)
-    {
-        LPointF vpos { view->pos() };
-        LSizeF vsz { view->size() };
+  // Meta + Right Click to resize window
+  if (event.button() == LPointerButtonEvent::Right) {
+    LPointF vpos{view->pos()};
+    LSizeF vsz{view->size()};
 
-        if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() && mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
-            mpos.y() >= vpos.y() + 0.0000f * vsz.y() && mpos.y() < vpos.y() + 0.3333f * vsz.y())
-        {
-            anchor = LEdgeTop | LEdgeLeft;
-            cursor = G::cursors().top_left_corner;
-        }
-        else if (mpos.x() >= vpos.x() + 0.3333f * vsz.x() && mpos.x() < vpos.x() + 0.6666f * vsz.x() &&
-                 mpos.y() >= vpos.y() + 0.0000f * vsz.y() && mpos.y() < vpos.y() + 0.3333f * vsz.y())
-        {
-            anchor = LEdgeTop;
-            cursor = G::cursors().top_side;
-        }
-        else if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() && mpos.x() < vpos.x() + 1 * vsz.x() &&
-                 mpos.y() >= vpos.y() + 0.0000f * vsz.y() && mpos.y() < vpos.y() + 0.3333f * vsz.y())
-        {
-            anchor = LEdgeTop | LEdgeRight;
-            cursor = G::cursors().top_right_corner;
-        }
-        else if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() && mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
-                 mpos.y() >= vpos.y() + 0.3333f * vsz.y() && mpos.y() < vpos.y() + 0.6666f * vsz.y())
-        {
-            anchor = LEdgeLeft;
-            cursor = G::cursors().left_side;
-        }
-        else if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() && mpos.x() < vpos.x() + 1 * vsz.x() &&
-                 mpos.y() >= vpos.y() + 0.3333f * vsz.y() && mpos.y() < vpos.y() + 0.6666f * vsz.y())
-        {
-            anchor = LEdgeRight;
-            cursor = G::cursors().right_side;
-        }
-        else if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() && mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
-                 mpos.y() >= vpos.y() + 0.6666f * vsz.y() && mpos.y() < vpos.y() + 1 * vsz.y())
-        {
-            anchor = LEdgeBottom | LEdgeLeft;
-            cursor = G::cursors().bottom_left_corner;
-        }
-        else if (mpos.x() >= vpos.x() + 0.3333f * vsz.x() && mpos.x() < vpos.x() + 0.6666f * vsz.x() &&
-                 mpos.y() >= vpos.y() + 0.6666f * vsz.y() && mpos.y() < vpos.y() + 1 * vsz.y())
-        {
-            anchor = LEdgeBottom;
-            cursor = G::cursors().bottom_side;
-        }
-        else if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() && mpos.x() < vpos.x() + 1 * vsz.x() &&
-                 mpos.y() >= vpos.y() + 0.6666f * vsz.y() && mpos.y() < vpos.y() + 1 * vsz.y())
-        {
-            anchor = LEdgeBottom | LEdgeRight;
-            cursor = G::cursors().bottom_right_corner;
-        }
+    if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() &&
+        mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
+        mpos.y() >= vpos.y() + 0.0000f * vsz.y() &&
+        mpos.y() < vpos.y() + 0.3333f * vsz.y()) {
+      anchor = LEdgeTop | LEdgeLeft;
+      cursor = G::cursors().top_left_corner;
+    } else if (mpos.x() >= vpos.x() + 0.3333f * vsz.x() &&
+               mpos.x() < vpos.x() + 0.6666f * vsz.x() &&
+               mpos.y() >= vpos.y() + 0.0000f * vsz.y() &&
+               mpos.y() < vpos.y() + 0.3333f * vsz.y()) {
+      anchor = LEdgeTop;
+      cursor = G::cursors().top_side;
+    } else if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() &&
+               mpos.x() < vpos.x() + 1 * vsz.x() &&
+               mpos.y() >= vpos.y() + 0.0000f * vsz.y() &&
+               mpos.y() < vpos.y() + 0.3333f * vsz.y()) {
+      anchor = LEdgeTop | LEdgeRight;
+      cursor = G::cursors().top_right_corner;
+    } else if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() &&
+               mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
+               mpos.y() >= vpos.y() + 0.3333f * vsz.y() &&
+               mpos.y() < vpos.y() + 0.6666f * vsz.y()) {
+      anchor = LEdgeLeft;
+      cursor = G::cursors().left_side;
+    } else if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() &&
+               mpos.x() < vpos.x() + 1 * vsz.x() &&
+               mpos.y() >= vpos.y() + 0.3333f * vsz.y() &&
+               mpos.y() < vpos.y() + 0.6666f * vsz.y()) {
+      anchor = LEdgeRight;
+      cursor = G::cursors().right_side;
+    } else if (mpos.x() >= vpos.x() + 0.0000f * vsz.x() &&
+               mpos.x() < vpos.x() + 0.3333f * vsz.x() &&
+               mpos.y() >= vpos.y() + 0.6666f * vsz.y() &&
+               mpos.y() < vpos.y() + 1 * vsz.y()) {
+      anchor = LEdgeBottom | LEdgeLeft;
+      cursor = G::cursors().bottom_left_corner;
+    } else if (mpos.x() >= vpos.x() + 0.3333f * vsz.x() &&
+               mpos.x() < vpos.x() + 0.6666f * vsz.x() &&
+               mpos.y() >= vpos.y() + 0.6666f * vsz.y() &&
+               mpos.y() < vpos.y() + 1 * vsz.y()) {
+      anchor = LEdgeBottom;
+      cursor = G::cursors().bottom_side;
+    } else if (mpos.x() >= vpos.x() + 0.6666f * vsz.x() &&
+               mpos.x() < vpos.x() + 1 * vsz.x() &&
+               mpos.y() >= vpos.y() + 0.6666f * vsz.y() &&
+               mpos.y() < vpos.y() + 1 * vsz.y()) {
+      anchor = LEdgeBottom | LEdgeRight;
+      cursor = G::cursors().bottom_right_corner;
     }
+  }
 
-    Louvre::cursor()->setCursor(cursor);
-    cursorOwner = view;
+  Louvre::cursor()->setCursor(cursor);
+  cursorOwner = view;
 
-    if (anchor)
-        toplevel->startResizeRequest(event, anchor);
+  if (anchor)
+    toplevel->startResizeRequest(event, anchor);
+  else
+    toplevel->startMoveRequest(event);
+
+  toplevel->configureState(toplevel->pendingConfiguration().state |
+                           LToplevelRole::Activated);
+  toplevel->surface()->raise();
+  seat()->dismissPopups();
+
+  return true;
+}
+
+void Pointer::pointerButtonEvent(const LPointerButtonEvent &event) {
+  if (event.state() == LPointerButtonEvent::Released &&
+      (!seat()->toplevelResizeSessions().empty() ||
+       !seat()->toplevelMoveSessions().empty())) {
+    if (focus())
+      cursor()->setCursor(focus()->client()->lastCursorRequest());
     else
-        toplevel->startMoveRequest(event);
+      cursor()->useDefault();
 
-    toplevel->configureState(toplevel->pendingConfiguration().state | LToplevelRole::Activated);
-    toplevel->surface()->raise();
-    seat()->dismissPopups();
+    G::enableDocks(true);
+    G::compositor()->updatePointerBeforePaint = true;
+  }
 
-    return true;
+  if (maybeMoveOrResize(event))
+    G::scene()->handlePointerButtonEvent(event, 0);
+  else
+    G::scene()->handlePointerButtonEvent(event);
+
+  if (G::compositor()->wofi && G::compositor()->wofi->client &&
+      G::compositor()->wofi && !G::scene()->pointerFocus().empty() &&
+      G::scene()->pointerFocus().front()->userData() == WallpaperType)
+    G::compositor()->wofi->client->destroyLater();
 }
 
-void Pointer::pointerButtonEvent(const LPointerButtonEvent &event)
-{
-    if (event.state() == LPointerButtonEvent::Released
-        && (!seat()->toplevelResizeSessions().empty()
-            || !seat()->toplevelMoveSessions().empty()))
-    {
-        if (focus())
-            cursor()->setCursor(focus()->client()->lastCursorRequest());
-        else
-            cursor()->useDefault();
+void Pointer::pointerScrollEvent(const LPointerScrollEvent &event) {
+  Output *output{static_cast<Output *>(cursor()->output())};
 
-        G::enableDocks(true);
-        G::compositor()->updatePointerBeforePaint = true;
-    }
+  if (output && seat()->keyboard()->isKeyCodePressed(KEY_LEFTMETA) &&
+      seat()->keyboard()->isKeyCodePressed(KEY_LEFTCTRL)) {
+    output->setZoom(output->zoom + event.axes().y() * 0.005f);
+    return;
+  }
 
-    if (maybeMoveOrResize(event))
-        G::scene()->handlePointerButtonEvent(event, 0);
-    else
-        G::scene()->handlePointerButtonEvent(event);
-
-    if (G::compositor()->wofi && G::compositor()->wofi->client
-        && G::compositor()->wofi && !G::scene()->pointerFocus().empty()
-        && G::scene()->pointerFocus().front()->userData() == WallpaperType)
-        G::compositor()->wofi->client->destroyLater();
+  G::scene()->handlePointerScrollEvent(event);
 }
 
-void Pointer::pointerScrollEvent(const LPointerScrollEvent &event)
-{
-    Output *output { static_cast<Output*>(cursor()->output()) };
+void Pointer::setCursorRequest(const LClientCursor &clientCursor) {
+  if (cursorOwner || !seat()->toplevelResizeSessions().empty()) return;
 
-    if (output &&
-        seat()->keyboard()->isKeyCodePressed(KEY_LEFTMETA) &&
-        seat()->keyboard()->isKeyCodePressed(KEY_LEFTCTRL))
-    {
-        output->setZoom(output->zoom + event.axes().y() * 0.005f);
-        return;
-    }
+  if (seat()->dnd()->dragging()) {
+    if (seat()->dnd()->origin()->client() == clientCursor.client())
+      cursor()->setCursor(clientCursor);
 
-    G::scene()->handlePointerScrollEvent(event);
-}
+    return;
+  }
 
-void Pointer::setCursorRequest(const LClientCursor &clientCursor)
-{
-    if (cursorOwner || !seat()->toplevelResizeSessions().empty())
-        return;
-
-    if (seat()->dnd()->dragging())
-    {
-        if (seat()->dnd()->origin()->client() == clientCursor.client())
-            cursor()->setCursor(clientCursor);
-
-        return;
-    }
-
-    if (focus() && focus()->client() == clientCursor.client())
-        cursor()->setCursor(clientCursor);
+  if (focus() && focus()->client() == clientCursor.client())
+    cursor()->setCursor(clientCursor);
 }

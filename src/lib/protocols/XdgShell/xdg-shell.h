@@ -3,11 +3,12 @@
 #ifndef XDG_SHELL_SERVER_PROTOCOL_H
 #define XDG_SHELL_SERVER_PROTOCOL_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include "wayland-server.h"
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -19,7 +20,8 @@ struct wl_resource;
  * @section page_ifaces_xdg_shell Interfaces
  * - @subpage page_iface_xdg_wm_base - create desktop-style surfaces
  * - @subpage page_iface_xdg_positioner - child surface positioner
- * - @subpage page_iface_xdg_surface - desktop user interface surface base interface
+ * - @subpage page_iface_xdg_surface - desktop user interface surface base
+ * interface
  * - @subpage page_iface_xdg_toplevel - toplevel surface
  * - @subpage page_iface_xdg_popup - short-lived, popup surfaces for menus
  * @section page_copyright_xdg_shell Copyright
@@ -372,34 +374,34 @@ extern const struct wl_interface xdg_popup_interface;
 #ifndef XDG_WM_BASE_ERROR_ENUM
 #define XDG_WM_BASE_ERROR_ENUM
 enum xdg_wm_base_error {
-	/**
-	 * given wl_surface has another role
-	 */
-	XDG_WM_BASE_ERROR_ROLE = 0,
-	/**
-	 * xdg_wm_base was destroyed before children
-	 */
-	XDG_WM_BASE_ERROR_DEFUNCT_SURFACES = 1,
-	/**
-	 * the client tried to map or destroy a non-topmost popup
-	 */
-	XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP = 2,
-	/**
-	 * the client specified an invalid popup parent surface
-	 */
-	XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT = 3,
-	/**
-	 * the client provided an invalid surface state
-	 */
-	XDG_WM_BASE_ERROR_INVALID_SURFACE_STATE = 4,
-	/**
-	 * the client provided an invalid positioner
-	 */
-	XDG_WM_BASE_ERROR_INVALID_POSITIONER = 5,
-	/**
-	 * the client didn’t respond to a ping event in time
-	 */
-	XDG_WM_BASE_ERROR_UNRESPONSIVE = 6,
+  /**
+   * given wl_surface has another role
+   */
+  XDG_WM_BASE_ERROR_ROLE = 0,
+  /**
+   * xdg_wm_base was destroyed before children
+   */
+  XDG_WM_BASE_ERROR_DEFUNCT_SURFACES = 1,
+  /**
+   * the client tried to map or destroy a non-topmost popup
+   */
+  XDG_WM_BASE_ERROR_NOT_THE_TOPMOST_POPUP = 2,
+  /**
+   * the client specified an invalid popup parent surface
+   */
+  XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT = 3,
+  /**
+   * the client provided an invalid surface state
+   */
+  XDG_WM_BASE_ERROR_INVALID_SURFACE_STATE = 4,
+  /**
+   * the client provided an invalid positioner
+   */
+  XDG_WM_BASE_ERROR_INVALID_POSITIONER = 5,
+  /**
+   * the client didn’t respond to a ping event in time
+   */
+  XDG_WM_BASE_ERROR_UNRESPONSIVE = 6,
 };
 #endif /* XDG_WM_BASE_ERROR_ENUM */
 
@@ -408,60 +410,56 @@ enum xdg_wm_base_error {
  * @struct xdg_wm_base_interface
  */
 struct xdg_wm_base_interface {
-	/**
-	 * destroy xdg_wm_base
-	 *
-	 * Destroy this xdg_wm_base object.
-	 *
-	 * Destroying a bound xdg_wm_base object while there are surfaces
-	 * still alive created by this xdg_wm_base object instance is
-	 * illegal and will result in a defunct_surfaces error.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * create a positioner object
-	 *
-	 * Create a positioner object. A positioner object is used to
-	 * position surfaces relative to some parent surface. See the
-	 * interface description and xdg_surface.get_popup for details.
-	 */
-	void (*create_positioner)(struct wl_client *client,
-				  struct wl_resource *resource,
-				  uint32_t id);
-	/**
-	 * create a shell surface from a surface
-	 *
-	 * This creates an xdg_surface for the given surface. While
-	 * xdg_surface itself is not a role, the corresponding surface may
-	 * only be assigned a role extending xdg_surface, such as
-	 * xdg_toplevel or xdg_popup. It is illegal to create an
-	 * xdg_surface for a wl_surface which already has an assigned role
-	 * and this will result in a role error.
-	 *
-	 * This creates an xdg_surface for the given surface. An
-	 * xdg_surface is used as basis to define a role to a given
-	 * surface, such as xdg_toplevel or xdg_popup. It also manages
-	 * functionality shared between xdg_surface based surface roles.
-	 *
-	 * See the documentation of xdg_surface for more details about what
-	 * an xdg_surface is and how it is used.
-	 */
-	void (*get_xdg_surface)(struct wl_client *client,
-				struct wl_resource *resource,
-				uint32_t id,
-				struct wl_resource *surface);
-	/**
-	 * respond to a ping event
-	 *
-	 * A client must respond to a ping event with a pong request or
-	 * the client may be deemed unresponsive. See xdg_wm_base.ping and
-	 * xdg_wm_base.error.unresponsive.
-	 * @param serial serial of the ping event
-	 */
-	void (*pong)(struct wl_client *client,
-		     struct wl_resource *resource,
-		     uint32_t serial);
+  /**
+   * destroy xdg_wm_base
+   *
+   * Destroy this xdg_wm_base object.
+   *
+   * Destroying a bound xdg_wm_base object while there are surfaces
+   * still alive created by this xdg_wm_base object instance is
+   * illegal and will result in a defunct_surfaces error.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * create a positioner object
+   *
+   * Create a positioner object. A positioner object is used to
+   * position surfaces relative to some parent surface. See the
+   * interface description and xdg_surface.get_popup for details.
+   */
+  void (*create_positioner)(struct wl_client *client,
+                            struct wl_resource *resource, uint32_t id);
+  /**
+   * create a shell surface from a surface
+   *
+   * This creates an xdg_surface for the given surface. While
+   * xdg_surface itself is not a role, the corresponding surface may
+   * only be assigned a role extending xdg_surface, such as
+   * xdg_toplevel or xdg_popup. It is illegal to create an
+   * xdg_surface for a wl_surface which already has an assigned role
+   * and this will result in a role error.
+   *
+   * This creates an xdg_surface for the given surface. An
+   * xdg_surface is used as basis to define a role to a given
+   * surface, such as xdg_toplevel or xdg_popup. It also manages
+   * functionality shared between xdg_surface based surface roles.
+   *
+   * See the documentation of xdg_surface for more details about what
+   * an xdg_surface is and how it is used.
+   */
+  void (*get_xdg_surface)(struct wl_client *client,
+                          struct wl_resource *resource, uint32_t id,
+                          struct wl_resource *surface);
+  /**
+   * respond to a ping event
+   *
+   * A client must respond to a ping event with a pong request or
+   * the client may be deemed unresponsive. See xdg_wm_base.ping and
+   * xdg_wm_base.error.unresponsive.
+   * @param serial serial of the ping event
+   */
+  void (*pong)(struct wl_client *client, struct wl_resource *resource,
+               uint32_t serial);
 };
 
 #define XDG_WM_BASE_PING 0
@@ -494,49 +492,48 @@ struct xdg_wm_base_interface {
  * @param resource_ The client's resource
  * @param serial pass this to the pong request
  */
-static inline void
-xdg_wm_base_send_ping(struct wl_resource *resource_, uint32_t serial)
-{
-	wl_resource_post_event(resource_, XDG_WM_BASE_PING, serial);
+static inline void xdg_wm_base_send_ping(struct wl_resource *resource_,
+                                         uint32_t serial) {
+  wl_resource_post_event(resource_, XDG_WM_BASE_PING, serial);
 }
 
 #ifndef XDG_POSITIONER_ERROR_ENUM
 #define XDG_POSITIONER_ERROR_ENUM
 enum xdg_positioner_error {
-	/**
-	 * invalid input provided
-	 */
-	XDG_POSITIONER_ERROR_INVALID_INPUT = 0,
+  /**
+   * invalid input provided
+   */
+  XDG_POSITIONER_ERROR_INVALID_INPUT = 0,
 };
 #endif /* XDG_POSITIONER_ERROR_ENUM */
 
 #ifndef XDG_POSITIONER_ANCHOR_ENUM
 #define XDG_POSITIONER_ANCHOR_ENUM
 enum xdg_positioner_anchor {
-	XDG_POSITIONER_ANCHOR_NONE = 0,
-	XDG_POSITIONER_ANCHOR_TOP = 1,
-	XDG_POSITIONER_ANCHOR_BOTTOM = 2,
-	XDG_POSITIONER_ANCHOR_LEFT = 3,
-	XDG_POSITIONER_ANCHOR_RIGHT = 4,
-	XDG_POSITIONER_ANCHOR_TOP_LEFT = 5,
-	XDG_POSITIONER_ANCHOR_BOTTOM_LEFT = 6,
-	XDG_POSITIONER_ANCHOR_TOP_RIGHT = 7,
-	XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT = 8,
+  XDG_POSITIONER_ANCHOR_NONE = 0,
+  XDG_POSITIONER_ANCHOR_TOP = 1,
+  XDG_POSITIONER_ANCHOR_BOTTOM = 2,
+  XDG_POSITIONER_ANCHOR_LEFT = 3,
+  XDG_POSITIONER_ANCHOR_RIGHT = 4,
+  XDG_POSITIONER_ANCHOR_TOP_LEFT = 5,
+  XDG_POSITIONER_ANCHOR_BOTTOM_LEFT = 6,
+  XDG_POSITIONER_ANCHOR_TOP_RIGHT = 7,
+  XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT = 8,
 };
 #endif /* XDG_POSITIONER_ANCHOR_ENUM */
 
 #ifndef XDG_POSITIONER_GRAVITY_ENUM
 #define XDG_POSITIONER_GRAVITY_ENUM
 enum xdg_positioner_gravity {
-	XDG_POSITIONER_GRAVITY_NONE = 0,
-	XDG_POSITIONER_GRAVITY_TOP = 1,
-	XDG_POSITIONER_GRAVITY_BOTTOM = 2,
-	XDG_POSITIONER_GRAVITY_LEFT = 3,
-	XDG_POSITIONER_GRAVITY_RIGHT = 4,
-	XDG_POSITIONER_GRAVITY_TOP_LEFT = 5,
-	XDG_POSITIONER_GRAVITY_BOTTOM_LEFT = 6,
-	XDG_POSITIONER_GRAVITY_TOP_RIGHT = 7,
-	XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT = 8,
+  XDG_POSITIONER_GRAVITY_NONE = 0,
+  XDG_POSITIONER_GRAVITY_TOP = 1,
+  XDG_POSITIONER_GRAVITY_BOTTOM = 2,
+  XDG_POSITIONER_GRAVITY_LEFT = 3,
+  XDG_POSITIONER_GRAVITY_RIGHT = 4,
+  XDG_POSITIONER_GRAVITY_TOP_LEFT = 5,
+  XDG_POSITIONER_GRAVITY_BOTTOM_LEFT = 6,
+  XDG_POSITIONER_GRAVITY_TOP_RIGHT = 7,
+  XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT = 8,
 };
 #endif /* XDG_POSITIONER_GRAVITY_ENUM */
 
@@ -559,92 +556,92 @@ enum xdg_positioner_gravity {
  * Flip, 2) Slide, 3) Resize.
  */
 enum xdg_positioner_constraint_adjustment {
-	/**
-	 * don't move the child surface when constrained
-	 *
-	 * Don't alter the surface position even if it is constrained on
-	 * some axis, for example partially outside the edge of an output.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE = 0,
-	/**
-	 * move along the x axis until unconstrained
-	 *
-	 * Slide the surface along the x axis until it is no longer
-	 * constrained.
-	 *
-	 * First try to slide towards the direction of the gravity on the x
-	 * axis until either the edge in the opposite direction of the
-	 * gravity is unconstrained or the edge in the direction of the
-	 * gravity is constrained.
-	 *
-	 * Then try to slide towards the opposite direction of the gravity
-	 * on the x axis until either the edge in the direction of the
-	 * gravity is unconstrained or the edge in the opposite direction
-	 * of the gravity is constrained.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X = 1,
-	/**
-	 * move along the y axis until unconstrained
-	 *
-	 * Slide the surface along the y axis until it is no longer
-	 * constrained.
-	 *
-	 * First try to slide towards the direction of the gravity on the y
-	 * axis until either the edge in the opposite direction of the
-	 * gravity is unconstrained or the edge in the direction of the
-	 * gravity is constrained.
-	 *
-	 * Then try to slide towards the opposite direction of the gravity
-	 * on the y axis until either the edge in the direction of the
-	 * gravity is unconstrained or the edge in the opposite direction
-	 * of the gravity is constrained.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y = 2,
-	/**
-	 * invert the anchor and gravity on the x axis
-	 *
-	 * Invert the anchor and gravity on the x axis if the surface is
-	 * constrained on the x axis. For example, if the left edge of the
-	 * surface is constrained, the gravity is 'left' and the anchor is
-	 * 'left', change the gravity to 'right' and the anchor to 'right'.
-	 *
-	 * If the adjusted position also ends up being constrained, the
-	 * resulting position of the flip_x adjustment will be the one
-	 * before the adjustment.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X = 4,
-	/**
-	 * invert the anchor and gravity on the y axis
-	 *
-	 * Invert the anchor and gravity on the y axis if the surface is
-	 * constrained on the y axis. For example, if the bottom edge of
-	 * the surface is constrained, the gravity is 'bottom' and the
-	 * anchor is 'bottom', change the gravity to 'top' and the anchor
-	 * to 'top'.
-	 *
-	 * The adjusted position is calculated given the original anchor
-	 * rectangle and offset, but with the new flipped anchor and
-	 * gravity values.
-	 *
-	 * If the adjusted position also ends up being constrained, the
-	 * resulting position of the flip_y adjustment will be the one
-	 * before the adjustment.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y = 8,
-	/**
-	 * horizontally resize the surface
-	 *
-	 * Resize the surface horizontally so that it is completely
-	 * unconstrained.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X = 16,
-	/**
-	 * vertically resize the surface
-	 *
-	 * Resize the surface vertically so that it is completely
-	 * unconstrained.
-	 */
-	XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y = 32,
+  /**
+   * don't move the child surface when constrained
+   *
+   * Don't alter the surface position even if it is constrained on
+   * some axis, for example partially outside the edge of an output.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE = 0,
+  /**
+   * move along the x axis until unconstrained
+   *
+   * Slide the surface along the x axis until it is no longer
+   * constrained.
+   *
+   * First try to slide towards the direction of the gravity on the x
+   * axis until either the edge in the opposite direction of the
+   * gravity is unconstrained or the edge in the direction of the
+   * gravity is constrained.
+   *
+   * Then try to slide towards the opposite direction of the gravity
+   * on the x axis until either the edge in the direction of the
+   * gravity is unconstrained or the edge in the opposite direction
+   * of the gravity is constrained.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X = 1,
+  /**
+   * move along the y axis until unconstrained
+   *
+   * Slide the surface along the y axis until it is no longer
+   * constrained.
+   *
+   * First try to slide towards the direction of the gravity on the y
+   * axis until either the edge in the opposite direction of the
+   * gravity is unconstrained or the edge in the direction of the
+   * gravity is constrained.
+   *
+   * Then try to slide towards the opposite direction of the gravity
+   * on the y axis until either the edge in the direction of the
+   * gravity is unconstrained or the edge in the opposite direction
+   * of the gravity is constrained.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y = 2,
+  /**
+   * invert the anchor and gravity on the x axis
+   *
+   * Invert the anchor and gravity on the x axis if the surface is
+   * constrained on the x axis. For example, if the left edge of the
+   * surface is constrained, the gravity is 'left' and the anchor is
+   * 'left', change the gravity to 'right' and the anchor to 'right'.
+   *
+   * If the adjusted position also ends up being constrained, the
+   * resulting position of the flip_x adjustment will be the one
+   * before the adjustment.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X = 4,
+  /**
+   * invert the anchor and gravity on the y axis
+   *
+   * Invert the anchor and gravity on the y axis if the surface is
+   * constrained on the y axis. For example, if the bottom edge of
+   * the surface is constrained, the gravity is 'bottom' and the
+   * anchor is 'bottom', change the gravity to 'top' and the anchor
+   * to 'top'.
+   *
+   * The adjusted position is calculated given the original anchor
+   * rectangle and offset, but with the new flipped anchor and
+   * gravity values.
+   *
+   * If the adjusted position also ends up being constrained, the
+   * resulting position of the flip_y adjustment will be the one
+   * before the adjustment.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y = 8,
+  /**
+   * horizontally resize the surface
+   *
+   * Resize the surface horizontally so that it is completely
+   * unconstrained.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X = 16,
+  /**
+   * vertically resize the surface
+   *
+   * Resize the surface vertically so that it is completely
+   * unconstrained.
+   */
+  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y = 32,
 };
 #endif /* XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_ENUM */
 
@@ -653,180 +650,166 @@ enum xdg_positioner_constraint_adjustment {
  * @struct xdg_positioner_interface
  */
 struct xdg_positioner_interface {
-	/**
-	 * destroy the xdg_positioner object
-	 *
-	 * Notify the compositor that the xdg_positioner will no longer
-	 * be used.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * set the size of the to-be positioned rectangle
-	 *
-	 * Set the size of the surface that is to be positioned with the
-	 * positioner object. The size is in surface-local coordinates and
-	 * corresponds to the window geometry. See
-	 * xdg_surface.set_window_geometry.
-	 *
-	 * If a zero or negative size is set the invalid_input error is
-	 * raised.
-	 * @param width width of positioned rectangle
-	 * @param height height of positioned rectangle
-	 */
-	void (*set_size)(struct wl_client *client,
-			 struct wl_resource *resource,
-			 int32_t width,
-			 int32_t height);
-	/**
-	 * set the anchor rectangle within the parent surface
-	 *
-	 * Specify the anchor rectangle within the parent surface that
-	 * the child surface will be placed relative to. The rectangle is
-	 * relative to the window geometry as defined by
-	 * xdg_surface.set_window_geometry of the parent surface.
-	 *
-	 * When the xdg_positioner object is used to position a child
-	 * surface, the anchor rectangle may not extend outside the window
-	 * geometry of the positioned child's parent surface.
-	 *
-	 * If a negative size is set the invalid_input error is raised.
-	 * @param x x position of anchor rectangle
-	 * @param y y position of anchor rectangle
-	 * @param width width of anchor rectangle
-	 * @param height height of anchor rectangle
-	 */
-	void (*set_anchor_rect)(struct wl_client *client,
-				struct wl_resource *resource,
-				int32_t x,
-				int32_t y,
-				int32_t width,
-				int32_t height);
-	/**
-	 * set anchor rectangle anchor
-	 *
-	 * Defines the anchor point for the anchor rectangle. The
-	 * specified anchor is used derive an anchor point that the child
-	 * surface will be positioned relative to. If a corner anchor is
-	 * set (e.g. 'top_left' or 'bottom_right'), the anchor point will
-	 * be at the specified corner; otherwise, the derived anchor point
-	 * will be centered on the specified edge, or in the center of the
-	 * anchor rectangle if no edge is specified.
-	 * @param anchor anchor
-	 */
-	void (*set_anchor)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   uint32_t anchor);
-	/**
-	 * set child surface gravity
-	 *
-	 * Defines in what direction a surface should be positioned,
-	 * relative to the anchor point of the parent surface. If a corner
-	 * gravity is specified (e.g. 'bottom_right' or 'top_left'), then
-	 * the child surface will be placed towards the specified gravity;
-	 * otherwise, the child surface will be centered over the anchor
-	 * point on any axis that had no gravity specified. If the gravity
-	 * is not in the ‘gravity’ enum, an invalid_input error is
-	 * raised.
-	 * @param gravity gravity direction
-	 */
-	void (*set_gravity)(struct wl_client *client,
-			    struct wl_resource *resource,
-			    uint32_t gravity);
-	/**
-	 * set the adjustment to be done when constrained
-	 *
-	 * Specify how the window should be positioned if the originally
-	 * intended position caused the surface to be constrained, meaning
-	 * at least partially outside positioning boundaries set by the
-	 * compositor. The adjustment is set by constructing a bitmask
-	 * describing the adjustment to be made when the surface is
-	 * constrained on that axis.
-	 *
-	 * If no bit for one axis is set, the compositor will assume that
-	 * the child surface should not change its position on that axis
-	 * when constrained.
-	 *
-	 * If more than one bit for one axis is set, the order of how
-	 * adjustments are applied is specified in the corresponding
-	 * adjustment descriptions.
-	 *
-	 * The default adjustment is none.
-	 * @param constraint_adjustment bit mask of constraint adjustments
-	 */
-	void (*set_constraint_adjustment)(struct wl_client *client,
-					  struct wl_resource *resource,
-					  uint32_t constraint_adjustment);
-	/**
-	 * set surface position offset
-	 *
-	 * Specify the surface position offset relative to the position
-	 * of the anchor on the anchor rectangle and the anchor on the
-	 * surface. For example if the anchor of the anchor rectangle is at
-	 * (x, y), the surface has the gravity bottom|right, and the offset
-	 * is (ox, oy), the calculated surface position will be (x + ox, y
-	 * + oy). The offset position of the surface is the one used for
-	 * constraint testing. See set_constraint_adjustment.
-	 *
-	 * An example use case is placing a popup menu on top of a user
-	 * interface element, while aligning the user interface element of
-	 * the parent surface with some user interface element placed
-	 * somewhere in the popup surface.
-	 * @param x surface position x offset
-	 * @param y surface position y offset
-	 */
-	void (*set_offset)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   int32_t x,
-			   int32_t y);
-	/**
-	 * continuously reconstrain the surface
-	 *
-	 * When set reactive, the surface is reconstrained if the
-	 * conditions used for constraining changed, e.g. the parent window
-	 * moved.
-	 *
-	 * If the conditions changed and the popup was reconstrained, an
-	 * xdg_popup.configure event is sent with updated geometry,
-	 * followed by an xdg_surface.configure event.
-	 * @since 3
-	 */
-	void (*set_reactive)(struct wl_client *client,
-			     struct wl_resource *resource);
-	/**
-	 * 
-	 *
-	 * Set the parent window geometry the compositor should use when
-	 * positioning the popup. The compositor may use this information
-	 * to determine the future state the popup should be constrained
-	 * using. If this doesn't match the dimension of the parent the
-	 * popup is eventually positioned against, the behavior is
-	 * undefined.
-	 *
-	 * The arguments are given in the surface-local coordinate space.
-	 * @param parent_width future window geometry width of parent
-	 * @param parent_height future window geometry height of parent
-	 * @since 3
-	 */
-	void (*set_parent_size)(struct wl_client *client,
-				struct wl_resource *resource,
-				int32_t parent_width,
-				int32_t parent_height);
-	/**
-	 * set parent configure this is a response to
-	 *
-	 * Set the serial of an xdg_surface.configure event this
-	 * positioner will be used in response to. The compositor may use
-	 * this information together with set_parent_size to determine what
-	 * future state the popup should be constrained using.
-	 * @param serial serial of parent configure event
-	 * @since 3
-	 */
-	void (*set_parent_configure)(struct wl_client *client,
-				     struct wl_resource *resource,
-				     uint32_t serial);
+  /**
+   * destroy the xdg_positioner object
+   *
+   * Notify the compositor that the xdg_positioner will no longer
+   * be used.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * set the size of the to-be positioned rectangle
+   *
+   * Set the size of the surface that is to be positioned with the
+   * positioner object. The size is in surface-local coordinates and
+   * corresponds to the window geometry. See
+   * xdg_surface.set_window_geometry.
+   *
+   * If a zero or negative size is set the invalid_input error is
+   * raised.
+   * @param width width of positioned rectangle
+   * @param height height of positioned rectangle
+   */
+  void (*set_size)(struct wl_client *client, struct wl_resource *resource,
+                   int32_t width, int32_t height);
+  /**
+   * set the anchor rectangle within the parent surface
+   *
+   * Specify the anchor rectangle within the parent surface that
+   * the child surface will be placed relative to. The rectangle is
+   * relative to the window geometry as defined by
+   * xdg_surface.set_window_geometry of the parent surface.
+   *
+   * When the xdg_positioner object is used to position a child
+   * surface, the anchor rectangle may not extend outside the window
+   * geometry of the positioned child's parent surface.
+   *
+   * If a negative size is set the invalid_input error is raised.
+   * @param x x position of anchor rectangle
+   * @param y y position of anchor rectangle
+   * @param width width of anchor rectangle
+   * @param height height of anchor rectangle
+   */
+  void (*set_anchor_rect)(struct wl_client *client,
+                          struct wl_resource *resource, int32_t x, int32_t y,
+                          int32_t width, int32_t height);
+  /**
+   * set anchor rectangle anchor
+   *
+   * Defines the anchor point for the anchor rectangle. The
+   * specified anchor is used derive an anchor point that the child
+   * surface will be positioned relative to. If a corner anchor is
+   * set (e.g. 'top_left' or 'bottom_right'), the anchor point will
+   * be at the specified corner; otherwise, the derived anchor point
+   * will be centered on the specified edge, or in the center of the
+   * anchor rectangle if no edge is specified.
+   * @param anchor anchor
+   */
+  void (*set_anchor)(struct wl_client *client, struct wl_resource *resource,
+                     uint32_t anchor);
+  /**
+   * set child surface gravity
+   *
+   * Defines in what direction a surface should be positioned,
+   * relative to the anchor point of the parent surface. If a corner
+   * gravity is specified (e.g. 'bottom_right' or 'top_left'), then
+   * the child surface will be placed towards the specified gravity;
+   * otherwise, the child surface will be centered over the anchor
+   * point on any axis that had no gravity specified. If the gravity
+   * is not in the ‘gravity’ enum, an invalid_input error is
+   * raised.
+   * @param gravity gravity direction
+   */
+  void (*set_gravity)(struct wl_client *client, struct wl_resource *resource,
+                      uint32_t gravity);
+  /**
+   * set the adjustment to be done when constrained
+   *
+   * Specify how the window should be positioned if the originally
+   * intended position caused the surface to be constrained, meaning
+   * at least partially outside positioning boundaries set by the
+   * compositor. The adjustment is set by constructing a bitmask
+   * describing the adjustment to be made when the surface is
+   * constrained on that axis.
+   *
+   * If no bit for one axis is set, the compositor will assume that
+   * the child surface should not change its position on that axis
+   * when constrained.
+   *
+   * If more than one bit for one axis is set, the order of how
+   * adjustments are applied is specified in the corresponding
+   * adjustment descriptions.
+   *
+   * The default adjustment is none.
+   * @param constraint_adjustment bit mask of constraint adjustments
+   */
+  void (*set_constraint_adjustment)(struct wl_client *client,
+                                    struct wl_resource *resource,
+                                    uint32_t constraint_adjustment);
+  /**
+   * set surface position offset
+   *
+   * Specify the surface position offset relative to the position
+   * of the anchor on the anchor rectangle and the anchor on the
+   * surface. For example if the anchor of the anchor rectangle is at
+   * (x, y), the surface has the gravity bottom|right, and the offset
+   * is (ox, oy), the calculated surface position will be (x + ox, y
+   * + oy). The offset position of the surface is the one used for
+   * constraint testing. See set_constraint_adjustment.
+   *
+   * An example use case is placing a popup menu on top of a user
+   * interface element, while aligning the user interface element of
+   * the parent surface with some user interface element placed
+   * somewhere in the popup surface.
+   * @param x surface position x offset
+   * @param y surface position y offset
+   */
+  void (*set_offset)(struct wl_client *client, struct wl_resource *resource,
+                     int32_t x, int32_t y);
+  /**
+   * continuously reconstrain the surface
+   *
+   * When set reactive, the surface is reconstrained if the
+   * conditions used for constraining changed, e.g. the parent window
+   * moved.
+   *
+   * If the conditions changed and the popup was reconstrained, an
+   * xdg_popup.configure event is sent with updated geometry,
+   * followed by an xdg_surface.configure event.
+   * @since 3
+   */
+  void (*set_reactive)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   *
+   *
+   * Set the parent window geometry the compositor should use when
+   * positioning the popup. The compositor may use this information
+   * to determine the future state the popup should be constrained
+   * using. If this doesn't match the dimension of the parent the
+   * popup is eventually positioned against, the behavior is
+   * undefined.
+   *
+   * The arguments are given in the surface-local coordinate space.
+   * @param parent_width future window geometry width of parent
+   * @param parent_height future window geometry height of parent
+   * @since 3
+   */
+  void (*set_parent_size)(struct wl_client *client,
+                          struct wl_resource *resource, int32_t parent_width,
+                          int32_t parent_height);
+  /**
+   * set parent configure this is a response to
+   *
+   * Set the serial of an xdg_surface.configure event this
+   * positioner will be used in response to. The compositor may use
+   * this information together with set_parent_size to determine what
+   * future state the popup should be constrained using.
+   * @param serial serial of parent configure event
+   * @since 3
+   */
+  void (*set_parent_configure)(struct wl_client *client,
+                               struct wl_resource *resource, uint32_t serial);
 };
-
 
 /**
  * @ingroup iface_xdg_positioner
@@ -872,30 +855,30 @@ struct xdg_positioner_interface {
 #ifndef XDG_SURFACE_ERROR_ENUM
 #define XDG_SURFACE_ERROR_ENUM
 enum xdg_surface_error {
-	/**
-	 * Surface was not fully constructed
-	 */
-	XDG_SURFACE_ERROR_NOT_CONSTRUCTED = 1,
-	/**
-	 * Surface was already constructed
-	 */
-	XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED = 2,
-	/**
-	 * Attaching a buffer to an unconfigured surface
-	 */
-	XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER = 3,
-	/**
-	 * Invalid serial number when acking a configure event
-	 */
-	XDG_SURFACE_ERROR_INVALID_SERIAL = 4,
-	/**
-	 * Width or height was zero or negative
-	 */
-	XDG_SURFACE_ERROR_INVALID_SIZE = 5,
-	/**
-	 * Surface was destroyed before its role object
-	 */
-	XDG_SURFACE_ERROR_DEFUNCT_ROLE_OBJECT = 6,
+  /**
+   * Surface was not fully constructed
+   */
+  XDG_SURFACE_ERROR_NOT_CONSTRUCTED = 1,
+  /**
+   * Surface was already constructed
+   */
+  XDG_SURFACE_ERROR_ALREADY_CONSTRUCTED = 2,
+  /**
+   * Attaching a buffer to an unconfigured surface
+   */
+  XDG_SURFACE_ERROR_UNCONFIGURED_BUFFER = 3,
+  /**
+   * Invalid serial number when acking a configure event
+   */
+  XDG_SURFACE_ERROR_INVALID_SERIAL = 4,
+  /**
+   * Width or height was zero or negative
+   */
+  XDG_SURFACE_ERROR_INVALID_SIZE = 5,
+  /**
+   * Surface was destroyed before its role object
+   */
+  XDG_SURFACE_ERROR_DEFUNCT_ROLE_OBJECT = 6,
 };
 #endif /* XDG_SURFACE_ERROR_ENUM */
 
@@ -904,138 +887,130 @@ enum xdg_surface_error {
  * @struct xdg_surface_interface
  */
 struct xdg_surface_interface {
-	/**
-	 * destroy the xdg_surface
-	 *
-	 * Destroy the xdg_surface object. An xdg_surface must only be
-	 * destroyed after its role object has been destroyed, otherwise a
-	 * defunct_role_object error is raised.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * assign the xdg_toplevel surface role
-	 *
-	 * This creates an xdg_toplevel object for the given xdg_surface
-	 * and gives the associated wl_surface the xdg_toplevel role.
-	 *
-	 * See the documentation of xdg_toplevel for more details about
-	 * what an xdg_toplevel is and how it is used.
-	 */
-	void (*get_toplevel)(struct wl_client *client,
-			     struct wl_resource *resource,
-			     uint32_t id);
-	/**
-	 * assign the xdg_popup surface role
-	 *
-	 * This creates an xdg_popup object for the given xdg_surface and
-	 * gives the associated wl_surface the xdg_popup role.
-	 *
-	 * If null is passed as a parent, a parent surface must be
-	 * specified using some other protocol, before committing the
-	 * initial state.
-	 *
-	 * See the documentation of xdg_popup for more details about what
-	 * an xdg_popup is and how it is used.
-	 */
-	void (*get_popup)(struct wl_client *client,
-			  struct wl_resource *resource,
-			  uint32_t id,
-			  struct wl_resource *parent,
-			  struct wl_resource *positioner);
-	/**
-	 * set the new window geometry
-	 *
-	 * The window geometry of a surface is its "visible bounds" from
-	 * the user's perspective. Client-side decorations often have
-	 * invisible portions like drop-shadows which should be ignored for
-	 * the purposes of aligning, placing and constraining windows.
-	 *
-	 * The window geometry is double buffered, and will be applied at
-	 * the time wl_surface.commit of the corresponding wl_surface is
-	 * called.
-	 *
-	 * When maintaining a position, the compositor should treat the (x,
-	 * y) coordinate of the window geometry as the top left corner of
-	 * the window. A client changing the (x, y) window geometry
-	 * coordinate should in general not alter the position of the
-	 * window.
-	 *
-	 * Once the window geometry of the surface is set, it is not
-	 * possible to unset it, and it will remain the same until
-	 * set_window_geometry is called again, even if a new subsurface or
-	 * buffer is attached.
-	 *
-	 * If never set, the value is the full bounds of the surface,
-	 * including any subsurfaces. This updates dynamically on every
-	 * commit. This unset is meant for extremely simple clients.
-	 *
-	 * The arguments are given in the surface-local coordinate space of
-	 * the wl_surface associated with this xdg_surface, and may extend
-	 * outside of the wl_surface itself to mark parts of the subsurface
-	 * tree as part of the window geometry.
-	 *
-	 * When applied, the effective window geometry will be the set
-	 * window geometry clamped to the bounding rectangle of the
-	 * combined geometry of the surface of the xdg_surface and the
-	 * associated subsurfaces.
-	 *
-	 * The effective geometry will not be recalculated unless a new
-	 * call to set_window_geometry is done and the new pending surface
-	 * state is subsequently applied.
-	 *
-	 * The width and height of the effective window geometry must be
-	 * greater than zero. Setting an invalid size will raise an
-	 * invalid_size error.
-	 */
-	void (*set_window_geometry)(struct wl_client *client,
-				    struct wl_resource *resource,
-				    int32_t x,
-				    int32_t y,
-				    int32_t width,
-				    int32_t height);
-	/**
-	 * ack a configure event
-	 *
-	 * When a configure event is received, if a client commits the
-	 * surface in response to the configure event, then the client must
-	 * make an ack_configure request sometime before the commit
-	 * request, passing along the serial of the configure event.
-	 *
-	 * For instance, for toplevel surfaces the compositor might use
-	 * this information to move a surface to the top left only when the
-	 * client has drawn itself for the maximized or fullscreen state.
-	 *
-	 * If the client receives multiple configure events before it can
-	 * respond to one, it only has to ack the last configure event.
-	 * Acking a configure event that was never sent raises an
-	 * invalid_serial error.
-	 *
-	 * A client is not required to commit immediately after sending an
-	 * ack_configure request - it may even ack_configure several times
-	 * before its next surface commit.
-	 *
-	 * A client may send multiple ack_configure requests before
-	 * committing, but only the last request sent before a commit
-	 * indicates which configure event the client really is responding
-	 * to.
-	 *
-	 * Sending an ack_configure request consumes the serial number sent
-	 * with the request, as well as serial numbers sent by all
-	 * configure events sent on this xdg_surface prior to the configure
-	 * event referenced by the committed serial.
-	 *
-	 * It is an error to issue multiple ack_configure requests
-	 * referencing a serial from the same configure event, or to issue
-	 * an ack_configure request referencing a serial from a configure
-	 * event issued before the event identified by the last
-	 * ack_configure request for the same xdg_surface. Doing so will
-	 * raise an invalid_serial error.
-	 * @param serial the serial from the configure event
-	 */
-	void (*ack_configure)(struct wl_client *client,
-			      struct wl_resource *resource,
-			      uint32_t serial);
+  /**
+   * destroy the xdg_surface
+   *
+   * Destroy the xdg_surface object. An xdg_surface must only be
+   * destroyed after its role object has been destroyed, otherwise a
+   * defunct_role_object error is raised.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * assign the xdg_toplevel surface role
+   *
+   * This creates an xdg_toplevel object for the given xdg_surface
+   * and gives the associated wl_surface the xdg_toplevel role.
+   *
+   * See the documentation of xdg_toplevel for more details about
+   * what an xdg_toplevel is and how it is used.
+   */
+  void (*get_toplevel)(struct wl_client *client, struct wl_resource *resource,
+                       uint32_t id);
+  /**
+   * assign the xdg_popup surface role
+   *
+   * This creates an xdg_popup object for the given xdg_surface and
+   * gives the associated wl_surface the xdg_popup role.
+   *
+   * If null is passed as a parent, a parent surface must be
+   * specified using some other protocol, before committing the
+   * initial state.
+   *
+   * See the documentation of xdg_popup for more details about what
+   * an xdg_popup is and how it is used.
+   */
+  void (*get_popup)(struct wl_client *client, struct wl_resource *resource,
+                    uint32_t id, struct wl_resource *parent,
+                    struct wl_resource *positioner);
+  /**
+   * set the new window geometry
+   *
+   * The window geometry of a surface is its "visible bounds" from
+   * the user's perspective. Client-side decorations often have
+   * invisible portions like drop-shadows which should be ignored for
+   * the purposes of aligning, placing and constraining windows.
+   *
+   * The window geometry is double buffered, and will be applied at
+   * the time wl_surface.commit of the corresponding wl_surface is
+   * called.
+   *
+   * When maintaining a position, the compositor should treat the (x,
+   * y) coordinate of the window geometry as the top left corner of
+   * the window. A client changing the (x, y) window geometry
+   * coordinate should in general not alter the position of the
+   * window.
+   *
+   * Once the window geometry of the surface is set, it is not
+   * possible to unset it, and it will remain the same until
+   * set_window_geometry is called again, even if a new subsurface or
+   * buffer is attached.
+   *
+   * If never set, the value is the full bounds of the surface,
+   * including any subsurfaces. This updates dynamically on every
+   * commit. This unset is meant for extremely simple clients.
+   *
+   * The arguments are given in the surface-local coordinate space of
+   * the wl_surface associated with this xdg_surface, and may extend
+   * outside of the wl_surface itself to mark parts of the subsurface
+   * tree as part of the window geometry.
+   *
+   * When applied, the effective window geometry will be the set
+   * window geometry clamped to the bounding rectangle of the
+   * combined geometry of the surface of the xdg_surface and the
+   * associated subsurfaces.
+   *
+   * The effective geometry will not be recalculated unless a new
+   * call to set_window_geometry is done and the new pending surface
+   * state is subsequently applied.
+   *
+   * The width and height of the effective window geometry must be
+   * greater than zero. Setting an invalid size will raise an
+   * invalid_size error.
+   */
+  void (*set_window_geometry)(struct wl_client *client,
+                              struct wl_resource *resource, int32_t x,
+                              int32_t y, int32_t width, int32_t height);
+  /**
+   * ack a configure event
+   *
+   * When a configure event is received, if a client commits the
+   * surface in response to the configure event, then the client must
+   * make an ack_configure request sometime before the commit
+   * request, passing along the serial of the configure event.
+   *
+   * For instance, for toplevel surfaces the compositor might use
+   * this information to move a surface to the top left only when the
+   * client has drawn itself for the maximized or fullscreen state.
+   *
+   * If the client receives multiple configure events before it can
+   * respond to one, it only has to ack the last configure event.
+   * Acking a configure event that was never sent raises an
+   * invalid_serial error.
+   *
+   * A client is not required to commit immediately after sending an
+   * ack_configure request - it may even ack_configure several times
+   * before its next surface commit.
+   *
+   * A client may send multiple ack_configure requests before
+   * committing, but only the last request sent before a commit
+   * indicates which configure event the client really is responding
+   * to.
+   *
+   * Sending an ack_configure request consumes the serial number sent
+   * with the request, as well as serial numbers sent by all
+   * configure events sent on this xdg_surface prior to the configure
+   * event referenced by the committed serial.
+   *
+   * It is an error to issue multiple ack_configure requests
+   * referencing a serial from the same configure event, or to issue
+   * an ack_configure request referencing a serial from a configure
+   * event issued before the event identified by the last
+   * ack_configure request for the same xdg_surface. Doing so will
+   * raise an invalid_serial error.
+   * @param serial the serial from the configure event
+   */
+  void (*ack_configure)(struct wl_client *client, struct wl_resource *resource,
+                        uint32_t serial);
 };
 
 #define XDG_SURFACE_CONFIGURE 0
@@ -1072,27 +1047,26 @@ struct xdg_surface_interface {
  * @param resource_ The client's resource
  * @param serial serial of the configure event
  */
-static inline void
-xdg_surface_send_configure(struct wl_resource *resource_, uint32_t serial)
-{
-	wl_resource_post_event(resource_, XDG_SURFACE_CONFIGURE, serial);
+static inline void xdg_surface_send_configure(struct wl_resource *resource_,
+                                              uint32_t serial) {
+  wl_resource_post_event(resource_, XDG_SURFACE_CONFIGURE, serial);
 }
 
 #ifndef XDG_TOPLEVEL_ERROR_ENUM
 #define XDG_TOPLEVEL_ERROR_ENUM
 enum xdg_toplevel_error {
-	/**
-	 * provided value is         not a valid variant of the resize_edge enum
-	 */
-	XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE = 0,
-	/**
-	 * invalid parent toplevel
-	 */
-	XDG_TOPLEVEL_ERROR_INVALID_PARENT = 1,
-	/**
-	 * client provided an invalid min or max size
-	 */
-	XDG_TOPLEVEL_ERROR_INVALID_SIZE = 2,
+  /**
+   * provided value is         not a valid variant of the resize_edge enum
+   */
+  XDG_TOPLEVEL_ERROR_INVALID_RESIZE_EDGE = 0,
+  /**
+   * invalid parent toplevel
+   */
+  XDG_TOPLEVEL_ERROR_INVALID_PARENT = 1,
+  /**
+   * client provided an invalid min or max size
+   */
+  XDG_TOPLEVEL_ERROR_INVALID_SIZE = 2,
 };
 #endif /* XDG_TOPLEVEL_ERROR_ENUM */
 
@@ -1106,15 +1080,15 @@ enum xdg_toplevel_error {
  * is being dragged in a resize operation.
  */
 enum xdg_toplevel_resize_edge {
-	XDG_TOPLEVEL_RESIZE_EDGE_NONE = 0,
-	XDG_TOPLEVEL_RESIZE_EDGE_TOP = 1,
-	XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM = 2,
-	XDG_TOPLEVEL_RESIZE_EDGE_LEFT = 4,
-	XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT = 5,
-	XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT = 6,
-	XDG_TOPLEVEL_RESIZE_EDGE_RIGHT = 8,
-	XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT = 9,
-	XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT = 10,
+  XDG_TOPLEVEL_RESIZE_EDGE_NONE = 0,
+  XDG_TOPLEVEL_RESIZE_EDGE_TOP = 1,
+  XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM = 2,
+  XDG_TOPLEVEL_RESIZE_EDGE_LEFT = 4,
+  XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT = 5,
+  XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT = 6,
+  XDG_TOPLEVEL_RESIZE_EDGE_RIGHT = 8,
+  XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT = 9,
+  XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT = 10,
 };
 #endif /* XDG_TOPLEVEL_RESIZE_EDGE_ENUM */
 
@@ -1133,101 +1107,101 @@ enum xdg_toplevel_resize_edge {
  * the next commit.
  */
 enum xdg_toplevel_state {
-	/**
-	 * the surface is maximized
-	 * the surface is maximized
-	 *
-	 * The surface is maximized. The window geometry specified in the
-	 * configure event must be obeyed by the client, or the
-	 * xdg_wm_base.invalid_surface_state error is raised.
-	 *
-	 * The client should draw without shadow or other decoration
-	 * outside of the window geometry.
-	 */
-	XDG_TOPLEVEL_STATE_MAXIMIZED = 1,
-	/**
-	 * the surface is fullscreen
-	 * the surface is fullscreen
-	 *
-	 * The surface is fullscreen. The window geometry specified in
-	 * the configure event is a maximum; the client cannot resize
-	 * beyond it. For a surface to cover the whole fullscreened area,
-	 * the geometry dimensions must be obeyed by the client. For more
-	 * details, see xdg_toplevel.set_fullscreen.
-	 */
-	XDG_TOPLEVEL_STATE_FULLSCREEN = 2,
-	/**
-	 * the surface is being resized
-	 * the surface is being resized
-	 *
-	 * The surface is being resized. The window geometry specified in
-	 * the configure event is a maximum; the client cannot resize
-	 * beyond it. Clients that have aspect ratio or cell sizing
-	 * configuration can use a smaller size, however.
-	 */
-	XDG_TOPLEVEL_STATE_RESIZING = 3,
-	/**
-	 * the surface is now activated
-	 * the surface is now activated
-	 *
-	 * Client window decorations should be painted as if the window
-	 * is active. Do not assume this means that the window actually has
-	 * keyboard or pointer focus.
-	 */
-	XDG_TOPLEVEL_STATE_ACTIVATED = 4,
-	/**
-	 * the surface’s left edge is tiled
-	 *
-	 * The window is currently in a tiled layout and the left edge is
-	 * considered to be adjacent to another part of the tiling grid.
-	 *
-	 * The client should draw without shadow or other decoration
-	 * outside of the window geometry on the left edge.
-	 * @since 2
-	 */
-	XDG_TOPLEVEL_STATE_TILED_LEFT = 5,
-	/**
-	 * the surface’s right edge is tiled
-	 *
-	 * The window is currently in a tiled layout and the right edge
-	 * is considered to be adjacent to another part of the tiling grid.
-	 *
-	 * The client should draw without shadow or other decoration
-	 * outside of the window geometry on the right edge.
-	 * @since 2
-	 */
-	XDG_TOPLEVEL_STATE_TILED_RIGHT = 6,
-	/**
-	 * the surface’s top edge is tiled
-	 *
-	 * The window is currently in a tiled layout and the top edge is
-	 * considered to be adjacent to another part of the tiling grid.
-	 *
-	 * The client should draw without shadow or other decoration
-	 * outside of the window geometry on the top edge.
-	 * @since 2
-	 */
-	XDG_TOPLEVEL_STATE_TILED_TOP = 7,
-	/**
-	 * the surface’s bottom edge is tiled
-	 *
-	 * The window is currently in a tiled layout and the bottom edge
-	 * is considered to be adjacent to another part of the tiling grid.
-	 *
-	 * The client should draw without shadow or other decoration
-	 * outside of the window geometry on the bottom edge.
-	 * @since 2
-	 */
-	XDG_TOPLEVEL_STATE_TILED_BOTTOM = 8,
-	/**
-	 * surface repaint is suspended
-	 *
-	 * The surface is currently not ordinarily being repainted; for
-	 * example because its content is occluded by another window, or
-	 * its outputs are switched off due to screen locking.
-	 * @since 6
-	 */
-	XDG_TOPLEVEL_STATE_SUSPENDED = 9,
+  /**
+   * the surface is maximized
+   * the surface is maximized
+   *
+   * The surface is maximized. The window geometry specified in the
+   * configure event must be obeyed by the client, or the
+   * xdg_wm_base.invalid_surface_state error is raised.
+   *
+   * The client should draw without shadow or other decoration
+   * outside of the window geometry.
+   */
+  XDG_TOPLEVEL_STATE_MAXIMIZED = 1,
+  /**
+   * the surface is fullscreen
+   * the surface is fullscreen
+   *
+   * The surface is fullscreen. The window geometry specified in
+   * the configure event is a maximum; the client cannot resize
+   * beyond it. For a surface to cover the whole fullscreened area,
+   * the geometry dimensions must be obeyed by the client. For more
+   * details, see xdg_toplevel.set_fullscreen.
+   */
+  XDG_TOPLEVEL_STATE_FULLSCREEN = 2,
+  /**
+   * the surface is being resized
+   * the surface is being resized
+   *
+   * The surface is being resized. The window geometry specified in
+   * the configure event is a maximum; the client cannot resize
+   * beyond it. Clients that have aspect ratio or cell sizing
+   * configuration can use a smaller size, however.
+   */
+  XDG_TOPLEVEL_STATE_RESIZING = 3,
+  /**
+   * the surface is now activated
+   * the surface is now activated
+   *
+   * Client window decorations should be painted as if the window
+   * is active. Do not assume this means that the window actually has
+   * keyboard or pointer focus.
+   */
+  XDG_TOPLEVEL_STATE_ACTIVATED = 4,
+  /**
+   * the surface’s left edge is tiled
+   *
+   * The window is currently in a tiled layout and the left edge is
+   * considered to be adjacent to another part of the tiling grid.
+   *
+   * The client should draw without shadow or other decoration
+   * outside of the window geometry on the left edge.
+   * @since 2
+   */
+  XDG_TOPLEVEL_STATE_TILED_LEFT = 5,
+  /**
+   * the surface’s right edge is tiled
+   *
+   * The window is currently in a tiled layout and the right edge
+   * is considered to be adjacent to another part of the tiling grid.
+   *
+   * The client should draw without shadow or other decoration
+   * outside of the window geometry on the right edge.
+   * @since 2
+   */
+  XDG_TOPLEVEL_STATE_TILED_RIGHT = 6,
+  /**
+   * the surface’s top edge is tiled
+   *
+   * The window is currently in a tiled layout and the top edge is
+   * considered to be adjacent to another part of the tiling grid.
+   *
+   * The client should draw without shadow or other decoration
+   * outside of the window geometry on the top edge.
+   * @since 2
+   */
+  XDG_TOPLEVEL_STATE_TILED_TOP = 7,
+  /**
+   * the surface’s bottom edge is tiled
+   *
+   * The window is currently in a tiled layout and the bottom edge
+   * is considered to be adjacent to another part of the tiling grid.
+   *
+   * The client should draw without shadow or other decoration
+   * outside of the window geometry on the bottom edge.
+   * @since 2
+   */
+  XDG_TOPLEVEL_STATE_TILED_BOTTOM = 8,
+  /**
+   * surface repaint is suspended
+   *
+   * The surface is currently not ordinarily being repainted; for
+   * example because its content is occluded by another window, or
+   * its outputs are switched off due to screen locking.
+   * @since 6
+   */
+  XDG_TOPLEVEL_STATE_SUSPENDED = 9,
 };
 /**
  * @ingroup iface_xdg_toplevel
@@ -1254,22 +1228,22 @@ enum xdg_toplevel_state {
 #ifndef XDG_TOPLEVEL_WM_CAPABILITIES_ENUM
 #define XDG_TOPLEVEL_WM_CAPABILITIES_ENUM
 enum xdg_toplevel_wm_capabilities {
-	/**
-	 * show_window_menu is available
-	 */
-	XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU = 1,
-	/**
-	 * set_maximized and unset_maximized are available
-	 */
-	XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE = 2,
-	/**
-	 * set_fullscreen and unset_fullscreen are available
-	 */
-	XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN = 3,
-	/**
-	 * set_minimized is available
-	 */
-	XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE = 4,
+  /**
+   * show_window_menu is available
+   */
+  XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU = 1,
+  /**
+   * set_maximized and unset_maximized are available
+   */
+  XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE = 2,
+  /**
+   * set_fullscreen and unset_fullscreen are available
+   */
+  XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN = 3,
+  /**
+   * set_minimized is available
+   */
+  XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE = 4,
 };
 #endif /* XDG_TOPLEVEL_WM_CAPABILITIES_ENUM */
 
@@ -1278,394 +1252,376 @@ enum xdg_toplevel_wm_capabilities {
  * @struct xdg_toplevel_interface
  */
 struct xdg_toplevel_interface {
-	/**
-	 * destroy the xdg_toplevel
-	 *
-	 * This request destroys the role surface and unmaps the surface;
-	 * see "Unmapping" behavior in interface section for details.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * set the parent of this surface
-	 *
-	 * Set the "parent" of this surface. This surface should be
-	 * stacked above the parent surface and all other ancestor
-	 * surfaces.
-	 *
-	 * Parent surfaces should be set on dialogs, toolboxes, or other
-	 * "auxiliary" surfaces, so that the parent is raised when the
-	 * dialog is raised.
-	 *
-	 * Setting a null parent for a child surface unsets its parent.
-	 * Setting a null parent for a surface which currently has no
-	 * parent is a no-op.
-	 *
-	 * Only mapped surfaces can have child surfaces. Setting a parent
-	 * which is not mapped is equivalent to setting a null parent. If a
-	 * surface becomes unmapped, its children's parent is set to the
-	 * parent of the now-unmapped surface. If the now-unmapped surface
-	 * has no parent, its children's parent is unset. If the
-	 * now-unmapped surface becomes mapped again, its parent-child
-	 * relationship is not restored.
-	 *
-	 * The parent toplevel must not be one of the child toplevel's
-	 * descendants, and the parent must be different from the child
-	 * toplevel, otherwise the invalid_parent protocol error is raised.
-	 */
-	void (*set_parent)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   struct wl_resource *parent);
-	/**
-	 * set surface title
-	 *
-	 * Set a short title for the surface.
-	 *
-	 * This string may be used to identify the surface in a task bar,
-	 * window list, or other user interface elements provided by the
-	 * compositor.
-	 *
-	 * The string must be encoded in UTF-8.
-	 */
-	void (*set_title)(struct wl_client *client,
-			  struct wl_resource *resource,
-			  const char *title);
-	/**
-	 * set application ID
-	 *
-	 * Set an application identifier for the surface.
-	 *
-	 * The app ID identifies the general class of applications to which
-	 * the surface belongs. The compositor can use this to group
-	 * multiple surfaces together, or to determine how to launch a new
-	 * application.
-	 *
-	 * For D-Bus activatable applications, the app ID is used as the
-	 * D-Bus service name.
-	 *
-	 * The compositor shell will try to group application surfaces
-	 * together by their app ID. As a best practice, it is suggested to
-	 * select app ID's that match the basename of the application's
-	 * .desktop file. For example, "org.freedesktop.FooViewer" where
-	 * the .desktop file is "org.freedesktop.FooViewer.desktop".
-	 *
-	 * Like other properties, a set_app_id request can be sent after
-	 * the xdg_toplevel has been mapped to update the property.
-	 *
-	 * See the desktop-entry specification [0] for more details on
-	 * application identifiers and how they relate to well-known D-Bus
-	 * names and .desktop files.
-	 *
-	 * [0] https://standards.freedesktop.org/desktop-entry-spec/
-	 */
-	void (*set_app_id)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   const char *app_id);
-	/**
-	 * show the window menu
-	 *
-	 * Clients implementing client-side decorations might want to
-	 * show a context menu when right-clicking on the decorations,
-	 * giving the user a menu that they can use to maximize or minimize
-	 * the window.
-	 *
-	 * This request asks the compositor to pop up such a window menu at
-	 * the given position, relative to the local surface coordinates of
-	 * the parent surface. There are no guarantees as to what menu
-	 * items the window menu contains, or even if a window menu will be
-	 * drawn at all.
-	 *
-	 * This request must be used in response to some sort of user
-	 * action like a button press, key press, or touch down event.
-	 * @param seat the wl_seat of the user event
-	 * @param serial the serial of the user event
-	 * @param x the x position to pop up the window menu at
-	 * @param y the y position to pop up the window menu at
-	 */
-	void (*show_window_menu)(struct wl_client *client,
-				 struct wl_resource *resource,
-				 struct wl_resource *seat,
-				 uint32_t serial,
-				 int32_t x,
-				 int32_t y);
-	/**
-	 * start an interactive move
-	 *
-	 * Start an interactive, user-driven move of the surface.
-	 *
-	 * This request must be used in response to some sort of user
-	 * action like a button press, key press, or touch down event. The
-	 * passed serial is used to determine the type of interactive move
-	 * (touch, pointer, etc).
-	 *
-	 * The server may ignore move requests depending on the state of
-	 * the surface (e.g. fullscreen or maximized), or if the passed
-	 * serial is no longer valid.
-	 *
-	 * If triggered, the surface will lose the focus of the device
-	 * (wl_pointer, wl_touch, etc) used for the move. It is up to the
-	 * compositor to visually indicate that the move is taking place,
-	 * such as updating a pointer cursor, during the move. There is no
-	 * guarantee that the device focus will return when the move is
-	 * completed.
-	 * @param seat the wl_seat of the user event
-	 * @param serial the serial of the user event
-	 */
-	void (*move)(struct wl_client *client,
-		     struct wl_resource *resource,
-		     struct wl_resource *seat,
-		     uint32_t serial);
-	/**
-	 * start an interactive resize
-	 *
-	 * Start a user-driven, interactive resize of the surface.
-	 *
-	 * This request must be used in response to some sort of user
-	 * action like a button press, key press, or touch down event. The
-	 * passed serial is used to determine the type of interactive
-	 * resize (touch, pointer, etc).
-	 *
-	 * The server may ignore resize requests depending on the state of
-	 * the surface (e.g. fullscreen or maximized).
-	 *
-	 * If triggered, the client will receive configure events with the
-	 * "resize" state enum value and the expected sizes. See the
-	 * "resize" enum value for more details about what is required. The
-	 * client must also acknowledge configure events using
-	 * "ack_configure". After the resize is completed, the client will
-	 * receive another "configure" event without the resize state.
-	 *
-	 * If triggered, the surface also will lose the focus of the device
-	 * (wl_pointer, wl_touch, etc) used for the resize. It is up to the
-	 * compositor to visually indicate that the resize is taking place,
-	 * such as updating a pointer cursor, during the resize. There is
-	 * no guarantee that the device focus will return when the resize
-	 * is completed.
-	 *
-	 * The edges parameter specifies how the surface should be resized,
-	 * and is one of the values of the resize_edge enum. Values not
-	 * matching a variant of the enum will cause the
-	 * invalid_resize_edge protocol error. The compositor may use this
-	 * information to update the surface position for example when
-	 * dragging the top left corner. The compositor may also use this
-	 * information to adapt its behavior, e.g. choose an appropriate
-	 * cursor image.
-	 * @param seat the wl_seat of the user event
-	 * @param serial the serial of the user event
-	 * @param edges which edge or corner is being dragged
-	 */
-	void (*resize)(struct wl_client *client,
-		       struct wl_resource *resource,
-		       struct wl_resource *seat,
-		       uint32_t serial,
-		       uint32_t edges);
-	/**
-	 * set the maximum size
-	 *
-	 * Set a maximum size for the window.
-	 *
-	 * The client can specify a maximum size so that the compositor
-	 * does not try to configure the window beyond this size.
-	 *
-	 * The width and height arguments are in window geometry
-	 * coordinates. See xdg_surface.set_window_geometry.
-	 *
-	 * Values set in this way are double-buffered. They will get
-	 * applied on the next commit.
-	 *
-	 * The compositor can use this information to allow or disallow
-	 * different states like maximize or fullscreen and draw accurate
-	 * animations.
-	 *
-	 * Similarly, a tiling window manager may use this information to
-	 * place and resize client windows in a more effective way.
-	 *
-	 * The client should not rely on the compositor to obey the maximum
-	 * size. The compositor may decide to ignore the values set by the
-	 * client and request a larger size.
-	 *
-	 * If never set, or a value of zero in the request, means that the
-	 * client has no expected maximum size in the given dimension. As a
-	 * result, a client wishing to reset the maximum size to an
-	 * unspecified state can use zero for width and height in the
-	 * request.
-	 *
-	 * Requesting a maximum size to be smaller than the minimum size of
-	 * a surface is illegal and will result in an invalid_size error.
-	 *
-	 * The width and height must be greater than or equal to zero.
-	 * Using strictly negative values for width or height will result
-	 * in a invalid_size error.
-	 */
-	void (*set_max_size)(struct wl_client *client,
-			     struct wl_resource *resource,
-			     int32_t width,
-			     int32_t height);
-	/**
-	 * set the minimum size
-	 *
-	 * Set a minimum size for the window.
-	 *
-	 * The client can specify a minimum size so that the compositor
-	 * does not try to configure the window below this size.
-	 *
-	 * The width and height arguments are in window geometry
-	 * coordinates. See xdg_surface.set_window_geometry.
-	 *
-	 * Values set in this way are double-buffered. They will get
-	 * applied on the next commit.
-	 *
-	 * The compositor can use this information to allow or disallow
-	 * different states like maximize or fullscreen and draw accurate
-	 * animations.
-	 *
-	 * Similarly, a tiling window manager may use this information to
-	 * place and resize client windows in a more effective way.
-	 *
-	 * The client should not rely on the compositor to obey the minimum
-	 * size. The compositor may decide to ignore the values set by the
-	 * client and request a smaller size.
-	 *
-	 * If never set, or a value of zero in the request, means that the
-	 * client has no expected minimum size in the given dimension. As a
-	 * result, a client wishing to reset the minimum size to an
-	 * unspecified state can use zero for width and height in the
-	 * request.
-	 *
-	 * Requesting a minimum size to be larger than the maximum size of
-	 * a surface is illegal and will result in an invalid_size error.
-	 *
-	 * The width and height must be greater than or equal to zero.
-	 * Using strictly negative values for width and height will result
-	 * in a invalid_size error.
-	 */
-	void (*set_min_size)(struct wl_client *client,
-			     struct wl_resource *resource,
-			     int32_t width,
-			     int32_t height);
-	/**
-	 * maximize the window
-	 *
-	 * Maximize the surface.
-	 *
-	 * After requesting that the surface should be maximized, the
-	 * compositor will respond by emitting a configure event. Whether
-	 * this configure actually sets the window maximized is subject to
-	 * compositor policies. The client must then update its content,
-	 * drawing in the configured state. The client must also
-	 * acknowledge the configure when committing the new content (see
-	 * ack_configure).
-	 *
-	 * It is up to the compositor to decide how and where to maximize
-	 * the surface, for example which output and what region of the
-	 * screen should be used.
-	 *
-	 * If the surface was already maximized, the compositor will still
-	 * emit a configure event with the "maximized" state.
-	 *
-	 * If the surface is in a fullscreen state, this request has no
-	 * direct effect. It may alter the state the surface is returned to
-	 * when unmaximized unless overridden by the compositor.
-	 */
-	void (*set_maximized)(struct wl_client *client,
-			      struct wl_resource *resource);
-	/**
-	 * unmaximize the window
-	 *
-	 * Unmaximize the surface.
-	 *
-	 * After requesting that the surface should be unmaximized, the
-	 * compositor will respond by emitting a configure event. Whether
-	 * this actually un-maximizes the window is subject to compositor
-	 * policies. If available and applicable, the compositor will
-	 * include the window geometry dimensions the window had prior to
-	 * being maximized in the configure event. The client must then
-	 * update its content, drawing it in the configured state. The
-	 * client must also acknowledge the configure when committing the
-	 * new content (see ack_configure).
-	 *
-	 * It is up to the compositor to position the surface after it was
-	 * unmaximized; usually the position the surface had before
-	 * maximizing, if applicable.
-	 *
-	 * If the surface was already not maximized, the compositor will
-	 * still emit a configure event without the "maximized" state.
-	 *
-	 * If the surface is in a fullscreen state, this request has no
-	 * direct effect. It may alter the state the surface is returned to
-	 * when unmaximized unless overridden by the compositor.
-	 */
-	void (*unset_maximized)(struct wl_client *client,
-				struct wl_resource *resource);
-	/**
-	 * set the window as fullscreen on an output
-	 *
-	 * Make the surface fullscreen.
-	 *
-	 * After requesting that the surface should be fullscreened, the
-	 * compositor will respond by emitting a configure event. Whether
-	 * the client is actually put into a fullscreen state is subject to
-	 * compositor policies. The client must also acknowledge the
-	 * configure when committing the new content (see ack_configure).
-	 *
-	 * The output passed by the request indicates the client's
-	 * preference as to which display it should be set fullscreen on.
-	 * If this value is NULL, it's up to the compositor to choose which
-	 * display will be used to map this surface.
-	 *
-	 * If the surface doesn't cover the whole output, the compositor
-	 * will position the surface in the center of the output and
-	 * compensate with with border fill covering the rest of the
-	 * output. The content of the border fill is undefined, but should
-	 * be assumed to be in some way that attempts to blend into the
-	 * surrounding area (e.g. solid black).
-	 *
-	 * If the fullscreened surface is not opaque, the compositor must
-	 * make sure that other screen content not part of the same surface
-	 * tree (made up of subsurfaces, popups or similarly coupled
-	 * surfaces) are not visible below the fullscreened surface.
-	 */
-	void (*set_fullscreen)(struct wl_client *client,
-			       struct wl_resource *resource,
-			       struct wl_resource *output);
-	/**
-	 * unset the window as fullscreen
-	 *
-	 * Make the surface no longer fullscreen.
-	 *
-	 * After requesting that the surface should be unfullscreened, the
-	 * compositor will respond by emitting a configure event. Whether
-	 * this actually removes the fullscreen state of the client is
-	 * subject to compositor policies.
-	 *
-	 * Making a surface unfullscreen sets states for the surface based
-	 * on the following: * the state(s) it may have had before becoming
-	 * fullscreen * any state(s) decided by the compositor * any
-	 * state(s) requested by the client while the surface was
-	 * fullscreen
-	 *
-	 * The compositor may include the previous window geometry
-	 * dimensions in the configure event, if applicable.
-	 *
-	 * The client must also acknowledge the configure when committing
-	 * the new content (see ack_configure).
-	 */
-	void (*unset_fullscreen)(struct wl_client *client,
-				 struct wl_resource *resource);
-	/**
-	 * set the window as minimized
-	 *
-	 * Request that the compositor minimize your surface. There is no
-	 * way to know if the surface is currently minimized, nor is there
-	 * any way to unset minimization on this surface.
-	 *
-	 * If you are looking to throttle redrawing when minimized, please
-	 * instead use the wl_surface.frame event for this, as this will
-	 * also work with live previews on windows in Alt-Tab, Expose or
-	 * similar compositor features.
-	 */
-	void (*set_minimized)(struct wl_client *client,
-			      struct wl_resource *resource);
+  /**
+   * destroy the xdg_toplevel
+   *
+   * This request destroys the role surface and unmaps the surface;
+   * see "Unmapping" behavior in interface section for details.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * set the parent of this surface
+   *
+   * Set the "parent" of this surface. This surface should be
+   * stacked above the parent surface and all other ancestor
+   * surfaces.
+   *
+   * Parent surfaces should be set on dialogs, toolboxes, or other
+   * "auxiliary" surfaces, so that the parent is raised when the
+   * dialog is raised.
+   *
+   * Setting a null parent for a child surface unsets its parent.
+   * Setting a null parent for a surface which currently has no
+   * parent is a no-op.
+   *
+   * Only mapped surfaces can have child surfaces. Setting a parent
+   * which is not mapped is equivalent to setting a null parent. If a
+   * surface becomes unmapped, its children's parent is set to the
+   * parent of the now-unmapped surface. If the now-unmapped surface
+   * has no parent, its children's parent is unset. If the
+   * now-unmapped surface becomes mapped again, its parent-child
+   * relationship is not restored.
+   *
+   * The parent toplevel must not be one of the child toplevel's
+   * descendants, and the parent must be different from the child
+   * toplevel, otherwise the invalid_parent protocol error is raised.
+   */
+  void (*set_parent)(struct wl_client *client, struct wl_resource *resource,
+                     struct wl_resource *parent);
+  /**
+   * set surface title
+   *
+   * Set a short title for the surface.
+   *
+   * This string may be used to identify the surface in a task bar,
+   * window list, or other user interface elements provided by the
+   * compositor.
+   *
+   * The string must be encoded in UTF-8.
+   */
+  void (*set_title)(struct wl_client *client, struct wl_resource *resource,
+                    const char *title);
+  /**
+   * set application ID
+   *
+   * Set an application identifier for the surface.
+   *
+   * The app ID identifies the general class of applications to which
+   * the surface belongs. The compositor can use this to group
+   * multiple surfaces together, or to determine how to launch a new
+   * application.
+   *
+   * For D-Bus activatable applications, the app ID is used as the
+   * D-Bus service name.
+   *
+   * The compositor shell will try to group application surfaces
+   * together by their app ID. As a best practice, it is suggested to
+   * select app ID's that match the basename of the application's
+   * .desktop file. For example, "org.freedesktop.FooViewer" where
+   * the .desktop file is "org.freedesktop.FooViewer.desktop".
+   *
+   * Like other properties, a set_app_id request can be sent after
+   * the xdg_toplevel has been mapped to update the property.
+   *
+   * See the desktop-entry specification [0] for more details on
+   * application identifiers and how they relate to well-known D-Bus
+   * names and .desktop files.
+   *
+   * [0] https://standards.freedesktop.org/desktop-entry-spec/
+   */
+  void (*set_app_id)(struct wl_client *client, struct wl_resource *resource,
+                     const char *app_id);
+  /**
+   * show the window menu
+   *
+   * Clients implementing client-side decorations might want to
+   * show a context menu when right-clicking on the decorations,
+   * giving the user a menu that they can use to maximize or minimize
+   * the window.
+   *
+   * This request asks the compositor to pop up such a window menu at
+   * the given position, relative to the local surface coordinates of
+   * the parent surface. There are no guarantees as to what menu
+   * items the window menu contains, or even if a window menu will be
+   * drawn at all.
+   *
+   * This request must be used in response to some sort of user
+   * action like a button press, key press, or touch down event.
+   * @param seat the wl_seat of the user event
+   * @param serial the serial of the user event
+   * @param x the x position to pop up the window menu at
+   * @param y the y position to pop up the window menu at
+   */
+  void (*show_window_menu)(struct wl_client *client,
+                           struct wl_resource *resource,
+                           struct wl_resource *seat, uint32_t serial, int32_t x,
+                           int32_t y);
+  /**
+   * start an interactive move
+   *
+   * Start an interactive, user-driven move of the surface.
+   *
+   * This request must be used in response to some sort of user
+   * action like a button press, key press, or touch down event. The
+   * passed serial is used to determine the type of interactive move
+   * (touch, pointer, etc).
+   *
+   * The server may ignore move requests depending on the state of
+   * the surface (e.g. fullscreen or maximized), or if the passed
+   * serial is no longer valid.
+   *
+   * If triggered, the surface will lose the focus of the device
+   * (wl_pointer, wl_touch, etc) used for the move. It is up to the
+   * compositor to visually indicate that the move is taking place,
+   * such as updating a pointer cursor, during the move. There is no
+   * guarantee that the device focus will return when the move is
+   * completed.
+   * @param seat the wl_seat of the user event
+   * @param serial the serial of the user event
+   */
+  void (*move)(struct wl_client *client, struct wl_resource *resource,
+               struct wl_resource *seat, uint32_t serial);
+  /**
+   * start an interactive resize
+   *
+   * Start a user-driven, interactive resize of the surface.
+   *
+   * This request must be used in response to some sort of user
+   * action like a button press, key press, or touch down event. The
+   * passed serial is used to determine the type of interactive
+   * resize (touch, pointer, etc).
+   *
+   * The server may ignore resize requests depending on the state of
+   * the surface (e.g. fullscreen or maximized).
+   *
+   * If triggered, the client will receive configure events with the
+   * "resize" state enum value and the expected sizes. See the
+   * "resize" enum value for more details about what is required. The
+   * client must also acknowledge configure events using
+   * "ack_configure". After the resize is completed, the client will
+   * receive another "configure" event without the resize state.
+   *
+   * If triggered, the surface also will lose the focus of the device
+   * (wl_pointer, wl_touch, etc) used for the resize. It is up to the
+   * compositor to visually indicate that the resize is taking place,
+   * such as updating a pointer cursor, during the resize. There is
+   * no guarantee that the device focus will return when the resize
+   * is completed.
+   *
+   * The edges parameter specifies how the surface should be resized,
+   * and is one of the values of the resize_edge enum. Values not
+   * matching a variant of the enum will cause the
+   * invalid_resize_edge protocol error. The compositor may use this
+   * information to update the surface position for example when
+   * dragging the top left corner. The compositor may also use this
+   * information to adapt its behavior, e.g. choose an appropriate
+   * cursor image.
+   * @param seat the wl_seat of the user event
+   * @param serial the serial of the user event
+   * @param edges which edge or corner is being dragged
+   */
+  void (*resize)(struct wl_client *client, struct wl_resource *resource,
+                 struct wl_resource *seat, uint32_t serial, uint32_t edges);
+  /**
+   * set the maximum size
+   *
+   * Set a maximum size for the window.
+   *
+   * The client can specify a maximum size so that the compositor
+   * does not try to configure the window beyond this size.
+   *
+   * The width and height arguments are in window geometry
+   * coordinates. See xdg_surface.set_window_geometry.
+   *
+   * Values set in this way are double-buffered. They will get
+   * applied on the next commit.
+   *
+   * The compositor can use this information to allow or disallow
+   * different states like maximize or fullscreen and draw accurate
+   * animations.
+   *
+   * Similarly, a tiling window manager may use this information to
+   * place and resize client windows in a more effective way.
+   *
+   * The client should not rely on the compositor to obey the maximum
+   * size. The compositor may decide to ignore the values set by the
+   * client and request a larger size.
+   *
+   * If never set, or a value of zero in the request, means that the
+   * client has no expected maximum size in the given dimension. As a
+   * result, a client wishing to reset the maximum size to an
+   * unspecified state can use zero for width and height in the
+   * request.
+   *
+   * Requesting a maximum size to be smaller than the minimum size of
+   * a surface is illegal and will result in an invalid_size error.
+   *
+   * The width and height must be greater than or equal to zero.
+   * Using strictly negative values for width or height will result
+   * in a invalid_size error.
+   */
+  void (*set_max_size)(struct wl_client *client, struct wl_resource *resource,
+                       int32_t width, int32_t height);
+  /**
+   * set the minimum size
+   *
+   * Set a minimum size for the window.
+   *
+   * The client can specify a minimum size so that the compositor
+   * does not try to configure the window below this size.
+   *
+   * The width and height arguments are in window geometry
+   * coordinates. See xdg_surface.set_window_geometry.
+   *
+   * Values set in this way are double-buffered. They will get
+   * applied on the next commit.
+   *
+   * The compositor can use this information to allow or disallow
+   * different states like maximize or fullscreen and draw accurate
+   * animations.
+   *
+   * Similarly, a tiling window manager may use this information to
+   * place and resize client windows in a more effective way.
+   *
+   * The client should not rely on the compositor to obey the minimum
+   * size. The compositor may decide to ignore the values set by the
+   * client and request a smaller size.
+   *
+   * If never set, or a value of zero in the request, means that the
+   * client has no expected minimum size in the given dimension. As a
+   * result, a client wishing to reset the minimum size to an
+   * unspecified state can use zero for width and height in the
+   * request.
+   *
+   * Requesting a minimum size to be larger than the maximum size of
+   * a surface is illegal and will result in an invalid_size error.
+   *
+   * The width and height must be greater than or equal to zero.
+   * Using strictly negative values for width and height will result
+   * in a invalid_size error.
+   */
+  void (*set_min_size)(struct wl_client *client, struct wl_resource *resource,
+                       int32_t width, int32_t height);
+  /**
+   * maximize the window
+   *
+   * Maximize the surface.
+   *
+   * After requesting that the surface should be maximized, the
+   * compositor will respond by emitting a configure event. Whether
+   * this configure actually sets the window maximized is subject to
+   * compositor policies. The client must then update its content,
+   * drawing in the configured state. The client must also
+   * acknowledge the configure when committing the new content (see
+   * ack_configure).
+   *
+   * It is up to the compositor to decide how and where to maximize
+   * the surface, for example which output and what region of the
+   * screen should be used.
+   *
+   * If the surface was already maximized, the compositor will still
+   * emit a configure event with the "maximized" state.
+   *
+   * If the surface is in a fullscreen state, this request has no
+   * direct effect. It may alter the state the surface is returned to
+   * when unmaximized unless overridden by the compositor.
+   */
+  void (*set_maximized)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * unmaximize the window
+   *
+   * Unmaximize the surface.
+   *
+   * After requesting that the surface should be unmaximized, the
+   * compositor will respond by emitting a configure event. Whether
+   * this actually un-maximizes the window is subject to compositor
+   * policies. If available and applicable, the compositor will
+   * include the window geometry dimensions the window had prior to
+   * being maximized in the configure event. The client must then
+   * update its content, drawing it in the configured state. The
+   * client must also acknowledge the configure when committing the
+   * new content (see ack_configure).
+   *
+   * It is up to the compositor to position the surface after it was
+   * unmaximized; usually the position the surface had before
+   * maximizing, if applicable.
+   *
+   * If the surface was already not maximized, the compositor will
+   * still emit a configure event without the "maximized" state.
+   *
+   * If the surface is in a fullscreen state, this request has no
+   * direct effect. It may alter the state the surface is returned to
+   * when unmaximized unless overridden by the compositor.
+   */
+  void (*unset_maximized)(struct wl_client *client,
+                          struct wl_resource *resource);
+  /**
+   * set the window as fullscreen on an output
+   *
+   * Make the surface fullscreen.
+   *
+   * After requesting that the surface should be fullscreened, the
+   * compositor will respond by emitting a configure event. Whether
+   * the client is actually put into a fullscreen state is subject to
+   * compositor policies. The client must also acknowledge the
+   * configure when committing the new content (see ack_configure).
+   *
+   * The output passed by the request indicates the client's
+   * preference as to which display it should be set fullscreen on.
+   * If this value is NULL, it's up to the compositor to choose which
+   * display will be used to map this surface.
+   *
+   * If the surface doesn't cover the whole output, the compositor
+   * will position the surface in the center of the output and
+   * compensate with with border fill covering the rest of the
+   * output. The content of the border fill is undefined, but should
+   * be assumed to be in some way that attempts to blend into the
+   * surrounding area (e.g. solid black).
+   *
+   * If the fullscreened surface is not opaque, the compositor must
+   * make sure that other screen content not part of the same surface
+   * tree (made up of subsurfaces, popups or similarly coupled
+   * surfaces) are not visible below the fullscreened surface.
+   */
+  void (*set_fullscreen)(struct wl_client *client, struct wl_resource *resource,
+                         struct wl_resource *output);
+  /**
+   * unset the window as fullscreen
+   *
+   * Make the surface no longer fullscreen.
+   *
+   * After requesting that the surface should be unfullscreened, the
+   * compositor will respond by emitting a configure event. Whether
+   * this actually removes the fullscreen state of the client is
+   * subject to compositor policies.
+   *
+   * Making a surface unfullscreen sets states for the surface based
+   * on the following: * the state(s) it may have had before becoming
+   * fullscreen * any state(s) decided by the compositor * any
+   * state(s) requested by the client while the surface was
+   * fullscreen
+   *
+   * The compositor may include the previous window geometry
+   * dimensions in the configure event, if applicable.
+   *
+   * The client must also acknowledge the configure when committing
+   * the new content (see ack_configure).
+   */
+  void (*unset_fullscreen)(struct wl_client *client,
+                           struct wl_resource *resource);
+  /**
+   * set the window as minimized
+   *
+   * Request that the compositor minimize your surface. There is no
+   * way to know if the surface is currently minimized, nor is there
+   * any way to unset minimization on this surface.
+   *
+   * If you are looking to throttle redrawing when minimized, please
+   * instead use the wl_surface.frame event for this, as this will
+   * also work with live previews on windows in Alt-Tab, Expose or
+   * similar compositor features.
+   */
+  void (*set_minimized)(struct wl_client *client, struct wl_resource *resource);
 };
 
 #define XDG_TOPLEVEL_CONFIGURE 0
@@ -1752,10 +1708,11 @@ struct xdg_toplevel_interface {
  * Sends an configure event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-xdg_toplevel_send_configure(struct wl_resource *resource_, int32_t width, int32_t height, struct wl_array *states)
-{
-	wl_resource_post_event(resource_, XDG_TOPLEVEL_CONFIGURE, width, height, states);
+static inline void xdg_toplevel_send_configure(struct wl_resource *resource_,
+                                               int32_t width, int32_t height,
+                                               struct wl_array *states) {
+  wl_resource_post_event(resource_, XDG_TOPLEVEL_CONFIGURE, width, height,
+                         states);
 }
 
 /**
@@ -1763,10 +1720,8 @@ xdg_toplevel_send_configure(struct wl_resource *resource_, int32_t width, int32_
  * Sends an close event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-xdg_toplevel_send_close(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, XDG_TOPLEVEL_CLOSE);
+static inline void xdg_toplevel_send_close(struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, XDG_TOPLEVEL_CLOSE);
 }
 
 /**
@@ -1774,10 +1729,10 @@ xdg_toplevel_send_close(struct wl_resource *resource_)
  * Sends an configure_bounds event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-xdg_toplevel_send_configure_bounds(struct wl_resource *resource_, int32_t width, int32_t height)
-{
-	wl_resource_post_event(resource_, XDG_TOPLEVEL_CONFIGURE_BOUNDS, width, height);
+static inline void xdg_toplevel_send_configure_bounds(
+    struct wl_resource *resource_, int32_t width, int32_t height) {
+  wl_resource_post_event(resource_, XDG_TOPLEVEL_CONFIGURE_BOUNDS, width,
+                         height);
 }
 
 /**
@@ -1786,19 +1741,18 @@ xdg_toplevel_send_configure_bounds(struct wl_resource *resource_, int32_t width,
  * @param resource_ The client's resource
  * @param capabilities array of 32-bit capabilities
  */
-static inline void
-xdg_toplevel_send_wm_capabilities(struct wl_resource *resource_, struct wl_array *capabilities)
-{
-	wl_resource_post_event(resource_, XDG_TOPLEVEL_WM_CAPABILITIES, capabilities);
+static inline void xdg_toplevel_send_wm_capabilities(
+    struct wl_resource *resource_, struct wl_array *capabilities) {
+  wl_resource_post_event(resource_, XDG_TOPLEVEL_WM_CAPABILITIES, capabilities);
 }
 
 #ifndef XDG_POPUP_ERROR_ENUM
 #define XDG_POPUP_ERROR_ENUM
 enum xdg_popup_error {
-	/**
-	 * tried to grab after being mapped
-	 */
-	XDG_POPUP_ERROR_INVALID_GRAB = 0,
+  /**
+   * tried to grab after being mapped
+   */
+  XDG_POPUP_ERROR_INVALID_GRAB = 0,
 };
 #endif /* XDG_POPUP_ERROR_ENUM */
 
@@ -1807,103 +1761,98 @@ enum xdg_popup_error {
  * @struct xdg_popup_interface
  */
 struct xdg_popup_interface {
-	/**
-	 * remove xdg_popup interface
-	 *
-	 * This destroys the popup. Explicitly destroying the xdg_popup
-	 * object will also dismiss the popup, and unmap the surface.
-	 *
-	 * If this xdg_popup is not the "topmost" popup, the
-	 * xdg_wm_base.not_the_topmost_popup protocol error will be sent.
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-	/**
-	 * make the popup take an explicit grab
-	 *
-	 * This request makes the created popup take an explicit grab. An
-	 * explicit grab will be dismissed when the user dismisses the
-	 * popup, or when the client destroys the xdg_popup. This can be
-	 * done by the user clicking outside the surface, using the
-	 * keyboard, or even locking the screen through closing the lid or
-	 * a timeout.
-	 *
-	 * If the compositor denies the grab, the popup will be immediately
-	 * dismissed.
-	 *
-	 * This request must be used in response to some sort of user
-	 * action like a button press, key press, or touch down event. The
-	 * serial number of the event should be passed as 'serial'.
-	 *
-	 * The parent of a grabbing popup must either be an xdg_toplevel
-	 * surface or another xdg_popup with an explicit grab. If the
-	 * parent is another xdg_popup it means that the popups are nested,
-	 * with this popup now being the topmost popup.
-	 *
-	 * Nested popups must be destroyed in the reverse order they were
-	 * created in, e.g. the only popup you are allowed to destroy at
-	 * all times is the topmost one.
-	 *
-	 * When compositors choose to dismiss a popup, they may dismiss
-	 * every nested grabbing popup as well. When a compositor dismisses
-	 * popups, it will follow the same dismissing order as required
-	 * from the client.
-	 *
-	 * If the topmost grabbing popup is destroyed, the grab will be
-	 * returned to the parent of the popup, if that parent previously
-	 * had an explicit grab.
-	 *
-	 * If the parent is a grabbing popup which has already been
-	 * dismissed, this popup will be immediately dismissed. If the
-	 * parent is a popup that did not take an explicit grab, an error
-	 * will be raised.
-	 *
-	 * During a popup grab, the client owning the grab will receive
-	 * pointer and touch events for all their surfaces as normal
-	 * (similar to an "owner-events" grab in X11 parlance), while the
-	 * top most grabbing popup will always have keyboard focus.
-	 * @param seat the wl_seat of the user event
-	 * @param serial the serial of the user event
-	 */
-	void (*grab)(struct wl_client *client,
-		     struct wl_resource *resource,
-		     struct wl_resource *seat,
-		     uint32_t serial);
-	/**
-	 * recalculate the popup's location
-	 *
-	 * Reposition an already-mapped popup. The popup will be placed
-	 * given the details in the passed xdg_positioner object, and a
-	 * xdg_popup.repositioned followed by xdg_popup.configure and
-	 * xdg_surface.configure will be emitted in response. Any
-	 * parameters set by the previous positioner will be discarded.
-	 *
-	 * The passed token will be sent in the corresponding
-	 * xdg_popup.repositioned event. The new popup position will not
-	 * take effect until the corresponding configure event is
-	 * acknowledged by the client. See xdg_popup.repositioned for
-	 * details. The token itself is opaque, and has no other special
-	 * meaning.
-	 *
-	 * If multiple reposition requests are sent, the compositor may
-	 * skip all but the last one.
-	 *
-	 * If the popup is repositioned in response to a configure event
-	 * for its parent, the client should send an
-	 * xdg_positioner.set_parent_configure and possibly an
-	 * xdg_positioner.set_parent_size request to allow the compositor
-	 * to properly constrain the popup.
-	 *
-	 * If the popup is repositioned together with a parent that is
-	 * being resized, but not in response to a configure event, the
-	 * client should send an xdg_positioner.set_parent_size request.
-	 * @param token reposition request token
-	 * @since 3
-	 */
-	void (*reposition)(struct wl_client *client,
-			   struct wl_resource *resource,
-			   struct wl_resource *positioner,
-			   uint32_t token);
+  /**
+   * remove xdg_popup interface
+   *
+   * This destroys the popup. Explicitly destroying the xdg_popup
+   * object will also dismiss the popup, and unmap the surface.
+   *
+   * If this xdg_popup is not the "topmost" popup, the
+   * xdg_wm_base.not_the_topmost_popup protocol error will be sent.
+   */
+  void (*destroy)(struct wl_client *client, struct wl_resource *resource);
+  /**
+   * make the popup take an explicit grab
+   *
+   * This request makes the created popup take an explicit grab. An
+   * explicit grab will be dismissed when the user dismisses the
+   * popup, or when the client destroys the xdg_popup. This can be
+   * done by the user clicking outside the surface, using the
+   * keyboard, or even locking the screen through closing the lid or
+   * a timeout.
+   *
+   * If the compositor denies the grab, the popup will be immediately
+   * dismissed.
+   *
+   * This request must be used in response to some sort of user
+   * action like a button press, key press, or touch down event. The
+   * serial number of the event should be passed as 'serial'.
+   *
+   * The parent of a grabbing popup must either be an xdg_toplevel
+   * surface or another xdg_popup with an explicit grab. If the
+   * parent is another xdg_popup it means that the popups are nested,
+   * with this popup now being the topmost popup.
+   *
+   * Nested popups must be destroyed in the reverse order they were
+   * created in, e.g. the only popup you are allowed to destroy at
+   * all times is the topmost one.
+   *
+   * When compositors choose to dismiss a popup, they may dismiss
+   * every nested grabbing popup as well. When a compositor dismisses
+   * popups, it will follow the same dismissing order as required
+   * from the client.
+   *
+   * If the topmost grabbing popup is destroyed, the grab will be
+   * returned to the parent of the popup, if that parent previously
+   * had an explicit grab.
+   *
+   * If the parent is a grabbing popup which has already been
+   * dismissed, this popup will be immediately dismissed. If the
+   * parent is a popup that did not take an explicit grab, an error
+   * will be raised.
+   *
+   * During a popup grab, the client owning the grab will receive
+   * pointer and touch events for all their surfaces as normal
+   * (similar to an "owner-events" grab in X11 parlance), while the
+   * top most grabbing popup will always have keyboard focus.
+   * @param seat the wl_seat of the user event
+   * @param serial the serial of the user event
+   */
+  void (*grab)(struct wl_client *client, struct wl_resource *resource,
+               struct wl_resource *seat, uint32_t serial);
+  /**
+   * recalculate the popup's location
+   *
+   * Reposition an already-mapped popup. The popup will be placed
+   * given the details in the passed xdg_positioner object, and a
+   * xdg_popup.repositioned followed by xdg_popup.configure and
+   * xdg_surface.configure will be emitted in response. Any
+   * parameters set by the previous positioner will be discarded.
+   *
+   * The passed token will be sent in the corresponding
+   * xdg_popup.repositioned event. The new popup position will not
+   * take effect until the corresponding configure event is
+   * acknowledged by the client. See xdg_popup.repositioned for
+   * details. The token itself is opaque, and has no other special
+   * meaning.
+   *
+   * If multiple reposition requests are sent, the compositor may
+   * skip all but the last one.
+   *
+   * If the popup is repositioned in response to a configure event
+   * for its parent, the client should send an
+   * xdg_positioner.set_parent_configure and possibly an
+   * xdg_positioner.set_parent_size request to allow the compositor
+   * to properly constrain the popup.
+   *
+   * If the popup is repositioned together with a parent that is
+   * being resized, but not in response to a configure event, the
+   * client should send an xdg_positioner.set_parent_size request.
+   * @param token reposition request token
+   * @since 3
+   */
+  void (*reposition)(struct wl_client *client, struct wl_resource *resource,
+                     struct wl_resource *positioner, uint32_t token);
 };
 
 #define XDG_POPUP_CONFIGURE 0
@@ -1945,10 +1894,10 @@ struct xdg_popup_interface {
  * @param width window geometry width
  * @param height window geometry height
  */
-static inline void
-xdg_popup_send_configure(struct wl_resource *resource_, int32_t x, int32_t y, int32_t width, int32_t height)
-{
-	wl_resource_post_event(resource_, XDG_POPUP_CONFIGURE, x, y, width, height);
+static inline void xdg_popup_send_configure(struct wl_resource *resource_,
+                                            int32_t x, int32_t y, int32_t width,
+                                            int32_t height) {
+  wl_resource_post_event(resource_, XDG_POPUP_CONFIGURE, x, y, width, height);
 }
 
 /**
@@ -1956,10 +1905,8 @@ xdg_popup_send_configure(struct wl_resource *resource_, int32_t x, int32_t y, in
  * Sends an popup_done event to the client owning the resource.
  * @param resource_ The client's resource
  */
-static inline void
-xdg_popup_send_popup_done(struct wl_resource *resource_)
-{
-	wl_resource_post_event(resource_, XDG_POPUP_POPUP_DONE);
+static inline void xdg_popup_send_popup_done(struct wl_resource *resource_) {
+  wl_resource_post_event(resource_, XDG_POPUP_POPUP_DONE);
 }
 
 /**
@@ -1968,13 +1915,12 @@ xdg_popup_send_popup_done(struct wl_resource *resource_)
  * @param resource_ The client's resource
  * @param token reposition request token
  */
-static inline void
-xdg_popup_send_repositioned(struct wl_resource *resource_, uint32_t token)
-{
-	wl_resource_post_event(resource_, XDG_POPUP_REPOSITIONED, token);
+static inline void xdg_popup_send_repositioned(struct wl_resource *resource_,
+                                               uint32_t token) {
+  wl_resource_post_event(resource_, XDG_POPUP_REPOSITIONED, token);
 }
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 

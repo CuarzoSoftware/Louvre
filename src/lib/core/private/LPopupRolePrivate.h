@@ -5,11 +5,10 @@
 
 using namespace Louvre;
 
-struct LPopupRole::Params
-{
-    LResource *popup;
-    LSurface *surface;
-    LPositioner *positioner;
+struct LPopupRole::Params {
+  LResource *popup;
+  LSurface *surface;
+  LPositioner *positioner;
 };
 
-#endif // LPOPUPROLEPRIVATE_H
+#endif  // LPOPUPROLEPRIVATE_H

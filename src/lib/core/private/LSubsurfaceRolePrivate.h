@@ -5,10 +5,9 @@
 
 using namespace Louvre;
 
-struct LSubsurfaceRole::Params
-{
-    LResource *subsurface;
-    LSurface *surface;
+struct LSubsurfaceRole::Params {
+  LResource *subsurface;
+  LSurface *surface;
 };
 
-#endif // LSUBSURFACEROLEPRIVATE_H
+#endif  // LSUBSURFACEROLEPRIVATE_H
