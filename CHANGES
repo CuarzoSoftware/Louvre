@@ -7,7 +7,7 @@ Louvre (2.18.1-1)
 
   # Documentation
 
-  * Improved LPointerScrollEvent documentation.
+  * Improved CZPointerScrollEvent documentation.
 
 -- Eduardo Hopperdietzel <ehopperdietzel@gmail.com> Sun, 18 May 2025 22:16:50 -0400
 
@@ -26,9 +26,9 @@ Louvre (2.18.0-1)
   * New LRRect class for defining rounded rectangles.
   * Added LCompositor::eventLoop() for quick access to the main wl_event_loop.
   * LCompositor::addFdListener() and LCompositor::removeFdListener() are now deprecated, wl_event_loop_add_fd() should be used instead.
-  * Added LPointerScrollEvent::LegacyWheel source type for handling older, deprecated Libinput Wheel events.
-  * LPointerScrollEvent now includes hasX() and hasY() to indicate if values are provided for each axis.
-  * LPointerScrollEvent::axes120() has been replaced by discreteAxes().
+  * Added CZPointerScrollEvent::LegacyWheel source type for handling older, deprecated Libinput Wheel events.
+  * CZPointerScrollEvent now includes hasX() and hasY() to indicate if values are provided for each axis.
+  * CZPointerScrollEvent::axes120() has been replaced by discreteAxes().
 
   # Internal Changes
 
@@ -540,7 +540,7 @@ Louvre (2.0.0-1)
   * Detached toplevel move and resize sessions from LPointer, moving them into the new LToplevelMoveSession and LToplevelResizeSession classes.
   * Move and resize sessions constraints can now be updated dynamically as needed.
   * Now multiple move and resize toplevel sessions are allowed at a time (e.g. pointer and touch at the same time).
-  * Replaced LToplevelRole::ResizeEdge enum with the new LEdge flags.
+  * Replaced LToplevelRole::ResizeEdge enum with the new CZEdge flags.
   * Replaced individual LToplevelRole and LPopupRole property change events with atomsChanged(), enabling the handling of multiple property changes simultaneously while accessing the previous state. This prevents issues that arose from the order in which events were previously triggered.
   * Added setExtraGeometry() to LToplevelRole to simplify the calculation of position, size, and constraints for toplevels using server-side decorations.
   * Popups are now immediately unmapped when dismissed.
@@ -569,7 +569,7 @@ Louvre (2.0.0-1)
 
   # Input Events
 
-  * Redesigned the entire input system, with each input event now having its own LEvent subclass providing detailed information.
+  * Redesigned the entire input system, with each input event now having its own CZEvent subclass providing detailed information.
   * Added support for touch events through the LTouch, LTouchPoint, and LSceneTouchPoint classes.
   * Introduced the LInputDevice class for configuring and accessing basic input device properties.
   * Requests triggered by user interactions now include the specific event that triggered them.
@@ -580,7 +580,7 @@ Louvre (2.0.0-1)
 
   # Security
 
-  * Introduced the LWeak class for efficient management of weak references to LObjects, automatically setting them to nullptr upon object destruction, with an optional destruction callback.
+  * Introduced the CZWeak class for efficient management of weak references to LObjects, automatically setting them to nullptr upon object destruction, with an optional destruction callback.
   * Replaced LClient::destroy() with destroyLater() to prevent immediate client resource destruction and reduce potential access to freed memory.
   * Added assert to prevent users from creating factory objects outside LCompositor::createObjectRequest().
 
@@ -647,13 +647,13 @@ Louvre (1.2.0-1)
   * LOutput now supports custom gamma correction curves through LOutput::setGamma() and the new LGammaTable class.
   * LPainter has new methods for rendering texture regions with higher precision and applied transforms.
   * LTextureView now supports custom source rects and transforms.
-  * Introduced LBitset class to reduce memory usage for storing binary conditions.
+  * Introduced CZBitset class to reduce memory usage for storing binary conditions.
   * Introduced isKeySymbolPressed() to LKeyboard, allowing querying the state of key symbols instead of raw key codes.
 
   # Minor API Changes
 
   * Replaced most of the non-order-dependent lists with vectors to minimize cache misses.
-  * LOutput setBufferDamage() now takes LRegion * as an argument instead of LRegion &.
+  * LOutput setBufferDamage() now takes SkRegion * as an argument instead of SkRegion &.
   * Updated all virtual constructor parameters in LCompositor to const void *.
   * Removed the create() method in LAnimation and LTimer, replaced with class constructors for stack allocation.
   * Replaced LView's paintRect() event with paintEvent().
@@ -710,7 +710,7 @@ Louvre (1.1.0-1)
 
   * The LCompositor loadGraphicBackend() and loadInputBackend() methods now accept const std::string & as an argument instead of const char *.
   * The LToplevelRole appId() and title() methods now return const std::string & instead of const char *.
-  * The use of LCompositor::nextSerial() is now deprecated, and LTime::nextSerial() should be used instead.
+  * The use of LCompositor::nextSerial() is now deprecated, and CZTime::NextSerial() should be used instead.
   * LView::paintRect() now takes an LView::PaintRectParams struct reference as an argument, eliminating the need to pass all parameters by value.
   * The LView setBlendFunc() method now follows the glBlendFuncSeparate() parameters, enabling a more precise blend function configuration.
   

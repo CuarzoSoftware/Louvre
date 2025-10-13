@@ -10,7 +10,7 @@ To run any example, switch to a free TTY session using the `CTRL + ALT + [F1,...
 
 ## louvre-views {#louvre-views-example}
 
-The louvre-views example replicates the appearance of macOS X. It showcases the implementation of server-side decorations and demonstrates how to leverage the Louvre::LScene and Louvre::LView classes to handle tasks such as damage calculation, painting, and input event dispatching on your behalf. This compositor includes a dock for adding applications and presenting minimized windows. Furthermore, it provides the capability to turn windows into fullscreen mode within a designated workspace and navigate between them via a three-finger swipe or by using the keyboard shortcut `Ctrl + Alt + [Left/Right arrow keys]`, closely resembling the behavior seen in macOS.
+The louvre-views example replicates the appearance of macOS X. It showcases the implementation of server-side decorations and demonstrates how to leverage the CZ::LScene and CZ::LView classes to handle tasks such as damage calculation, painting, and input event dispatching on your behalf. This compositor includes a dock for adding applications and presenting minimized windows. Furthermore, it provides the capability to turn windows into fullscreen mode within a designated workspace and navigate between them via a three-finger swipe or by using the keyboard shortcut `Ctrl + Alt + [Left/Right arrow keys]`, closely resembling the behavior seen in macOS.
 
 ### Screenshot
 
@@ -73,7 +73,7 @@ Ensure that there are no empty lines between entries or at the begining/end of t
 
 ## louvre-weston-clone {#louvre-weston-clone-example}
 
-The louvre-weston-clone example resembles a Weston-like compositor, showcasing the efficient use of Louvre::LPainter. It optimally repaints only the content that requires updating, taking surface damage and opaque/translucent regions into consideration. 
+The louvre-weston-clone example resembles a Weston-like compositor, showcasing the efficient use of CZ::LPainter. It optimally repaints only the content that requires updating, taking surface damage and opaque/translucent regions into consideration. 
 
 ### Screenshot
 
@@ -92,7 +92,7 @@ To set the background wallpaper, simply place an image in the following director
 
 ## louvre-default {#louvre-default-example}
 
-This example demonstrates Louvre's default behavior: a basic compositor with a white background for user interaction with applications. It uses Louvre::LPainter for rendering but in a non-efficient way as it clears and repaints the entire screen each frame.
+This example demonstrates Louvre's default behavior: a basic compositor with a white background for user interaction with applications. It uses CZ::LPainter for rendering but in a non-efficient way as it clears and repaints the entire screen each frame.
 
 ### Screenshot
 

@@ -1,18 +1,19 @@
-#include <LCompositor.h>
-#include <LLauncher.h>
-#include <LLog.h>
-#include <unistd.h>
-#include <LObject.h>
+#include <CZ/Louvre/LCompositor.h>
+#include <CZ/Louvre/LLauncher.h>
+#include <CZ/Louvre/LLog.h>
 
-using namespace Louvre;
+using namespace CZ;
 
 int main(int, char *[])
 {
-    setenv("LOUVRE_DEBUG", "1", 0);
-    setenv("SRM_DEBUG", "1", 0);
-    setenv("MOZ_ENABLE_WAYLAND", "1", 1);
-    setenv("QT_QPA_PLATFORM", "wayland-egl", 1);
-    setenv("LOUVRE_WAYLAND_DISPLAY", "wayland-2", 0);
+    /* setenv("XKB_DEFAULT_LAYOUT", "latam", 0) */
+
+    setenv("CZ_LOUVRE_WAYLAND_DISPLAY", "louvre", 0);
+    setenv("CZ_LOUVRE_ENABLE_LIBSEAT",  "1", 0);
+    setenv("CZ_CORE_LOG_LEVEL",         "4", 0);
+    setenv("CZ_REAM_LOG_LEVEL",         "4", 0);
+    setenv("CZ_SRM_LOG_LEVEL",          "4", 0);
+    setenv("CZ_LOUVRE_LOG_LEVEL",       "4", 0);
 
     LLauncher::startDaemon();
 
@@ -20,12 +21,12 @@ int main(int, char *[])
 
     if (!compositor.start())
     {
-        LLog::fatal("[louvre-default] Failed to start compositor.");
+        LLog(CZFatal, CZLN, "Failed to start compositor");
         return 1;
     }
 
     while (compositor.state() != LCompositor::Uninitialized)
-        compositor.processLoop(-1);
+        compositor.dispatch(-1);
 
     return 0;
 }

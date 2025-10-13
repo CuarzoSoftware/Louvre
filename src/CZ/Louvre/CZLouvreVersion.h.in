@@ -1,0 +1,14 @@
+#ifndef CZ_LOUVREVERSION_H
+#define CZ_LOUVREVERSION_H
+
+#define CZ_LOUVRE_VERSION_MAJOR @VERSION_MAJOR@
+#define CZ_LOUVRE_VERSION_MINOR @VERSION_MINOR@
+#define CZ_LOUVRE_VERSION_PATCH @VERSION_PATCH@
+
+// Pack into a 64-bit version integer (Major:32 | Minor:16 | Patch:16)
+#define CZ_LOUVRE_VERSION \
+    ((static_cast<uint64_t>(CZ_LOUVRE_VERSION_MAJOR) << 32) | \
+     (static_cast<uint64_t>(CZ_LOUVRE_VERSION_MINOR) << 16) | \
+     (static_cast<uint64_t>(CZ_LOUVRE_VERSION_PATCH)))
+
+#endif // CZ_LOUVREVERSION_H

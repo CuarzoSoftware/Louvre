@@ -1,0 +1,174 @@
+#include "LPopupRole.h"
+#include <CZ/Louvre/Protocols/XdgShell/xdg-shell.h>
+#include <CZ/Louvre/Protocols/LayerShell/wlr-layer-shell-unstable-v1.h>
+#include <CZ/Louvre/Protocols/LayerShell/GLayerShell.h>
+#include <CZ/Louvre/Protocols/LayerShell/RLayerSurface.h>
+#include <CZ/Louvre/Protocols/XdgShell/RXdgPopup.h>
+#include <CZ/Louvre/Protocols/XdgShell/RXdgSurface.h>
+#include <CZ/Louvre/Private/LSurfacePrivate.h>
+#include <CZ/Louvre/Private/LLayerRolePrivate.h>
+#include <CZ/Louvre/Private/LFactory.h>
+
+using namespace CZ::Protocols::LayerShell;
+
+static const struct zwlr_layer_surface_v1_interface imp
+{
+    .set_size = RLayerSurface::set_size,
+    .set_anchor = RLayerSurface::set_anchor,
+    .set_exclusive_zone = RLayerSurface::set_exclusive_zone,
+    .set_margin = RLayerSurface::set_margin,
+    .set_keyboard_interactivity = RLayerSurface::set_keyboard_interactivity,
+    .get_popup = RLayerSurface::get_popup,
+    .ack_configure = RLayerSurface::ack_configure,
+    .destroy = RLayerSurface::destroy,
+#if LOUVRE_LAYER_SHELL_VERSION >= 2
+    .set_layer = RLayerSurface::set_layer,
+#endif
+#if LOUVRE_LAYER_SHELL_VERSION >= 5
+    .set_exclusive_edge = RLayerSurface::set_exclusive_edge
+#endif
+};
+
+RLayerSurface::RLayerSurface(UInt32 id,
+                             GLayerShell *layerShellRes,
+                             LSurface *surface,
+                             LOutput *output,
+                             LSurfaceLayer layer,
+                             const char *scope) noexcept :
+    LResource(
+        layerShellRes->client(),
+        &zwlr_layer_surface_v1_interface,
+        layerShellRes->version(),
+        id,
+        &imp)
+{
+    LLayerRole::Params params
+    {
+        .layerSurfaceRes = this,
+        .surface = surface,
+        .output = output,
+        .layer = layer,
+        .scope = scope,
+    };
+
+    m_layerRole.reset(LFactory::createObject<LLayerRole>(&params));
+    surface->imp()->notifyRoleChange();
+    surface->imp()->setLayer(layer);
+}
+
+RLayerSurface::~RLayerSurface()
+{
+    compositor()->onAnticipatedObjectDestruction(layerRole());
+    layerRole()->surface()->imp()->setMapped(false);
+    layerRole()->surface()->imp()->setRole(nullptr, true);
+}
+
+void RLayerSurface::set_size(wl_client */*client*/, wl_resource *resource, UInt32 width, UInt32 height)
+{
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+
+    if (width > LOUVRE_MAX_SURFACE_SIZE)
+        width = LOUVRE_MAX_SURFACE_SIZE;
+
+    if (height > LOUVRE_MAX_SURFACE_SIZE)
+        height = LOUVRE_MAX_SURFACE_SIZE;
+
+    res.layerRole()->m_pending.size.set(width, height);
+    res.layerRole()->m_pending.requestedConfigure = true;
+}
+
+void RLayerSurface::set_anchor(wl_client */*client*/, wl_resource *resource, UInt32 anchor)
+{
+    anchor &= CZEdgeTop | CZEdgeBottom | CZEdgeLeft | CZEdgeRight;
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+    res.layerRole()->m_pending.anchor = anchor;
+}
+
+void RLayerSurface::set_exclusive_zone(wl_client */*client*/, wl_resource *resource, Int32 zone)
+{
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+    res.layerRole()->m_pending.exclusiveZoneSize = zone;
+}
+
+void RLayerSurface::set_margin(wl_client */*client*/, wl_resource *resource, Int32 top, Int32 right, Int32 bottom, Int32 left)
+{
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+    res.layerRole()->m_pending.margins.top = top;
+    res.layerRole()->m_pending.margins.right = right;
+    res.layerRole()->m_pending.margins.bottom = bottom;
+    res.layerRole()->m_pending.margins.left = left;
+}
+
+void RLayerSurface::set_keyboard_interactivity(wl_client */*client*/, wl_resource *resource, UInt32 keyboard_interactivity)
+{
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+
+    if (keyboard_interactivity > 2)
+    {
+        res.postError(ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_KEYBOARD_INTERACTIVITY, "Invalid keyboard interactivity value.");
+        return;
+    }
+
+    res.layerRole()->m_pending.keyboardInteractivity = (LLayerRole::KeyboardInteractivity)keyboard_interactivity;
+}
+
+void RLayerSurface::get_popup(wl_client */*client*/, wl_resource *resource, wl_resource *popup)
+{
+    auto &popupRole { *static_cast<XdgShell::RXdgPopup*>(wl_resource_get_user_data(popup))->popupRole() };
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+
+    if (popupRole.surface()->parent())
+    {
+        res.postError(XDG_WM_BASE_ERROR_INVALID_POPUP_PARENT, "Popup already has a parent");
+        return;
+    }
+
+    popupRole.setParent(res.layerRole()->surface());
+}
+
+void RLayerSurface::ack_configure(wl_client */*client*/, wl_resource */*resource*/, UInt32 /*serial*/) {}
+
+void RLayerSurface::destroy(wl_client */*client*/, wl_resource *resource)
+{
+    wl_resource_destroy(resource);
+}
+
+#if LOUVRE_LAYER_SHELL_VERSION >= 2
+void RLayerSurface::set_layer(wl_client */*client*/, wl_resource *resource, UInt32 layer)
+{
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+
+    if (layer > 3)
+    {
+        res.postError(ZWLR_LAYER_SHELL_V1_ERROR_INVALID_LAYER, "Invalid layer value.");
+        return;
+    }
+
+    res.layerRole()->m_pending.layer = static_cast<LSurfaceLayer>(layer < 2 ? layer : layer + 1);
+}
+#endif
+
+#if LOUVRE_LAYER_SHELL_VERSION >= 5
+void RLayerSurface::set_exclusive_edge(wl_client */*client*/, wl_resource *resource, UInt32 edge)
+{
+    auto &res { *static_cast<RLayerSurface*>(wl_resource_get_user_data(resource)) };
+
+    if (!(edge == 0 || edge == 1 || edge == 2 || edge == 4 || edge == 8))
+    {
+        res.postError(ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_EXCLUSIVE_EDGE, "Invalid exclusive edge.");
+        return;
+    }
+
+    res.layerRole()->m_pending.exclusiveEdge = (CZEdge)edge;
+}
+#endif
+
+void RLayerSurface::configure(UInt32 serial, const SkISize &size) noexcept
+{
+    zwlr_layer_surface_v1_send_configure(resource(), serial, size.width(), size.height());
+}
+
+void RLayerSurface::closed() noexcept
+{
+    zwlr_layer_surface_v1_send_closed(resource());
+}

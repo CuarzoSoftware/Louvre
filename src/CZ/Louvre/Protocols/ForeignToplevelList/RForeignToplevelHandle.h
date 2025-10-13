@@ -1,0 +1,35 @@
+#ifndef RFOREIGNTOPLEVELLISTHANDLE_H
+#define RFOREIGNTOPLEVELLISTHANDLE_H
+
+#include <CZ/Louvre/LResource.h>
+#include <CZ/Core/CZWeak.h>
+#include <string>
+
+class CZ::Protocols::ForeignToplevelList::RForeignToplevelHandle final : public LResource
+{
+public:
+    LToplevelRole *toplevelRole() const noexcept { return m_toplevelRole; }
+    bool canSendParams() const noexcept;
+
+    /******************** REQUESTS ********************/
+
+    static void destroy(wl_client *client, wl_resource *resource);
+
+    /******************** EVENTS ********************/
+
+    void closed() noexcept;
+    void done() noexcept;
+    void title(const std::string &title) noexcept;
+    void appId(const std::string &appId) noexcept;
+    void identifier(const std::string &identifier) noexcept;
+
+private:
+    friend class GForeignToplevelList;
+    RForeignToplevelHandle(GForeignToplevelList &foreignToplevelListRes, LToplevelRole &toplevelRole);
+    ~RForeignToplevelHandle();
+    CZWeak<GForeignToplevelList> m_foreignToplevelListRes;
+    CZWeak<LToplevelRole> m_toplevelRole;
+    bool m_closed { false };
+};
+
+#endif // RFOREIGNTOPLEVELLISTHANDLE_H

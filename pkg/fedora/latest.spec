@@ -93,4 +93,4 @@ pushd repo/src
 * Sun May 18 2025 Eduardo Hopperdietzel <ehopperdietzel@gmail.com> - %{basever}-%{origrel}
 - Clients were unable to reuse wl_surfaces for popups after the previous role was destroyed.
 - The LPointer:enableNaturalScrollingX/Y options were behaving incorrectly.
-- Improved LPointerScrollEvent documentation.
+- Improved CZPointerScrollEvent documentation.

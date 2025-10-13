@@ -2,7 +2,7 @@
 
 ## Debugging
 
-* **LOUVRE_DEBUG**: Enables debugging messages. Accepts an integer in the range [0-4]. For details, consult the Louvre::LLog documentation.
+* **LOUVRE_DEBUG**: Enables debugging messages. Accepts an integer in the range [0-4]. For details, consult the CZ::LLog documentation.
 
 ## Wayland Socket
 
@@ -38,7 +38,7 @@ For adjusting parameters related to the DRM graphic backend, including buffering
 
 ## Keyboard Map
 
-The keyboard map can be changed programmatically at any time using `Louvre::LKeyboard::setKeymap()`. However, for example compositors or those not setting it explicitly, the default keymap can be modified using the following environment variables:
+The keyboard map can be changed programmatically at any time using `CZ::LKeyboard::setKeymap()`. However, for example compositors or those not setting it explicitly, the default keymap can be modified using the following environment variables:
 
 - **XKB_DEFAULT_RULES**
 - **XKB_DEFAULT_MODEL**
