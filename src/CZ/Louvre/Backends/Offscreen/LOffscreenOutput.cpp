@@ -80,5 +80,5 @@ void LOffscreenOutput::unit() noexcept
 
 RDevice *LOffscreenOutput::device() const noexcept
 {
-    backend->m_ream->mainDevice();
+    return backend->m_ream->mainDevice();
 }
