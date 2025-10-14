@@ -15,7 +15,7 @@ using namespace CZ;
 //! [lockRequest]
 bool LSessionLockManager::lockRequest(LClient *client)
 {
-    L_UNUSED(client);
+    CZ_UNUSED(client);
 
     /* Allow all requests by default. */
 

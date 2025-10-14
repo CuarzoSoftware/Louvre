@@ -330,7 +330,7 @@ void LToplevelRole::closeRequest()
 //! [foreignControllerFilter]
 bool LToplevelRole::foreignControllerFilter(Protocols::ForeignToplevelManagement::GForeignToplevelManager *manager)
 {
-    L_UNUSED(manager)
+    CZ_UNUSED(manager)
 
     /* Allow all foreign clients to control the toplevel */
     return true;
@@ -340,7 +340,7 @@ bool LToplevelRole::foreignControllerFilter(Protocols::ForeignToplevelManagement
 //! [foreignHandleFilter]
 bool LToplevelRole::foreignHandleFilter(Protocols::ForeignToplevelList::GForeignToplevelList *foreignList)
 {
-    L_UNUSED(foreignList)
+    CZ_UNUSED(foreignList)
 
     /* Allow all clients to get a handle for this toplevel */
     return true;
@@ -350,9 +350,9 @@ bool LToplevelRole::foreignHandleFilter(Protocols::ForeignToplevelList::GForeign
 //! [showWindowMenuRequest]
 void LToplevelRole::showWindowMenuRequest(const CZEvent &triggeringEvent, Int32 x, Int32 y)
 {
-    L_UNUSED(triggeringEvent);
-    L_UNUSED(x);
-    L_UNUSED(y);
+    CZ_UNUSED(triggeringEvent);
+    CZ_UNUSED(x);
+    CZ_UNUSED(y);
 
     /* Here the compositor should render a context menu showing
      * the minimize, maximize and fullscreen options */

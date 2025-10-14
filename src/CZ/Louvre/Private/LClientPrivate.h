@@ -18,8 +18,6 @@ public:
         client {wlClient}
     {}
 
-    LCLASS_NO_COPY(LClientPrivate)
-
     ~LClientPrivate() noexcept = default;
 
     wl_client *client;

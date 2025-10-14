@@ -84,7 +84,7 @@ bool RXdgOutput::name(const char *name) noexcept
         return true;
     }
 #else
-    L_UNUSED(name)
+    CZ_UNUSED(name)
 #endif
     return false;
 }
@@ -98,7 +98,7 @@ bool RXdgOutput::description(const char *description) noexcept
         return true;
     }
 #else
-    L_UNUSED(description)
+    CZ_UNUSED(description)
 #endif
     return false;
 }

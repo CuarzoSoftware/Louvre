@@ -169,8 +169,8 @@ bool LCompositor::createGlobalsRequest()
 //! [globalsFilter]
 bool LCompositor::globalsFilter(LClient *client, LGlobal *global)
 {
-    L_UNUSED(client)
-    L_UNUSED(global)
+    CZ_UNUSED(client)
+    CZ_UNUSED(global)
     return true;
 }
 //! [globalsFilter]
@@ -294,8 +294,8 @@ void LCompositor::uninitialized() noexcept
 //! [createObjectRequest]
 LFactoryObject *LCompositor::createObjectRequest(LFactoryObject::Type objectType, const void *params)
 {
-    L_UNUSED(objectType)
-    L_UNUSED(params)
+    CZ_UNUSED(objectType)
+    CZ_UNUSED(params)
 
     /* If nullptr is returned, Louvre creates an instance of the base class */
     return nullptr;
@@ -306,6 +306,6 @@ LFactoryObject *LCompositor::createObjectRequest(LFactoryObject::Type objectType
 //! [onAnticipatedObjectDestruction]
 void LCompositor::onAnticipatedObjectDestruction(LFactoryObject *object)
 {
-    L_UNUSED(object)
+    CZ_UNUSED(object)
 }
 //! [onAnticipatedObjectDestruction]

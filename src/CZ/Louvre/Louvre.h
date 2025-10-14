@@ -4,7 +4,7 @@
 #include <CZ/Core/Cuarzo.h>
 #include <CZ/Louvre/Protocols/Wayland/wayland.h>
 
-#define LOUVRE_MAX_SURFACE_SIZE 21474836
+#define LOUVRE_MAX_SURFACE_SIZE 1080 * 100
 
 /* Protocol Global Versions */
 #define LOUVRE_FRACTIONAL_SCALE_MANAGER_VERSION 1
@@ -45,8 +45,6 @@
 #define LOUVRE_WL_DRM_VERSION 2
 #define LOUVRE_DRM_SYNC_OBJ_MANAGER_VERSION 1
 
-#define L_UNUSED(object){(void)object;}
-
 #define CAT(x, y) CAT_(x, y)
 #define CAT_(x, y) x ## y
 
@@ -59,9 +57,9 @@
         CAT(class_name,Private) &operator=(const CAT(class_name,Private)&) = delete;
 
 #define LPRIVATE_CLASS_NO_COPY(class_name) \
-    class class_name::CAT(class_name,Private){ \
-        public: \
-        CAT(class_name,Private)(const CAT(class_name,Private)&) = delete; \
+class class_name::CAT(class_name,Private){ \
+    public: \
+    CAT(class_name,Private)(const CAT(class_name,Private)&) = delete; \
         CAT(class_name,Private) &operator=(const CAT(class_name,Private)&) = delete;
 
 #define LPRIVATE_IMP(class_name) \
@@ -79,11 +77,6 @@
 
 #define LPRIVATE_INIT_UNIQUE(class_name) \
     m_imp(std::make_unique<CAT(class_name,Private)>())
-
-#define LCLASS_NO_COPY(class_name) \
-    class_name(const class_name&) = delete; \
-    class_name(class_name&&) = delete; \
-    class_name &operator=(const class_name&) = delete;
 
 /**
  * @brief Namespaces

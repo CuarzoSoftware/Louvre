@@ -87,7 +87,7 @@ SkIPoint LLayerRole::rolePos() const
 //! [atomsChanged]
 void LLayerRole::stateChanged(CZBitset<Changes> changes, const State &prev) noexcept
 {
-    L_UNUSED(prev);
+    CZ_UNUSED(prev);
 
     if (changes.has(KeyboardInteractivityChanged))
     {

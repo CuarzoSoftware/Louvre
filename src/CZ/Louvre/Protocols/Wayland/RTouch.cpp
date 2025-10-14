@@ -115,9 +115,9 @@ bool RTouch::shape(Int32 id, Float24 major, Float24 minor) noexcept
         return true;
     }
 #endif
-    L_UNUSED(id);
-    L_UNUSED(major);
-    L_UNUSED(minor);
+    CZ_UNUSED(id);
+    CZ_UNUSED(major);
+    CZ_UNUSED(minor);
     return false;
 }
 
@@ -130,7 +130,7 @@ bool RTouch::orientation(Int32 id, Float24 orientation) noexcept
         return true;
     }
 #endif
-    L_UNUSED(id);
-    L_UNUSED(orientation);
+    CZ_UNUSED(id);
+    CZ_UNUSED(orientation);
     return false;
 }

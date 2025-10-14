@@ -170,7 +170,7 @@ bool GOutput::scale(Int32 factor) noexcept
         return true;
     }
 #endif
-    L_UNUSED(factor);
+    CZ_UNUSED(factor);
     return false;
 }
 
@@ -183,7 +183,7 @@ bool GOutput::name(const char *name) noexcept
         return true;
     }
 #endif
-    L_UNUSED(name);
+    CZ_UNUSED(name);
     return false;
 }
 
@@ -196,6 +196,6 @@ bool GOutput::description(const char *description) noexcept
         return true;
     }
 #endif
-    L_UNUSED(description);
+    CZ_UNUSED(description);
     return false;
 }

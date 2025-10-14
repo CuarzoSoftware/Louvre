@@ -46,8 +46,6 @@ public:
         clear();
     }
 
-    LCLASS_NO_COPY(LClipboard)
-
     /**
      * @brief Client request to set the clipboard.
      *

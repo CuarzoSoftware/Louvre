@@ -28,17 +28,17 @@ LClient *LBaseSurfaceRole::client() const noexcept
 
 void LBaseSurfaceRole::handleSurfaceBufferAttach(wl_resource *buffer, Int32 x, Int32 y)
 {
-    L_UNUSED(buffer);
-    L_UNUSED(x);
-    L_UNUSED(y);
+    CZ_UNUSED(buffer);
+    CZ_UNUSED(x);
+    CZ_UNUSED(y);
 
     /* No default implementation */
 }
 
 void LBaseSurfaceRole::handleSurfaceOffset(Int32 x, Int32 y)
 {
-    L_UNUSED(x);
-    L_UNUSED(y);
+    CZ_UNUSED(x);
+    CZ_UNUSED(y);
 
     /* No default implementation */
 }

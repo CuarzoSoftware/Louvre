@@ -275,7 +275,7 @@ bool RWlSurface::preferredBufferScale(Int32 scale) noexcept
         return true;
     }
 #endif
-    L_UNUSED(scale);
+    CZ_UNUSED(scale);
     return false;
 }
 
@@ -288,6 +288,6 @@ bool RWlSurface::preferredBufferTransform(CZTransform transform) noexcept
         return true;
     }
 #endif
-    L_UNUSED(transform);
+    CZ_UNUSED(transform);
     return false;
 }

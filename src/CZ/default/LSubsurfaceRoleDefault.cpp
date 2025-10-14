@@ -31,13 +31,13 @@ void LSubsurfaceRole::syncModeChanged()
 //! [placedAbove]
 void LSubsurfaceRole::placedAbove(LSurface *sibling)
 {
-    L_UNUSED(sibling);
+    CZ_UNUSED(sibling);
 }
 //! [placedAbove]
 
 //! [placedBelow]
 void LSubsurfaceRole::placedBelow(LSurface *sibling)
 {
-    L_UNUSED(sibling);
+    CZ_UNUSED(sibling);
 }
 //! [placedBelow]

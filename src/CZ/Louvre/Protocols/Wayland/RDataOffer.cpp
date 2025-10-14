@@ -206,7 +206,7 @@ bool RDataOffer::sourceActions(UInt32 sourceActions) noexcept
         return true;
     }
 #endif
-    L_UNUSED(sourceActions);
+    CZ_UNUSED(sourceActions);
     return false;
 }
 
@@ -219,6 +219,6 @@ bool RDataOffer::action(UInt32 dndAction) noexcept
         return true;
     }
 #endif
-    L_UNUSED(dndAction);
+    CZ_UNUSED(dndAction);
     return false;
 }

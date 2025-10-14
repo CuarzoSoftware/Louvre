@@ -128,7 +128,7 @@ bool RKeyboard::repeatInfo(Int32 rate, Int32 delay) noexcept
         return true;
     }
 #endif
-    L_UNUSED(rate);
-    L_UNUSED(delay);
+    CZ_UNUSED(rate);
+    CZ_UNUSED(delay);
     return false;
 }

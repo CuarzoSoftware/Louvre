@@ -163,7 +163,7 @@ bool RWlrOutputHead::make(const char *make) noexcept
         return true;
     }
 #else
-    L_UNUSED(make)
+    CZ_UNUSED(make)
 #endif
     return false;
 }
@@ -178,7 +178,7 @@ bool RWlrOutputHead::model(const char *model) noexcept
         return true;
     }
 #else
-    L_UNUSED(model)
+    CZ_UNUSED(model)
 #endif
     return false;
 }
@@ -193,7 +193,7 @@ bool RWlrOutputHead::serialNumber(const char *serial) noexcept
         return true;
     }
 #else
-    L_UNUSED(serial)
+    CZ_UNUSED(serial)
 #endif
     return false;
 }
@@ -208,7 +208,7 @@ bool RWlrOutputHead::adaptiveSync(bool enabled) noexcept
         return true;
     }
 #else
-    L_UNUSED(enabled)
+    CZ_UNUSED(enabled)
 #endif
     return false;
 }

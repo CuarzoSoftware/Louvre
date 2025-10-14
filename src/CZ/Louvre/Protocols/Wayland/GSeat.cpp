@@ -100,6 +100,6 @@ bool GSeat::name(const char *name) noexcept
         return true;
     }
 #endif
-    L_UNUSED(name);
+    CZ_UNUSED(name);
     return false;
 }

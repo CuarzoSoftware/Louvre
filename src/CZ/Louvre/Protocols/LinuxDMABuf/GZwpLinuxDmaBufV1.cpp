@@ -126,8 +126,8 @@ bool GZwpLinuxDmaBufV1::modifier(UInt32 format, UInt32 mod_hi, UInt32 mod_lo) no
     }
 #endif
 
-    L_UNUSED(format);
-    L_UNUSED(mod_hi);
-    L_UNUSED(mod_lo);
+    CZ_UNUSED(format);
+    CZ_UNUSED(mod_hi);
+    CZ_UNUSED(mod_lo);
     return false;
 }

@@ -186,7 +186,7 @@ void LOutput::uninitializeGL()
 //! [setGammaRequest]
 void LOutput::setGammaRequest(LClient *client, std::shared_ptr<const RGammaLUT> gamma)
 {
-    L_UNUSED(client)
+    CZ_UNUSED(client)
 
     /* Sets the client gamma table */
     setGammaLUT(gamma);
@@ -196,7 +196,7 @@ void LOutput::setGammaRequest(LClient *client, std::shared_ptr<const RGammaLUT> 
 //! [leaseRequest]
 bool LOutput::leaseRequest(LClient *client)
 {
-    L_UNUSED(client)
+    CZ_UNUSED(client)
     return true;
 }
 //! [leaseRequest]

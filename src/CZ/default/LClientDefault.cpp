@@ -5,7 +5,7 @@ using namespace CZ;
 //! [pong]
 void LClient::pong(UInt32 serial)
 {
-    L_UNUSED(serial);
+    CZ_UNUSED(serial);
 
     /* No default implementation */
 }

@@ -199,7 +199,7 @@ bool RPointer::axisSource(UInt32 axisSource) noexcept
         return true;
     }
 #endif
-    L_UNUSED(axisSource);
+    CZ_UNUSED(axisSource);
     return false;
 }
 
@@ -212,8 +212,8 @@ bool RPointer::axisStop(UInt32 time, UInt32 axis) noexcept
         return true;
     }
 #endif
-    L_UNUSED(time);
-    L_UNUSED(axis);
+    CZ_UNUSED(time);
+    CZ_UNUSED(axis);
     return false;
 }
 
@@ -226,8 +226,8 @@ bool RPointer::axisDiscrete(UInt32 axis, Int32 discrete) noexcept
         return true;
     }
 #endif
-    L_UNUSED(axis);
-    L_UNUSED(discrete);
+    CZ_UNUSED(axis);
+    CZ_UNUSED(discrete);
     return false;
 }
 
@@ -240,8 +240,8 @@ bool RPointer::axisValue120(UInt32 axis, Int32 value120) noexcept
         return true;
     }
 #endif
-    L_UNUSED(axis);
-    L_UNUSED(value120);
+    CZ_UNUSED(axis);
+    CZ_UNUSED(value120);
     return false;
 }
 
@@ -254,7 +254,7 @@ bool RPointer::axisRelativeDirection(UInt32 axis, UInt32 direction) noexcept
         return true;
     }
 #endif
-    L_UNUSED(axis);
-    L_UNUSED(direction);
+    CZ_UNUSED(axis);
+    CZ_UNUSED(direction);
     return false;
 }

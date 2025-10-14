@@ -57,8 +57,6 @@ public:
      */
     ~LActivationTokenManager() noexcept;
 
-    LCLASS_NO_COPY(LActivationTokenManager)
-
     /**
      * @brief Retrieve available tokens.
      *

@@ -152,6 +152,6 @@ bool RXdgPopup::repositioned(UInt32 token) noexcept
         return true;
     }
 #endif
-    L_UNUSED(token);
+    CZ_UNUSED(token);
     return false;
 }

@@ -15,7 +15,7 @@ using namespace CZ;
 bool LSeat::configureOutputsRequest(LClient *client, const std::vector<OutputConfiguration> &configurations)
 {
     // All requests accepted by default (unsafe) see LCompositor::globalsFilter().
-    L_UNUSED(client)
+    CZ_UNUSED(client)
 
     for (const auto &conf : configurations)
     {
@@ -38,7 +38,7 @@ bool LSeat::configureOutputsRequest(LClient *client, const std::vector<OutputCon
 //! [nativeInputEvent]
 void LSeat::nativeInputEvent(void *event)
 {
-    L_UNUSED(event);
+    CZ_UNUSED(event);
 }
 //! [nativeInputEvent]
 

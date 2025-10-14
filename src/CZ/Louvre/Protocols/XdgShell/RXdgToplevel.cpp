@@ -291,7 +291,7 @@ bool RXdgToplevel::configureBounds(const SkISize &bounds) noexcept
         return true;
     }
 #endif
-    L_UNUSED(bounds);
+    CZ_UNUSED(bounds);
     return false;
 }
 
@@ -304,6 +304,6 @@ bool RXdgToplevel::wmCapabilities(wl_array *capabilities) noexcept
         return true;
     }
 #endif
-    L_UNUSED(capabilities);
+    CZ_UNUSED(capabilities);
     return false;
 }

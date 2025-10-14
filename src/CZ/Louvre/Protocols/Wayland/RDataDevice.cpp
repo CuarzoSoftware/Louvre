@@ -180,7 +180,7 @@ fail:
 
 void RDataDevice::set_selection(wl_client *client, wl_resource *resource, wl_resource *source, UInt32 serial)
 {
-    L_UNUSED(client);
+    CZ_UNUSED(client);
 
     RDataDevice *rDataDevice { static_cast<RDataDevice*>(wl_resource_get_user_data(resource)) };
 

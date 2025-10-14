@@ -75,7 +75,7 @@ static void clientDisconnectedEvent(wl_listener *listener, void *data)
 
 static void clientConnectedEvent(wl_listener *listener, void *data)
 {
-    L_UNUSED(listener);
+    CZ_UNUSED(listener);
     wl_client *client { (wl_client*)data };
     LClient::Params *params { new LClient::Params };
     params->client = client;

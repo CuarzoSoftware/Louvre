@@ -305,6 +305,6 @@ bool RForeignToplevelHandle::parent(RForeignToplevelHandle *parent) noexcept
         return true;
     }
 #endif
-    L_UNUSED(parent)
+    CZ_UNUSED(parent)
     return false;
 }

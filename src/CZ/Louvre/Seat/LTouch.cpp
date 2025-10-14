@@ -114,7 +114,7 @@ SkPoint LTouch::toGlobal(LOutput *output, SkPoint touchPointPos) noexcept
 
 void LTouch::sendFrameEvent(const CZTouchFrameEvent &event) noexcept
 {
-    L_UNUSED(event);
+    CZ_UNUSED(event);
 
     LTouchPoint *tp;
 
@@ -135,7 +135,7 @@ void LTouch::sendFrameEvent(const CZTouchFrameEvent &event) noexcept
 
 void LTouch::sendCancelEvent(const CZTouchCancelEvent &event) noexcept
 {
-    L_UNUSED(event);
+    CZ_UNUSED(event);
 
     LTouchPoint *tp;
     while (!touchPoints().empty())

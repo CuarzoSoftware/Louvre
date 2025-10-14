@@ -60,8 +60,6 @@ public:
      */
     LForeignToplevelController(const void *params) noexcept;
 
-    LCLASS_NO_COPY(LForeignToplevelController)
-
     /**
      * @brief Destructor of the LForeignToplevelController class.
      *

@@ -78,8 +78,8 @@ void LPopupRole::grabKeyboardRequest(const CZEvent &triggeringEvent)
 //! [atomsChanged]
 void LPopupRole::stateChanged(CZBitset<Changes> changes, const State &prev)
 {
-    L_UNUSED(changes)
-    L_UNUSED(prev)
+    CZ_UNUSED(changes)
+    CZ_UNUSED(prev)
 }
 //! [atomsChanged]
 

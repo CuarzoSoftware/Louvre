@@ -5,8 +5,8 @@ using namespace CZ;
 //! [propsChanged]
 void LBackgroundBlur::propsChanged(CZBitset<PropChanges> changes, const Props &prevProps)
 {
-    L_UNUSED(changes)
-    L_UNUSED(prevProps)
+    CZ_UNUSED(changes)
+    CZ_UNUSED(prevProps)
 }
 //! [propsChanged]
 

@@ -119,8 +119,6 @@ public:
      */
     LClient(const void *params) noexcept;
 
-    LCLASS_NO_COPY(LClient)
-
     /**
      * @brief Destructor of the LClient class.
      *
