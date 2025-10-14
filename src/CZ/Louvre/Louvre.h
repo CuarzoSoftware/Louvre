@@ -91,79 +91,75 @@
 namespace CZ
 {
     class LObject;
-    class LBackend;
-    class LBackendOutput;
-    class LDRMBackend;
-    class LWaylandBackend;
-    class LOffscreenBackend;
     class LFactoryObject;
     class LGlobal;
     class LClient;
     class LCompositor;
-    class LOutput;
-    class LOutputManager;
-    class LOutputMode;
-    class LPositioner;
     class LResource;
-    class LSessionLockManager;
     class LSurface;
     class LSurfaceLock;
+    class LDMAFeedback;
+    class LLauncher;
+    class LExclusiveZone;
+    struct LMargins;
+
+    // Buffers
+    class LDMABuffer;
+    class LSinglePixelBuffer;
+
+    // Manager
+    class LForeignToplevelController;
+    class LSessionLockManager;
     class LActivationTokenManager;
     class LActivationToken;
+    class LIdleListener;
     class LBackgroundBlur;
-    class LDMAFeedback;
 
     // Events
     class LSurfaceCommitEvent;
     class LSurfaceUnlockEvent;
 
-    // Data
-    class LDND;
-    class LDNDSession;
-    class LClipboard;
-
-    class LBaseSurfaceRole;
-    class LCursorRole;
-    class LDNDIconRole;
-    class LToplevelRole;
-    class LPopupRole;
-    class LSubsurfaceRole;
-    class LSessionLockRole;
-    class LLayerRole;
-
-    class LCursor;
-
-    class LCursorSource;
-    class LShapeCursorSource;
-    class LImageCursorSource;
-    class LRoleCursorSource;
-
+    // Seat
     class LSeat;
     class LPointer;
     class LKeyboard;
     class LTouch;
     class LTouchPoint;
+    class LDND;
+    class LDNDSession;
+    class LClipboard;
+    class LOutput;
+    class LOutputMode;
 
+    // Roles
+    class LBaseSurfaceRole;
+    class LCursorRole;
+    class LDNDIconRole;
+    class LPopupRole;
+    class LPositioner;
+    class LSubsurfaceRole;
+    class LSessionLockRole;
+    class LLayerRole;
+    class LToplevelRole;
     class LToplevelResizeSession;
     class LToplevelMoveSession;
-    class LForeignToplevelController;
 
-    // Other
-    class LDMABuffer;
-    class LSinglePixelBuffer;
-    class LExclusiveZone;
-    class LIdleListener;
-
-    // Utils
-    class LLauncher;
+    // Cursor
+    class LCursor;
+    class LCursorSource;
+    class LShapeCursorSource;
+    class LImageCursorSource;
+    class LRoleCursorSource;
 
     /// @brief 24 bits Wayland float
     typedef wl_fixed_t      Float24;
 
-    /// @brief Unsigned integer capable of holding a pointer
-    typedef uintptr_t       UIntPtr;
-
-    struct LMargins;
+    // Backend
+    class LBackend;
+    class LBackendOutput;
+    class LDRMBackend;
+    class LWaylandBackend;
+    class LOffscreenBackend;
 
     enum class LBackendId
     {
