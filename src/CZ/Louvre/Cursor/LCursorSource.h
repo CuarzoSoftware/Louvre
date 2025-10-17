@@ -1,7 +1,7 @@
 #ifndef CZ_LCURSORSOURCE_H
 #define CZ_LCURSORSOURCE_H
 
-#include "Core/CZCursorShape.h"
+#include <CZ/Core/CZCursorShape.h>
 #include <CZ/Louvre/LObject.h>
 #include <CZ/Ream/Ream.h>
 #include <memory>

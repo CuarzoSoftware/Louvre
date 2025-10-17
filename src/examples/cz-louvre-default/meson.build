@@ -1,8 +1,8 @@
 executable(
-    'louvre-default',
+    'cz-louvre-default',
     sources : ['main.cpp'],
     dependencies : [
-        louvre_dep,
+        cz_louvre_dep,
         gl_dep,
     ],
     install : true)

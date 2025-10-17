@@ -1,4 +1,4 @@
-#include "Core/CZCore.h"
+#include <CZ/Core/CZCore.h>
 #include <CZ/Louvre/Protocols/Wayland/RKeyboard.h>
 #include <CZ/Louvre/Protocols/Wayland/RDataDevice.h>
 #include <CZ/Louvre/Protocols/Wayland/RDataOffer.h>

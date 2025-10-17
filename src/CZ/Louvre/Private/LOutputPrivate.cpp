@@ -194,9 +194,10 @@ void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
     output->backend()->setDamage(output->damage);
 }
 
-void LOutput::LOutputPrivate::blitFractionalScaleFb(bool cursorOnly) noexcept
+void LOutput::LOutputPrivate::blitFractionalScaleFb(bool /*cursorOnly*/) noexcept
 {
-        /* TODO
+
+    /* TODO
     stateFlags.remove(UsingFractionalScale);
     const CZTransform prevTrasform { transform };
     transform = CZTransform::Normal;

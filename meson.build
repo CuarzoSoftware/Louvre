@@ -1,5 +1,5 @@
 project(
-    'Louvre',
+    'cz-louvre',
     'c','cpp',
     version : run_command('cat', files('VERSION'), check : false).stdout().strip(),
     meson_version: '>= 0.56.0',
@@ -11,20 +11,20 @@ project(
 )
 
 cpp = meson.get_compiler('cpp')
-
+NAME='Louvre'
 VERSION_MAJOR = meson.project_version().split('.')[0]
 VERSION_MINOR = meson.project_version().split('.')[1]
 VERSION_PATCH = meson.project_version().split('.')[2]
 VERSION_BUILD = run_command('cat', './BUILD', check : false).stdout()
-HEADERS_INSTALL_DIR = join_paths(get_option('prefix'), get_option('includedir'), 'CZ/', meson.project_name())
-CONF_FILE_NAME = 'CZ' + meson.project_name() + 'Version.h'
+HEADERS_INSTALL_DIR = join_paths(get_option('prefix'), get_option('includedir'), 'CZ/', NAME)
+CONF_FILE_NAME = 'CZ' + NAME + 'Version.h'
 
 conf = configuration_data()
 conf.set('VERSION_MAJOR', VERSION_MAJOR)
 conf.set('VERSION_MINOR', VERSION_MINOR)
 conf.set('VERSION_PATCH', VERSION_PATCH)
 conf_file = configure_file(
-    input : 'src/CZ/' + meson.project_name() + '/' + CONF_FILE_NAME +'.in',
+    input : 'src/CZ/' + NAME + '/' + CONF_FILE_NAME +'.in',
     output : CONF_FILE_NAME,
     configuration : conf)
 
@@ -37,7 +37,7 @@ install_data(
 pkg                 = import('pkgconfig')
 cz_core_dep         = dependency('cz-core')
 cz_skia_dep         = dependency('cz-skia')
-cz_srm_dep          = dependency('cz-srm')
+cz_srm_dep          = dependency('cz-srm', fallback:['cz-srm', 'cz_srm_dep'])
 cz_ream_dep         = dependency('cz-ream')
 wayland_server_dep  = dependency('wayland-server', version: '>= 1.20.0')
 wayland_client_dep  = dependency('wayland-client')
@@ -55,7 +55,7 @@ dl_dep              = cpp.find_library('dl')
 
 # -------------- HEADERS --------------
 
-include_paths = [include_directories('src/')]
+include_paths = ['src/', 'src/CZ']
 
 # All headers
 headers = run_command('find', 'src/CZ', '-type', 'f', '-name', '*.h', check : false).stdout().strip().split('\n')
@@ -124,42 +124,44 @@ endforeach
 
 # -------------- LIBRARY --------------
 
-louvre = library(
-    'Louvre',
+deps = [
+    cz_core_dep,
+    cz_skia_dep,
+    cz_srm_dep,
+    cz_ream_dep,
+    wayland_server_dep,
+    wayland_client_dep,
+    egl_dep,
+    glesv2_dep,
+    input_dep,
+    udev_dep,
+    pthread_dep,
+    xcursor_dep,
+    xkbcommon_dep,
+    dl_dep,
+    drm_dep,
+    libseat_dep,
+]
+
+cz_louvre = library(
+    'cz-louvre',
     sources : run_command('find', 'src/CZ', '-type', 'f', '-name', '*[.cpp,.c]', check : false).stdout().strip().split('\n'),
     include_directories : include_paths,
-    dependencies : [
-        cz_core_dep,
-        cz_skia_dep,
-        cz_srm_dep,
-        cz_ream_dep,
-        wayland_server_dep,
-        wayland_client_dep,
-        egl_dep,
-        glesv2_dep,
-        input_dep,
-        udev_dep,
-        pthread_dep,
-        xcursor_dep,
-        xkbcommon_dep,
-        dl_dep,
-        drm_dep,
-        libseat_dep,
-    ],
+    dependencies : deps,
     soversion: VERSION_MAJOR,
     install : true)
 
-louvre_dep = declare_dependency(
-    dependencies: [cz_core_dep, cz_skia_dep, wayland_server_dep, drm_dep, xkbcommon_dep],
+cz_louvre_dep = declare_dependency(
+    dependencies: deps,
     include_directories : include_paths,
-    link_with : louvre)
+    link_with : cz_louvre)
 
 pkg.generate(
-    louvre,
+    cz_louvre,
     name: 'cz-louvre',
     description: 'C++ library for building Wayland compositors',
     version: meson.project_version(),
-    libraries: [cz_core_dep],
+    libraries: deps,
     subdirs: ['CZ','CZ/Louvre'],
     requires: ['cz-core'],
     filebase: 'cz-louvre')
@@ -167,5 +169,5 @@ pkg.generate(
 # -------------- SUBDIRS --------------
 
 if get_option('build_examples')
-    subdir('src/examples/louvre-default')
+    subdir('src/examples/cz-louvre-default')
 endif
