@@ -80,6 +80,9 @@ LOutput *LWaylandOutput::Make(LWaylandBackend *backend) noexcept
     o->m_modes.emplace_back(std::shared_ptr<LWaylandOutputMode>(new LWaylandOutputMode(o)));
 
     surfaceLis.preferred_buffer_scale = &handle_preferred_buffer_scale;
+    surfaceLis.preferred_buffer_transform = [](auto, auto, auto){};
+    surfaceLis.enter = [](auto, auto, auto){};
+    surfaceLis.leave = [](auto, auto, auto){};
     xdgSurfaceLis.configure = &handle_xdg_surface_configure;
     xdgToplevelLis.configure = &handle_xdg_toplevel_configure;
     xdgToplevelLis.close = &handle_xdg_toplevel_close;
