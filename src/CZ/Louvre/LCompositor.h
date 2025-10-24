@@ -528,7 +528,7 @@ public:
     ///@}
 
     LPRIVATE_IMP_UNIQUE(LCompositor)
-
+    void logInfo() noexcept;
     LGlobal *globalCreate(const wl_interface *interface, Int32 version, void *data, wl_global_bind_func_t bind);
 };
 

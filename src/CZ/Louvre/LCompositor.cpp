@@ -30,6 +30,7 @@
 #include <CZ/Core/CZCore.h>
 #include <CZ/Core/CZTime.h>
 
+#include <CZLouvreVersion.h>
 #include <sys/eventfd.h>
 #include <poll.h>
 #include <thread>
@@ -173,14 +174,14 @@ LCompositor::LCompositor() noexcept : LPRIVATE_INIT_UNIQUE(LCompositor)
     if (!s_compositor)
         s_compositor = this;
 
-    LLog(CZInfo, CZLN, "Compositor created");
+    LLog(CZDebug, CZLN, "Compositor created");
     imp()->core = CZCore::Get();
     imp()->core->m_owner = CZCore::Owner::Louvre;
 }
 
 LCompositor::~LCompositor() noexcept
 {
-    LLog(CZInfo, CZLN, "Compositor destroyed");
+    LLog(CZDebug, CZLN, "Compositor destroyed");
 }
 
 bool LCompositor::setBackend(std::shared_ptr<LBackend> backend) noexcept
@@ -215,6 +216,37 @@ bool LCompositor::event(const CZEvent &e) noexcept
     }
 
     return CZObject::event(e);
+}
+
+void LCompositor::logInfo() noexcept
+{
+    if (LLog.level() >= CZInfo)
+    {
+        const char *backendName;
+
+        switch (backend()->id())
+        {
+        case LBackendId::DRM:
+            backendName = "DRM";
+            break;
+        case LBackendId::Wayland:
+            backendName = "Wayland";
+            break;
+        case LBackendId::Offscreen:
+            backendName = "Offscreen";
+            break;
+        default:
+            backendName = "User";
+            break;
+        }
+
+        printf("\n");
+        LLog(CZInfo, "----------- Louvre -----------");
+        LLog(CZInfo, "Version: {}.{}.{}", CZ_LOUVRE_VERSION_MAJOR, CZ_LOUVRE_VERSION_MINOR, CZ_LOUVRE_VERSION_PATCH);
+        LLog(CZInfo, "Backend: {}", backendName);
+        LLog(CZInfo, "Libseat: {}", seat()->libseatHandle() != nullptr);
+        LLog(CZInfo, "------------------------------\n");
+    }
 }
 
 bool LCompositor::start()
@@ -254,6 +286,8 @@ bool LCompositor::start()
         LLog(CZFatal, CZLN, "Failed to initialize backend");
         goto fail;
     }
+
+    logInfo();
 
     if (!compositor()->createGlobalsRequest())
     {

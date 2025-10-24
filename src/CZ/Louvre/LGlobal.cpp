@@ -10,12 +10,12 @@ const wl_interface *LGlobal::interface() const noexcept
 
 LGlobal::LGlobal(wl_global *global) noexcept : m_global(global)
 {
-    LLog(CZInfo, "[LGlobal] {} created", interface()->name);
+    LLog(CZDebug, "[LGlobal] {} created", interface()->name);
 }
 
 LGlobal::~LGlobal() noexcept
 {
     notifyDestruction();
-    LLog(CZInfo, "[LGlobal] {} destroyed", interface()->name);
+    LLog(CZDebug, "[LGlobal] {} destroyed", interface()->name);
     wl_global_destroy(m_global);
 }

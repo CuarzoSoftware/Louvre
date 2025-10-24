@@ -111,7 +111,6 @@ bool LSeat::LSeatPrivate::initLibseat()
 
     const auto lock { LLockGuard() };
     dispatchSeat();
-    LLog(CZInfo, CZLN, "Using libseat");
     return true;
 }
 

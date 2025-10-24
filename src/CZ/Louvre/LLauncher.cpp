@@ -160,7 +160,7 @@ pid_t LLauncher::startDaemon(const std::string &name)
 
         prctl(PR_SET_NAME, name.c_str(), 0, 0, 0);
         Int32 ret = daemonLoop();
-        LauncherLog(CZInfo, "[{}] Daemon exited with status {}", name.c_str(), ret);
+        LauncherLog(CZDebug, "[{}] Daemon exited with status {}", name.c_str(), ret);
 
         close(pipeA[0]);
         close(pipeB[1]);
@@ -177,7 +177,7 @@ pid_t LLauncher::startDaemon(const std::string &name)
     {
         close(pipeA[0]);
         close(pipeB[1]);
-        LauncherLog(CZInfo, "LLauncher daemon started successfully with PID: {}", daemonPID);
+        LauncherLog(CZDebug, "LLauncher daemon started successfully with PID: {}", daemonPID);
         return daemonPID;
     }
 

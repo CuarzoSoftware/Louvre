@@ -1,4 +1,3 @@
-#include "RCore.h"
 #include <CZ/Louvre/Protocols/WlrOutputManagement/GWlrOutputManager.h>
 #include <CZ/Louvre/Protocols/DRMLease/GDRMLeaseDevice.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
@@ -24,6 +23,7 @@
 #include <CZ/Louvre/Backends/DRM/LDRMBackend.h>
 #include <CZ/Louvre/Backends/Wayland/LWaylandBackend.h>
 
+#include <CZ/Ream/RCore.h>
 #include <CZ/Ream/RDevice.h>
 #include <CZ/Core/Utils/CZVectorUtils.h>
 #include <CZ/Core/CZTime.h>
@@ -218,7 +218,7 @@ void LCompositor::LCompositorPrivate::unitCompositor()
     if (ream)
         ream->clearGarbage();
 
-    LLog(CZInfo, CZLN, "Compositor uninitialized");
+    LLog(CZDebug, CZLN, "Compositor uninitialized");
     state = CompositorState::Uninitialized;
 }
 
@@ -258,41 +258,41 @@ void LCompositor::LCompositorPrivate::unitSeat()
         {
             delete seat->m_keyboard;
             seat->m_keyboard = nullptr;
-            LLog(CZInfo, "LKeyboard uninitialized successfully");
+            LLog(CZDebug, "LKeyboard uninitialized successfully");
         }
 
         if (seat->pointer())
         {
             delete seat->m_pointer;
             seat->m_pointer = nullptr;
-            LLog(CZInfo, "LPointer uninitialized successfully");
+            LLog(CZDebug, "LPointer uninitialized successfully");
         }
 
         if (seat->touch())
         {
             delete seat->m_touch;
             seat->m_touch = nullptr;
-            LLog(CZInfo, "LTouch uninitialized successfully");
+            LLog(CZDebug, "LTouch uninitialized successfully");
         }
 
         if (seat->dnd())
         {
             delete seat->m_dnd;
             seat->m_dnd = nullptr;
-            LLog(CZInfo, "LDND uninitialized successfully");
+            LLog(CZDebug, "LDND uninitialized successfully");
         }
 
         if (seat->clipboard())
         {
             delete seat->m_clipboard;
             seat->m_clipboard = nullptr;
-            LLog(CZInfo, "LClipboard Manager uninitialized successfully");
+            LLog(CZDebug, "LClipboard Manager uninitialized successfully");
         }
 
         delete seat;
         seat = nullptr;
 
-        LLog(CZInfo, "LSeat uninitialized successfully");
+        LLog(CZDebug, "LSeat uninitialized successfully");
     }
 }
 
