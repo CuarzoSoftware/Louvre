@@ -189,7 +189,6 @@ bool LWaylandOutput::init() noexcept
             wl_callback_add_listener(wl.callback, &callbackLis, this);
             m_swapchain->present(image.value(), m_damage.has_value() ? &m_damage.value() : nullptr);
             m_damage.reset();
-            wl_display_flush(wl.display);
         }
 
         output()->imp()->backendUninitializeGL();
