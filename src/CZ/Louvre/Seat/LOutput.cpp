@@ -37,7 +37,7 @@ LOutput::LOutput(const void *params) noexcept : LFactoryObject(FactoryObjectType
     imp()->updateRect();
 }
 
-LOutput::~LOutput()
+LOutput::~LOutput() noexcept
 {
     notifyDestruction();
 }
