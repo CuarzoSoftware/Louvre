@@ -172,11 +172,12 @@ bool LWaylandOutput::init() noexcept
             if (!m_swapchain)
                 m_swapchain = RWLSwapchain::Make(wl.surface, newSize);
 
-            if (output()->transform() != CZTransform::Normal || newSize != mode->m_size)
+            if (output()->transform() != CZTransform::Normal || newSize != mode->m_size || output()->scale() != m_scale)
             {
                 output()->setTransform(CZTransform::Normal);
                 mode->m_size = newSize;
                 m_swapchain->resize(newSize);
+                output()->setScale(m_scale);
                 output()->imp()->backendResizeGL();
                 updateCursor();
             }
@@ -185,7 +186,6 @@ bool LWaylandOutput::init() noexcept
 
             auto image { m_swapchain->acquire() };
             m_images[0] = image->image;
-            output()->setScale(m_scale);
             m_age = image->age;
             output()->imp()->backendPaintGL();
             wl.callback = wl_surface_frame(wl.surface);

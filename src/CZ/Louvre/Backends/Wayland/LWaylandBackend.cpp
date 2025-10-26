@@ -346,13 +346,13 @@ bool LWaylandBackend::initDisplay() noexcept
 
     if (!wl.compositor)
     {
-        log(CZFatal, CZLN, "wl_compositor not available");
+        log(CZFatal, CZLN, "wl_compositor >= 6 unsupported by the parent compositor");
         return false;
     }
 
     if (!wl.xdgWmBase)
     {
-        log(CZFatal, CZLN, "xdg_wm_base not available");
+        log(CZFatal, CZLN, "xdg_wm_base unsupported by the parent compositor");
         return false;
     }
 
