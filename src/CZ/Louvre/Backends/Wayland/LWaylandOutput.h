@@ -71,7 +71,7 @@ public:
 protected:
     friend class LWaylandBackend;
     LWaylandOutput(LWaylandBackend *backend) noexcept;
-
+    bool event(const CZEvent &e) noexcept override;
     static void handle_preferred_buffer_scale(void *data, wl_surface *surface, Int32 factor) noexcept;
     static void handle_xdg_surface_configure(void *data, xdg_surface *xdgSurface, UInt32 serial) noexcept;
     static void handle_xdg_toplevel_configure(void *data, xdg_toplevel *toplevel, Int32 width, Int32 height, wl_array *states) noexcept;

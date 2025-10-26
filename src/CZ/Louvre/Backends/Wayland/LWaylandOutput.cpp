@@ -10,6 +10,7 @@
 #include <CZ/Ream/RPass.h>
 #include <CZ/Ream/RCore.h>
 #include <CZ/Core/CZPresentationTime.h>
+#include <CZ/Core/CZCore.h>
 
 using namespace CZ;
 
@@ -143,7 +144,9 @@ bool LWaylandOutput::init() noexcept
     std::thread([this](){
         auto &wl { m_backend->wl };
         auto *mode { static_cast<LWaylandOutputMode*>(m_modes[0].get()) };
+        auto core { CZCore::Get() };
         output()->imp()->backendInitializeGL();
+        auto event { std::make_shared<CZPresentationEvent>() };
 
         while (true)
         {
@@ -189,6 +192,7 @@ bool LWaylandOutput::init() noexcept
             wl_callback_add_listener(wl.callback, &callbackLis, this);
             m_swapchain->present(image.value(), m_damage.has_value() ? &m_damage.value() : nullptr);
             m_damage.reset();
+            core->postEvent(event, *this);
         }
 
         output()->imp()->backendUninitializeGL();
@@ -334,3 +338,14 @@ bool LWaylandOutput::setCursor(UInt8 *pixels) noexcept
 }
 
 LWaylandOutput::LWaylandOutput(LWaylandBackend *backend) noexcept : m_backend(backend) {}
+
+bool LWaylandOutput::event(const CZEvent &e) noexcept
+{
+    if (e.type() == CZEvent::Type::Presentation)
+    {
+        wl_display_flush(m_backend->wl.display);
+        return true;
+    }
+
+    return LBackendOutput::event(e);
+}
