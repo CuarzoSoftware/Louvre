@@ -17,18 +17,12 @@ public:
         DND
     };
 
-    void requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType);
-    Usage usage() const noexcept
-    {
-        return m_usage;
-    }
+    bool requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType);
+    Usage usage() const noexcept { return m_usage; }
 
     /******************** DND ONLY ********************/
 
-    UInt32 actions() const noexcept
-    {
-        return m_actions;
-    }
+    UInt32 actions() const noexcept { return m_actions; }
 
     /******************** REQUESTS ********************/
 

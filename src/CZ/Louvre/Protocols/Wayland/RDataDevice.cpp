@@ -225,7 +225,8 @@ void RDataDevice::set_selection(wl_client *client, wl_resource *resource, wl_res
 
         // Ask client to write to the compositor fds
         for (auto &mimeType : rDataSource->m_mimeTypes)
-            rDataSource->requestPersistentMimeType(mimeType);
+            if (!rDataSource->requestPersistentMimeType(mimeType))
+                return;
 
         seat()->clipboard()->m_dataSource.reset(rDataSource);
 

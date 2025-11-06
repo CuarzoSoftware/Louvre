@@ -2,6 +2,7 @@
 #include <CZ/Louvre/Protocols/LinuxDMABuf/RZwpLinuxBufferParamsV1.h>
 #include <CZ/Louvre/Protocols/LinuxDMABuf/GZwpLinuxDmaBufV1.h>
 #include <CZ/Louvre/Protocols/LinuxDMABuf/LDMABuffer.h>
+#include <CZ/Louvre/LClient.h>
 #include <CZ/Ream/RCore.h>
 #include <CZ/Core/CZBitset.h>
 
@@ -46,12 +47,12 @@ RZwpLinuxBufferParamsV1::~RZwpLinuxBufferParamsV1() noexcept
     }
 }
 
-bool RZwpLinuxBufferParamsV1::createCommon(Int32 width, Int32 height, UInt32 format, UInt32 flags) noexcept
+int RZwpLinuxBufferParamsV1::createCommon(Int32 width, Int32 height, UInt32 format, UInt32 flags) noexcept
 {
     if (m_used)
     {
         postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_ALREADY_USED, "The dmabuf_batch object has already been used to create a wl_buffer.");
-        return false;
+        return -1;
     }
 
     m_used = true;
@@ -60,21 +61,21 @@ bool RZwpLinuxBufferParamsV1::createCommon(Int32 width, Int32 height, UInt32 for
     {
         m_isInvalid = true;
         failed();
-        return false;
+        return 0;
     }
 
     if (width <= 0 || height <= 0)
     {
         m_isInvalid = true;
         postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INVALID_DIMENSIONS, "Invalid wl_buffer size {}x{}.", width, height);
-        return false;
+        return -1;
     }
 
     if (m_dmaInfo.planeCount == 0)
     {
         m_isInvalid = true;
         postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE, "Invalid number of planes {}.", m_dmaInfo.planeCount);
-        return false;
+        return -1;
     }
 
     for (int i = 0; i < 4; i++)
@@ -83,7 +84,7 @@ bool RZwpLinuxBufferParamsV1::createCommon(Int32 width, Int32 height, UInt32 for
         {
             m_isInvalid = true;
             postError(ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_INCOMPLETE, "Missing plane {}/{}.", i + 1, m_dmaInfo.planeCount);
-            return false;
+            return -1;
         }
     }
 
@@ -99,11 +100,22 @@ bool RZwpLinuxBufferParamsV1::createCommon(Int32 width, Int32 height, UInt32 for
 
     if (!m_image)
     {
+        /* Nvidia drivers keep too many open files, if one of the fds is larger than 1020 the compositor may have reached
+         * the default limit (1024) */
+        for (int i = 0; i < m_dmaInfo.planeCount; i++)
+        {
+            if (m_dmaInfo.fd[i] >= 1020)
+            {
+                wl_client_post_no_memory(client()->client());
+                return -1;
+            }
+        }
+
         failed();
-        return false;
+        return 0;
     }
 
-    return true;
+    return 1;
 }
 
 /******************** REQUESTS ********************/
@@ -176,7 +188,7 @@ void RZwpLinuxBufferParamsV1::add(wl_client */*client*/,
 void RZwpLinuxBufferParamsV1::create(wl_client */*client*/, wl_resource *resource, Int32 width, Int32 height, UInt32 format, UInt32 flags) noexcept
 {
     auto *res { static_cast<RZwpLinuxBufferParamsV1*>(wl_resource_get_user_data(resource)) };
-    if (res->createCommon(width, height, format, flags))
+    if (res->createCommon(width, height, format, flags) == 1)
         res->created((new LDMABuffer(std::move(res->m_image), res->client(), 0))->resource());
 
     // Ignore the leak warning, the buffer is destroyed when the client releases it or is disconnected
@@ -187,7 +199,8 @@ void RZwpLinuxBufferParamsV1::create_immed(wl_client */*client*/, wl_resource *r
                                      Int32 width, Int32 height, UInt32 format, UInt32 flags) noexcept
 {
     auto *res { static_cast<RZwpLinuxBufferParamsV1*>(wl_resource_get_user_data(resource)) };
-    res->createCommon(width, height, format, flags);
+    if (res->createCommon(width, height, format, flags) == -1)
+        return;
     new LDMABuffer(std::move(res->m_image), res->client(), buffer_id);
 }
 #endif

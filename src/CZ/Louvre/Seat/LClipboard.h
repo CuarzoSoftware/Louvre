@@ -40,7 +40,7 @@ public:
     /**
      * @brief Desructor.
      */
-    ~LClipboard()
+    ~LClipboard() noexcept
     {
         notifyDestruction();
         clear();

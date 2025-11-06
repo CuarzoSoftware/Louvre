@@ -5,6 +5,7 @@
 #include <CZ/Louvre/Seat/LDNDSession.h>
 #include <CZ/Louvre/Seat/LClipboard.h>
 #include <CZ/Louvre/Seat/LSeat.h>
+#include <CZ/Louvre/LClient.h>
 
 using namespace CZ::Protocols::Wayland;
 
@@ -49,16 +50,25 @@ RDataSource::~RDataSource() noexcept
     }
 }
 
-void RDataSource::requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType)
+bool RDataSource::requestPersistentMimeType(LClipboard::MimeTypeFile &mimeType)
 {
     if (mimeType.tmp != NULL)
-        return;
+        return true;
 
     if (seat()->clipboard()->persistentMimeTypeFilter(mimeType.mimeType))
     {
         mimeType.tmp = tmpfile();
+
+        if (mimeType.tmp == NULL)
+        {
+            wl_client_post_no_memory(client()->client());
+            return false;
+        }
+
         send(mimeType.mimeType.c_str(), fileno(mimeType.tmp));
     }
+
+    return true;
 }
 
 /******************** REQUESTS ********************/
@@ -75,7 +85,8 @@ void RDataSource::offer(wl_client */*client*/, wl_resource *resource, const char
 
     if (&dataSourceRes == seat()->clipboard()->m_dataSource)
     {
-        dataSourceRes.requestPersistentMimeType(dataSourceRes.m_mimeTypes.back());
+        if (!dataSourceRes.requestPersistentMimeType(dataSourceRes.m_mimeTypes.back()))
+            return;
 
         if (seat()->clipboard()->m_dataOffer)
             seat()->clipboard()->m_dataOffer->offer(mime_type);

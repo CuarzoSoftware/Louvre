@@ -175,7 +175,7 @@ LCompositor::LCompositor() noexcept : LPRIVATE_INIT_UNIQUE(LCompositor)
         s_compositor = this;
 
     LLog(CZDebug, CZLN, "Compositor created");
-    imp()->core = CZCore::Get();
+    imp()->core = CZCore::GetOrMake();
     imp()->core->m_owner = CZCore::Owner::Louvre;
 }
 

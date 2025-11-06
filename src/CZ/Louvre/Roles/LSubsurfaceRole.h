@@ -66,20 +66,14 @@ public:
      *
      * @returns `true` if in synchronous mode, `false` otherwise.
      */
-    bool isSynced() const noexcept
-    {
-        return m_isSynced;
-    }
+    bool isSynced() const noexcept { return m_isSynced; }
 
     /**
     * @brief Offset in surface coordinates.
     *
     * The offset relative to the top-left corner of the parent surface in surface coordinates.
     */
-    SkIPoint localPos() const noexcept
-    {
-        return m_currentLocalPos;
-    }
+    SkIPoint localPos() const noexcept { return m_currentLocalPos; }
 
 /// @name Virtual Methods
 /// @{

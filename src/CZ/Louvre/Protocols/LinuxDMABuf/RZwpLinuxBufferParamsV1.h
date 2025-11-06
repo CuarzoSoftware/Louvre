@@ -31,7 +31,9 @@ private:
     friend class CZ::LDMABuffer;
     RZwpLinuxBufferParamsV1(GZwpLinuxDmaBufV1 *linuxDMABufRes, UInt32 id) noexcept;
     ~RZwpLinuxBufferParamsV1() noexcept;
-    bool createCommon(Int32 width, Int32 height, UInt32 format, UInt32 flags) noexcept;
+
+    // 1: Created, 0: failed sent, -1: error sent
+    int createCommon(Int32 width, Int32 height, UInt32 format, UInt32 flags) noexcept;
     RDMABufferInfo m_dmaInfo {};
     std::shared_ptr<RImage> m_image;
     std::unordered_set<int> m_fds;
