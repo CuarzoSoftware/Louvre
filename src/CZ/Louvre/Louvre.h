@@ -40,6 +40,7 @@
 #define LOUVRE_WLR_OUTPUT_MANAGER_VERSION 4
 #define LOUVRE_SVG_PATH_MANAGER_VERSION 1
 #define LOUVRE_BACKGROUND_BLUR_MANAGER_VERSION 1
+#define LOUVRE_PRIVATE_HANDLE_MANAGER_VERSION 1
 #define LOUVRE_INVISIBLE_REGION_MANAGER_VERSION 1
 #define LOUVRE_CURSOR_SHAPE_MANAGER_VERSION 2
 #define LOUVRE_WL_DRM_VERSION 2
@@ -391,6 +392,11 @@ namespace CZ
             class GInvisibleRegionManager;
 
             class RInvisibleRegion;
+        }
+
+        namespace PrivateHandle
+        {
+            class GPrivateHandleManager;
         }
 
         namespace CursorShape

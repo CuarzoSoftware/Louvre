@@ -23,6 +23,7 @@ public:
     wl_client *client;
     EventHistory eventHistory;
     std::shared_ptr<LCursorSource> cursor;
+    std::string privateHandle;
     std::list<LResource*> resources;
 
     // Globals
@@ -62,6 +63,7 @@ public:
     std::vector<InvisibleRegion::GInvisibleRegionManager*> invisibleRegionManagerGlobals;
     std::vector<WaylandDRM::GWlDRM*> wlDRMGlobals;
     std::vector<DRMSyncObj::GDRMSyncObjManager*> drmSyncObjManagerGlobals;
+    std::vector<PrivateHandle::GPrivateHandleManager*> privateHandleManagerGlobals;
 
     bool pendingDestroyLater { false };
     bool destroyed { false };

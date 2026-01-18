@@ -30,6 +30,7 @@
 #include <CZ/Louvre/Protocols/Wayland/GSubcompositor.h>
 #include <CZ/Louvre/Protocols/XdgShell/GXdgWmBase.h>
 #include <CZ/Louvre/Protocols/Wayland/GCompositor.h>
+#include <CZ/Louvre/Protocols/PrivateHandle/GPrivateHandleManager.h>
 #include <CZ/Louvre/Protocols/WaylandDRM/GWlDRM.h>
 #include <CZ/Louvre/Protocols/Wayland/GSeat.h>
 #include <CZ/Louvre/Manager/LSessionLockManager.h>
@@ -161,6 +162,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to specify invisible regions within their surfaces
     createGlobal<InvisibleRegion::GInvisibleRegionManager>();
+
+    // Assigns a unique identifier to each client
+    createGlobal<PrivateHandle::GPrivateHandleManager>();
 
     return true;
 }

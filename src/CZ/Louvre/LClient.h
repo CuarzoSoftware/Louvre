@@ -140,6 +140,16 @@ public:
     void credentials(pid_t *pid, uid_t *uid = nullptr, gid_t *gid = nullptr) const noexcept;
 
     /**
+     * @brief Client-private handle
+     *
+     * This handle is sent to the client when it binds to the
+     * `lvr_private_handle_manager` global. The client may then propagate it
+     * through other IPC mechanisms, such as D-Bus, allowing the compositor
+     * to associate the Wayland client with the corresponding D-Bus connection.
+     */
+    const std::string &privateHandle() const noexcept;
+
+    /**
      * @brief Sends a ping event to the client.
      *
      * This method sends a serial number to the client, which is expected to acknowledge it by invoking the `pong()` virtual method.\n
@@ -499,7 +509,13 @@ public:
      * Resources created when the client binds to the
      * wp_linux_drm_syncobj_manager_v1 global of the DRM synchronization object protocol.
      */
-    const std::vector<Protocols::DRMSyncObj::GDRMSyncObjManager*> drmSyncObjManager() const noexcept;
+    const std::vector<Protocols::DRMSyncObj::GDRMSyncObjManager*> drmSyncObjManagerGlobals() const noexcept;
+
+    /**
+     * Resources created when the client binds to the
+     * lvr_private_handle_manager global of the Private Handle protocol.
+     */
+    const std::vector<Protocols::PrivateHandle::GPrivateHandleManager*> privateHandleManagerGlobals() const noexcept;
 
     LPRIVATE_IMP_UNIQUE(LClient)
     void postErrorPrivate(wl_resource *resource, UInt32 code, const std::string &message);

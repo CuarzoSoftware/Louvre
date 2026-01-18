@@ -114,7 +114,8 @@ protocols = [
     'CursorShape',
     'Tablet',
     'WaylandDRM',
-    'DRMSyncObj'
+    'DRMSyncObj',
+    'PrivateHandle'
 ]
 
 foreach p : protocols

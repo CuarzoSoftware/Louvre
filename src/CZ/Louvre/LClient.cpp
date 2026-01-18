@@ -5,6 +5,34 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Cursor/LRoleCursorSource.h>
 #include <CZ/Louvre/LClient.h>
+#include <random>
+
+static std::string GenPrivateHandle(std::size_t length = 64) noexcept
+{
+    static constexpr char charset[]
+    {
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz"
+        "0123456789"
+        "_"
+    };
+
+    static constexpr std::size_t max_index = sizeof(charset) - 2;
+
+    thread_local std::mt19937 rng{std::random_device{}()};
+    std::uniform_int_distribution<std::size_t> dist(0, max_index);
+
+    if (length > 64)
+        length = 64;
+
+    std::string result;
+    result.reserve(length);
+
+    for (std::size_t i = 0; i < length; ++i)
+        result += charset[dist(rng)];
+
+    return result;
+}
 
 LClient::LClient(const void *params) noexcept : LFactoryObject(FactoryObjectType), m_imp { std::make_unique<LClientPrivate>(this, ((Params*)params)->client) }
 {
@@ -30,6 +58,16 @@ LClient::LClient(const void *params) noexcept : LFactoryObject(FactoryObjectType
     imp()->eventHistory.keyboard.enter.serial = 0;
     imp()->eventHistory.keyboard.leave.serial = 0;
     imp()->eventHistory.keyboard.modifiers.serial = 0;
+
+retryPrivateHandle:
+    imp()->privateHandle = GenPrivateHandle(32);
+
+    for (LClient *c : compositor()->clients())
+    {
+        if (c == this) continue;
+        if (c->imp()->privateHandle == imp()->privateHandle)
+            goto retryPrivateHandle;
+    }
 }
 
 LClient::~LClient()
@@ -43,6 +81,11 @@ LClient::~LClient()
 void LClient::credentials(pid_t *pid, uid_t *uid, gid_t *gid) const noexcept
 {
     wl_client_get_credentials(client(), pid, uid, gid);
+}
+
+const std::string &LClient::privateHandle() const noexcept
+{
+    return imp()->privateHandle;
 }
 
 const CZEvent *LClient::findEventBySerial(UInt32 serial) const noexcept
@@ -324,10 +367,16 @@ const std::vector<WaylandDRM::GWlDRM *> LClient::wlDRMGlobals() const noexcept
     return imp()->wlDRMGlobals;
 }
 
-const std::vector<DRMSyncObj::GDRMSyncObjManager *> LClient::drmSyncObjManager() const noexcept
+const std::vector<DRMSyncObj::GDRMSyncObjManager *> LClient::drmSyncObjManagerGlobals() const noexcept
 {
     return imp()->drmSyncObjManagerGlobals;
 }
+
+const std::vector<PrivateHandle::GPrivateHandleManager *> LClient::privateHandleManagerGlobals() const noexcept
+{
+    return imp()->privateHandleManagerGlobals;
+}
+
 
 const LClient::EventHistory &LClient::eventHistory() const noexcept
 {
