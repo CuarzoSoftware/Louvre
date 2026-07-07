@@ -331,7 +331,7 @@ bool LWaylandBackend::initDisplay() noexcept
         wl_display_get_fd(wl.display),
         EPOLLIN,
         CZOwn::Borrow,
-        [this](int fd, UInt32 events){
+        [this](int fd, UInt32 events, CZEventSource*){
 
             pollfd pfd {};
             pfd.fd = fd;

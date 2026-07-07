@@ -132,7 +132,7 @@ bool LCompositor::LCompositorPrivate::initWayland()
     wl_display_init_shm(display);
     auto *eventLoop = wl_display_get_event_loop(display);
 
-    waylandEventSource = CZEventSource::Make(wl_event_loop_get_fd(eventLoop), EPOLLIN, CZOwn::Borrow, [eventLoop](auto, auto) {
+    waylandEventSource = CZEventSource::Make(wl_event_loop_get_fd(eventLoop), EPOLLIN, CZOwn::Borrow, [eventLoop](auto, auto, auto) {
         wl_event_loop_dispatch(eventLoop, 0);
     });
 

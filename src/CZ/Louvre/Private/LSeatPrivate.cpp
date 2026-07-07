@@ -105,7 +105,7 @@ bool LSeat::LSeatPrivate::initLibseat()
         return false;
     }
 
-    libseatEventSource = CZEventSource::Make(fd, EPOLLIN, CZOwn::Borrow, [this](int, UInt32) {
+    libseatEventSource = CZEventSource::Make(fd, EPOLLIN, CZOwn::Borrow, [this](int, UInt32, CZEventSource*) {
         dispatchSeat();
     });
 

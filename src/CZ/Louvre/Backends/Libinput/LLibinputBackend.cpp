@@ -113,7 +113,7 @@ bool LDRMBackend::inputInit() noexcept
         libinput_udev_assign_seat(m_libinput, "seat0");
 
     m_libinputEventSource = CZEventSource::Make(
-        libinput_get_fd(m_libinput), EPOLLIN, CZOwn::Borrow, [this](auto, auto) {
+        libinput_get_fd(m_libinput), EPOLLIN, CZOwn::Borrow, [this](auto, auto, auto) {
             inputDispatch();
         });
 
