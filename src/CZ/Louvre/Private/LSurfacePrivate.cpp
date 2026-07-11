@@ -649,6 +649,22 @@ void LSurface::LSurfacePrivate::checkTimelines() noexcept
 
         if (waitRet == 0)
         {
+            // Guard against a client that keeps committing buffers whose acquire timeline points
+            // never materialize (e.g. a stalled or cross-GPU explicit-sync client). Each such commit
+            // is locked and cached; without a bound they accumulate indefinitely and degrade the
+            // whole compositor. A well-behaved client keeps only a handful of buffers in flight, so
+            // exceeding this limit is treated as protocol abuse and the client is disconnected.
+            static constexpr size_t MaxPendingAcquireCommits { 64 };
+            if (acquireTimelineLocks.size() >= MaxPendingAcquireCommits)
+            {
+                LLog(CZError, CZLN, "Client committed too many buffers ({}) with unmaterialized acquire timeline points; disconnecting",
+                     acquireTimelineLocks.size());
+                wl_client_post_implementation_error(
+                    pending.drmSyncObjSurfaceRes->client()->client(),
+                    "too many committed buffers waiting for their acquire timeline point");
+                return;
+            }
+
             LLog(CZTrace, CZLN, "Locking surface commit: Acquire timeline point not yet materialized");
             acquireTimelineLocks.emplace_back(lock());
             const auto commitId { pending.commitId };
