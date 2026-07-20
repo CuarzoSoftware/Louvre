@@ -6,7 +6,7 @@ project(
     default_options: [
         'warning_level=3',
         'buildtype=release',
-        'cpp_std=c++20'
+        'cpp_std=c++23'
     ]
 )
 
