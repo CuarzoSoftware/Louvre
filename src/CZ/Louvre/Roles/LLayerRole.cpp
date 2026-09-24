@@ -22,7 +22,7 @@ LLayerRole::LLayerRole(const void *params) noexcept :
 
     m_exclusiveZone.setOnRectChangeCallback([this](auto)
     {
-        if (surface()->mapped() && surface()->bufferResource())
+        if (surface()->mapped())
             configureRequest();
     });
 }
