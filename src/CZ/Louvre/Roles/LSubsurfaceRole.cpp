@@ -35,7 +35,7 @@ void LSubsurfaceRole::handleParentCommit() noexcept
 
 void LSubsurfaceRole::updateMapping() noexcept
 {
-    surface()->imp()->setMapped(surface()->parent() && surface()->parent()->mapped() && surface()->bufferResource());
+    surface()->imp()->setMapped(surface()->parent() && surface()->parent()->mapped() && surface()->hasBuffer());
 }
 
 void LSubsurfaceRole::cacheCommit() noexcept

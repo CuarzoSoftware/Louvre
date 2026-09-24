@@ -56,5 +56,5 @@ void LDNDIconRole::applyCommit() noexcept
 
     if (prevHotspotB != m_hotspotB)
         hotspotChanged();
-    surface()->imp()->setMapped(surface()->bufferResource());
+    surface()->imp()->setMapped(surface()->hasBuffer());
 }

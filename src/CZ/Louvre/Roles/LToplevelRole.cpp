@@ -428,7 +428,7 @@ void LToplevelRole::applyCommit() noexcept
     }
 
     // Unmap request
-    if (surface()->mapped() && !surface()->bufferResource())
+    if (surface()->mapped() && !surface()->hasBuffer())
     {
         reset(pending);
         return;
@@ -437,7 +437,7 @@ void LToplevelRole::applyCommit() noexcept
     applyState(pending);
 
     // Map request
-    if (!surface()->mapped() && surface()->bufferResource())
+    if (!surface()->mapped() && surface()->hasBuffer())
     {
         // ID used by the ext-toplevel-list protocol, must be updated each time
         // the toplevel is re-mapped

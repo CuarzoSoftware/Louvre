@@ -138,7 +138,7 @@ void LLayerRole::applyCommit() noexcept
         return;
 
     // Unmap request
-    if (m_flags.has(MappedByClient) && !surface()->bufferResource())
+    if (m_flags.has(MappedByClient) && !surface()->hasBuffer())
     {
         m_flags.remove(MappedByClient);
         updateMappingState();
@@ -284,5 +284,5 @@ void LLayerRole::updateMappingState() noexcept
         m_exclusiveZone.output() &&
         m_exclusiveZone.output()->state() != LOutput::State::Uninitialized &&
         m_flags.has(MappedByClient) &&
-        surface()->bufferResource());
+        surface()->hasBuffer());
 }
