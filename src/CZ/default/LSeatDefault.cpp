@@ -118,6 +118,14 @@ void LSeat::outputUnplugged(LOutput *output)
 }
 //! [outputUnplugged]
 
+//! [outputModesChanged]
+void LSeat::outputModesChanged(LOutput *output)
+{
+    if (output->state() == LOutput::Initialized)
+        output->setMode(output->preferredMode());
+}
+//! [outputModesChanged]
+
 //! [inputDevicePluggedEvent]
 void LSeat::inputDevicePlugged(std::shared_ptr<CZInputDevice> dev)
 {
