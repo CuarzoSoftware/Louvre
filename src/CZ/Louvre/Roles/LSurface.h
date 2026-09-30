@@ -24,6 +24,7 @@ namespace CZ
         UInt64 acquirePoint, releasePoint;
         std::shared_ptr<CZEventSource> acquireTimelineSource;
         bool attached;
+        bool hasContent;
         bool released;
         bool signaled;
         bool queued;
@@ -505,6 +506,14 @@ public:
      * @warning It could return `nullptr` if the surface is not currently mapped.
      */
     wl_buffer *bufferResource() const noexcept;
+
+    /**
+     * @brief Whether the client has a buffer attached
+     *
+     * `true` if the last attached buffer was not null, even if the client has destroyed the wl_buffer since.
+     * Roles map and unmap the surface based on this instead of bufferResource().
+     */
+    bool hasBuffer() const noexcept;
 
     /**
      * @brief Presence of damage

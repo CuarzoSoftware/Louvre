@@ -96,6 +96,7 @@ void RWlSurface::attach(wl_client */*client*/, wl_resource *resource, wl_resourc
     auto &surfaceRes { *static_cast<RWlSurface*>(wl_resource_get_user_data(resource)) };
 
     surfaceRes.surface()->imp()->pending.buffer.attached = true;
+    surfaceRes.surface()->imp()->pending.buffer.hasContent = buffer != nullptr;
     surfaceRes.surface()->imp()->pending.buffer.released = false;
     surfaceRes.surface()->imp()->pending.buffer.signaled = false;
 

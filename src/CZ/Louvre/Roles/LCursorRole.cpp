@@ -62,7 +62,7 @@ void LCursorRole::applyCommit() noexcept
     if (prevHotspotB != m_hotspotB)
         hotspotChanged();
 
-    surface()->imp()->setMapped(surface()->bufferResource());
+    surface()->imp()->setMapped(surface()->hasBuffer());
 
     m_cursor->m_visibility = surface()->mapped() ? LCursorSource::Visible : LCursorSource::Hidden;
     m_cursor->m_hotspot = m_hotspotB;

@@ -524,6 +524,11 @@ wl_buffer *LSurface::bufferResource() const noexcept
     return (wl_buffer*)imp()->current.buffer.buffer.res();
 }
 
+bool LSurface::hasBuffer() const noexcept
+{
+    return imp()->current.buffer.hasContent;
+}
+
 LClient *LSurface::client() const noexcept
 {
     return surfaceResource()->client();

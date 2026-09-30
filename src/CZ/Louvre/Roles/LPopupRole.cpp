@@ -515,7 +515,7 @@ void LPopupRole::applyCommit() noexcept
     }
 
     // Request unmap
-    if (surface()->mapped() && (!surface()->bufferResource() || !surface()->parent()))
+    if (surface()->mapped() && (!surface()->hasBuffer() || !surface()->parent()))
     {
         dismiss();
         return;
@@ -524,7 +524,7 @@ void LPopupRole::applyCommit() noexcept
     applyState(pending);
 
     // Request map
-    if (!surface()->mapped() && surface()->bufferResource() && surface()->parent() && surface()->parent()->mapped())
+    if (!surface()->mapped() && surface()->hasBuffer() && surface()->parent() && surface()->parent()->mapped())
         surface()->imp()->setMapped(true);
 }
 
