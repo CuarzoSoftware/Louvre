@@ -189,6 +189,12 @@ bool LDRMBackend::init() noexcept
         delete output;
     });
 
+    m_srm->onConnectorModesChanged.subscribe(this, [](SRMConnector *conn) {
+        auto *output { static_cast<LDRMOutput*>(conn->userData) };
+        output->handleModesChanged();
+        seat()->imp()->handleOutputModesChanged(output->output());
+    });
+
     for (auto *dev : m_srm->devices())
         for (auto *conn : dev->connectors())
             if (conn->isConnected())
