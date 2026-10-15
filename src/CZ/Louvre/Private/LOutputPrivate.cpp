@@ -17,6 +17,8 @@
 #include <CZ/Louvre/Cursor/LCursor.h>
 #include <CZ/Core/CZTime.h>
 #include <CZ/Core/CZCore.h>
+#include <CZ/Louvre/LLog.h>
+#include <CZ/Louvre/Private/LFreezeWatchdog.h>
 
 #include <CZ/Ream/RCore.h>
 #include <CZ/Core/Utils/CZRegionUtils.h>
@@ -44,15 +46,31 @@ void LOutput::LOutputPrivate::backendInitializeGL()
 
     output->initializeGL();
     compositor()->flushClients();
+
+    if (auto *watchdog { LFreezeWatchdog::Get() })
+        watchdog->watch(output);
+
     initPromise.set_value(true);
 }
 
 void LOutput::LOutputPrivate::backendPaintGL()
 {
+    /* Frame latency instrumentation: the request time (0 if the backend repainted on its own),
+     * the wake-up time (before the lock, so a stall acquiring it is measured) and the lock time. */
+    FrameTiming timing {};
+    timing.requestUs = repaintRequestUs.exchange(0);
+    timing.wakeUs = CZTime::Us();
+    paintSinceUs.store(timing.requestUs == 0 ? timing.wakeUs : timing.requestUs);
+
     const auto lock { LLockGuard() };
 
+    timing.lockUs = CZTime::Us();
+
     if (output->imp()->state != LOutput::Initialized)
+    {
+        paintSinceUs.store(0);
         return;
+    }
 
     compositor()->imp()->dispatchPresentationTimeEvents();
     compositor()->imp()->disablePendingPosixSignals();
@@ -112,6 +130,19 @@ void LOutput::LOutputPrivate::backendPaintGL()
 
     /* Destroy render buffers created from this thread and marked as destroyed by the user */
     RCore::Get()->clearGarbage();
+
+    /* Frame latency instrumentation: store the timings, retrieved when presented/discarded */
+    timing.endUs = CZTime::Us();
+    paintSinceUs.store(0);
+    {
+        std::lock_guard<std::mutex> timingsLock { frameTimingsMutex };
+
+        // Each frame is always presented or discarded, this should never grow
+        if (frameTimings.size() > 16)
+            frameTimings.clear();
+
+        frameTimings[output->backend()->paintEventId()] = timing;
+    }
 }
 
 void LOutput::LOutputPrivate::backendResizeGL() noexcept
@@ -136,6 +167,12 @@ void LOutput::LOutputPrivate::backendResizeGL() noexcept
 
 void LOutput::LOutputPrivate::backendUninitializeGL()
 {
+    if (auto *watchdog { LFreezeWatchdog::Get() })
+        watchdog->unwatch(output);
+
+    repaintRequestUs.store(0);
+    paintSinceUs.store(0);
+
     const auto lock { LLockGuard() };
 
     compositor()->imp()->disablePendingPosixSignals();
@@ -155,6 +192,7 @@ void LOutput::LOutputPrivate::backendUninitializeGL()
 
 void LOutput::LOutputPrivate::backendPresented(const CZPresentationTime &info) noexcept
 {
+    logFrameTiming(info.paintEventId, false);
     std::lock_guard<std::mutex> lock { compositor()->imp()->presentationMutex };
     CZPresentationEvent e {};
     e.info = info;
@@ -164,11 +202,44 @@ void LOutput::LOutputPrivate::backendPresented(const CZPresentationTime &info) n
 
 void LOutput::LOutputPrivate::backendDiscarded(UInt64 paintEventId) noexcept
 {
+    logFrameTiming(paintEventId, true);
     std::lock_guard<std::mutex> lock { compositor()->imp()->presentationMutex };
     CZPresentationEvent e {};
     e.info.paintEventId = paintEventId;
     e.discarded = true;
     presentationEventQueue.emplace(e);
+}
+
+void LOutput::LOutputPrivate::logFrameTiming(UInt64 paintEventId, bool discarded) noexcept
+{
+    FrameTiming timing;
+
+    {
+        std::lock_guard<std::mutex> lock { frameTimingsMutex };
+        const auto it { frameTimings.find(paintEventId) };
+
+        if (it == frameTimings.end())
+            return;
+
+        timing = it->second;
+        frameTimings.erase(it);
+    }
+
+    const UInt64 nowUs { CZTime::Us() };
+    const UInt64 fromUs { timing.requestUs == 0 ? timing.wakeUs : timing.requestUs };
+    const Float64 totalMs { Float64(nowUs - fromUs) / 1000.0 };
+    const Float64 wakeMs { timing.requestUs == 0 ? 0.0 : Float64(timing.wakeUs - timing.requestUs) / 1000.0 };
+    const Float64 lockMs { Float64(timing.lockUs - timing.wakeUs) / 1000.0 };
+    const Float64 paintMs { Float64(timing.endUs - timing.lockUs) / 1000.0 };
+    const Float64 flipMs { Float64(nowUs - timing.endUs) / 1000.0 };
+
+    /* A frame normally takes up to ~2 refresh cycles from request to presentation */
+    constexpr Float64 warnThresholdMs { 50.0 };
+
+    LLog(totalMs >= warnThresholdMs ? CZWarning : CZDebug, CZLN,
+         "[{}] Frame {} in {:.2f} ms (request -> wake {:.2f} ms, wake -> lock {:.2f} ms, paint {:.2f} ms, {} wait {:.2f} ms)",
+         output->name(), discarded ? "DISCARDED" : "presented", totalMs,
+         wakeMs, lockMs, paintMs, discarded ? "discard" : "flip", flipMs);
 }
 
 void LOutput::LOutputPrivate::damageToBufferCoords() noexcept

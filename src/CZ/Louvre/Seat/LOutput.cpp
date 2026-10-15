@@ -244,7 +244,12 @@ Float32 LOutput::scale() const noexcept
 void LOutput::repaint() noexcept
 {
     if (m_backend->repaint())
+    {
+        // Frame latency instrumentation: keep the time of the first request of the pending frame
+        UInt64 expected { 0 };
+        imp()->repaintRequestUs.compare_exchange_strong(expected, CZTime::Us());
         imp()->stateFlags.add(LOutputPrivate::PendingRepaint);
+    }
 }
 
 Int32 LOutput::dpi() noexcept

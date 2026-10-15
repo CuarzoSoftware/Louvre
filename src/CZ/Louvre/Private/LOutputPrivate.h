@@ -9,9 +9,12 @@
 #include <CZ/Core/Events/CZPresentationEvent.h>
 #include <CZ/Core/CZBitset.h>
 #include <CZ/Core/CZWeak.h>
+#include <atomic>
 #include <future>
 #include <list>
+#include <mutex>
 #include <queue>
+#include <unordered_map>
 
 using namespace CZ;
 
@@ -114,6 +117,27 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     std::list<CZWeak<Protocols::PresentationTime::RPresentationFeedback>> waitingPresentationFeedback;
     // Presented/discarded frames
     std::queue<CZPresentationEvent> presentationEventQueue;
+
+    /* Frame latency instrumentation (freeze debugging).
+     * Lifecycle: repaint() request -> render thread wakes (backendPaintGL entry) -> compositor
+     * lock acquired -> paintGL + blits done -> presented/discarded. Each timestamp is CZTime::Us().
+     * On present, the per-phase durations are logged (CZDebug always, CZWarning above threshold),
+     * pinpointing whether a stall happened before waking, waiting for the main-thread lock,
+     * inside paintGL, or waiting for the page flip. */
+    std::atomic<UInt64> repaintRequestUs { 0 }; // First repaint() of the pending frame (0 = none)
+    std::atomic<UInt64> paintSinceUs { 0 };     // backendPaintGL in progress since (0 = not painting)
+
+    struct FrameTiming
+    {
+        UInt64 requestUs; // repaint() request (0 = frame triggered by the backend, not repaint())
+        UInt64 wakeUs;    // backendPaintGL entry
+        UInt64 lockUs;    // compositor lock acquired
+        UInt64 endUs;     // paintGL + blits + flush done
+    };
+
+    std::mutex frameTimingsMutex;
+    std::unordered_map<UInt64, FrameTiming> frameTimings; // Keyed by backend paintEventId
+    void logFrameTiming(UInt64 paintEventId, bool discarded) noexcept;
 
     std::list<LExclusiveZone*> exclusiveZones;
     SkIRect availableGeometry { 0, 0, 0, 0 };
