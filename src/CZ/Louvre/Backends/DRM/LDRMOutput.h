@@ -71,6 +71,7 @@ public:
     void handlePresented(const CZPresentationTime &info) noexcept;
     void handleDiscarded(UInt64 paintEventId) noexcept;
     void handleUninitializeGL() noexcept;
+    void handleModesChanged() noexcept;
 
 private:
     LDRMOutput(SRMConnector *conn) noexcept;

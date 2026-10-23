@@ -41,6 +41,7 @@ LPRIVATE_CLASS(LSeat)
 
     void handleOutputPlugged(LOutput *output) noexcept;
     void handleOutputUnplugged(LOutput *output) noexcept;
+    void handleOutputModesChanged(LOutput *output) noexcept;
     void setActiveToplevel(LToplevelRole *newToplevel) noexcept;
 };
 

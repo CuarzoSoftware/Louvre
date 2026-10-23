@@ -334,6 +334,19 @@ public:
     virtual void outputUnplugged(LOutput *output);
 
     /**
+     * @brief The available modes of an output changed.
+     *
+     * This event is invoked by the graphic backend when a connected output reports new modes or a new preferred mode,
+     * for example when the display of a virtual machine is resized. New modes are appended to LOutput::modes().
+     *
+     * The default implementation switches initialized outputs to their preferred mode.
+     *
+     * #### Default Implementation
+     * @snippet LSeatDefault.cpp outputModesChanged
+     */
+    virtual void outputModesChanged(LOutput *output);
+
+    /**
      * @brief New available input device.
      *
      * #### Default Implementation

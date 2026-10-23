@@ -71,6 +71,13 @@ void LDRMOutput::handleUninitializeGL() noexcept
     m_output->imp()->backendUninitializeGL();
 }
 
+void LDRMOutput::handleModesChanged() noexcept
+{
+    for (auto *mode : m_conn->modes())
+        if (!mode->userData)
+            m_modes.emplace_back(LDRMOutputMode::Make(mode));
+}
+
 LOutput *LDRMOutput::Make(SRMConnector *conn) noexcept
 {
     LOutput::Params params {};

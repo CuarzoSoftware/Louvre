@@ -142,6 +142,15 @@ void LSeat::LSeatPrivate::handleOutputUnplugged(LOutput *output) noexcept
     compositor()->removeOutput(output);
 }
 
+void LSeat::LSeatPrivate::handleOutputModesChanged(LOutput *output) noexcept
+{
+    for (auto *head : output->imp()->wlrOutputHeads)
+        for (const auto &mode : output->modes())
+            head->mode(mode);
+
+    seat()->outputModesChanged(output);
+}
+
 void LSeat::LSeatPrivate::setActiveToplevel(LToplevelRole *newToplevel) noexcept
 {
     if (newToplevel == activeToplevelRole)
