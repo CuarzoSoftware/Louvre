@@ -89,8 +89,9 @@ void LOutput::LOutputPrivate::backendPaintGL()
         lastSize = rect.size();
     }
 
-    // Update active LAnimations
-    compositor()->imp()->core->updateAnimations();
+
+    if (compositor()->imp()->core->animationInterval() > 0)
+        compositor()->imp()->core->updateAnimations();
 
     compositor()->imp()->currentOutput = output;
 
