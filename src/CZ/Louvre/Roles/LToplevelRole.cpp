@@ -498,6 +498,12 @@ void LToplevelRole::applyState(State *pending) noexcept
 
                 seat()->imp()->setActiveToplevel(this);
             }
+            else if (stateChanges.has(CZWinActivated) && seat()->activeToplevel() == this)
+            {
+                // Deactivated without another toplevel taking over (e.g. the desktop was clicked):
+                // no toplevel is active anymore.
+                seat()->imp()->setActiveToplevel(nullptr);
+            }
         }
 
         if (m_current.decorationMode != pending->decorationMode)

@@ -151,8 +151,10 @@ void RDataDevice::start_drag(wl_client */*client*/,
             LFactory::createObject<LDNDIconRole>(&dndIconRoleParams);
             iconSurface->imp()->notifyRoleChange();
             iconSurface->imp()->setLayer(LLayerOverlay);
-            session->icon.reset(iconSurface->dndIcon());
         }
+
+        // Also when reusing a surface that already has the role (from a previous session).
+        session->icon.reset(iconSurface->dndIcon());
     }
 
     // Check if DND action was set
