@@ -71,7 +71,7 @@ void RSvgPath::done(wl_client */*client*/, wl_resource *resource)
 
     if (!res.m_commands.empty())
     {
-        if (SkParsePath::FromSVGString(res.m_commands.c_str(), &res.m_path))
+        if (!SkParsePath::FromSVGString(res.m_commands.c_str(), &res.m_path))
         {
             res.postError(LVR_SVG_PATH_ERROR_INVALID_COMMANDS, "invalid SVG commands");
             return;
