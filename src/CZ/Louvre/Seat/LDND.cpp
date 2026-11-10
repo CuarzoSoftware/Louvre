@@ -192,6 +192,10 @@ void LDND::drop() noexcept
     }
 
     m_session.reset();
+
+    // The target didn't accept it: for the compositor it's cancelled too (like a drop on nothing).
+    if (cancelled)
+        this->cancelled();
 }
 
 // Since 3

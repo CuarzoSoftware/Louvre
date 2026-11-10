@@ -42,6 +42,10 @@ LPRIVATE_CLASS(LSeat)
     void handleOutputPlugged(LOutput *output) noexcept;
     void handleOutputUnplugged(LOutput *output) noexcept;
     void setActiveToplevel(LToplevelRole *newToplevel) noexcept;
+
+    // The active toplevel is being destroyed (e.g. its client quit): no toplevel is active anymore.
+    // activeToplevelChanged() gets nullptr as prev (the role is half destroyed).
+    void activeToplevelDestroyed() noexcept;
 };
 
 #endif // LSEATPRIVATE_H

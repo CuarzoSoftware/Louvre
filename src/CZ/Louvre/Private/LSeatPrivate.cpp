@@ -142,6 +142,12 @@ void LSeat::LSeatPrivate::handleOutputUnplugged(LOutput *output) noexcept
     compositor()->removeOutput(output);
 }
 
+void LSeat::LSeatPrivate::activeToplevelDestroyed() noexcept
+{
+    activeToplevelRole.reset();
+    seat()->activeToplevelChanged(nullptr);
+}
+
 void LSeat::LSeatPrivate::setActiveToplevel(LToplevelRole *newToplevel) noexcept
 {
     if (newToplevel == activeToplevelRole)

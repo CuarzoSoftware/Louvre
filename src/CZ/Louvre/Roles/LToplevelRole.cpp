@@ -33,7 +33,15 @@ LToplevelRole::LToplevelRole(const void *params) noexcept :
 LToplevelRole::~LToplevelRole() noexcept
 {
     validateDestructor();
+
+    // Destroyed while active (e.g. its client quit without unmapping first): tell the seat, else the
+    // active toplevel would silently become nullptr (notifyDestruction() clears the weak refs).
+    const bool wasActive { seat() && seat()->activeToplevel() == this };
+
     notifyDestruction();
+
+    if (wasActive)
+        seat()->imp()->activeToplevelDestroyed();
 }
 
 const LToplevelRole::Configuration *LToplevelRole::findConfiguration(UInt32 serial) const noexcept
