@@ -300,6 +300,12 @@ void LToplevelRole::setAppId(const char *appId) noexcept
     appIdChanged();
 }
 
+LToplevelRole *LToplevelRole::foreignParent() const noexcept
+{
+    LToplevelRole *parent { m_foreignParent.get() };
+    return parent && surface()->parent() == parent->surface() ? parent : nullptr;
+}
+
 void LToplevelRole::setParent(LToplevelRole *parent) noexcept
 {
     auto *newParent { parent && parent->surface()->mapped() ? parent : nullptr };

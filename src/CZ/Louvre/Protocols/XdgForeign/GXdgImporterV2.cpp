@@ -1,9 +1,10 @@
 #include <CZ/Louvre/Protocols/XdgForeign/xdg-foreign-unstable-v2.h>
 #include <CZ/Louvre/Protocols/XdgForeign/GXdgImporterV2.h>
 #include <CZ/Louvre/Protocols/XdgForeign/RXdgImportedV2.h>
-#include <CZ/Louvre/Protocols/XdgForeign/XdgForeignRegistry.h>
+#include <CZ/Louvre/Protocols/XdgForeign/RXdgExportedBase.h>
 #include <CZ/Louvre/LLog.h>
 
+#include <CZ/Louvre/LCompositor.h>
 using namespace CZ;
 using namespace CZ::Protocols::XdgForeign;
 
@@ -15,8 +16,15 @@ static const struct zxdg_importer_v2_interface imp
 
 LGLOBAL_INTERFACE_IMP(GXdgImporterV2, LOUVRE_XDG_FOREIGN_V2_VERSION, zxdg_importer_v2_interface)
 
-bool GXdgImporterV2::Probe(CZWeak<LGlobal> **/*slot*/) noexcept
+bool GXdgImporterV2::Probe(CZWeak<LGlobal> **slot) noexcept
 {
+    if (compositor()->wellKnownGlobals.XdgImporterV2)
+    {
+        LLog(CZError, CZLN, "Failed to create {} global (already created)", Interface()->name);
+        return false;
+    }
+
+    *slot = &compositor()->wellKnownGlobals.XdgImporterV2;
     return true;
 }
 
@@ -49,6 +57,6 @@ void GXdgImporterV2::import_toplevel(wl_client */*client*/, wl_resource *resourc
 {
     auto &importer { LRES_CAST(GXdgImporterV2, resource) };
 
-    // An unknown handle creates an inert imported object (per spec).
-    new RXdgImportedV2(&importer, id, XdgForeignRegistryInternal::FindExported(handle));
+    // An invalid handle (unknown, or its toplevel is gone) gets the destroyed event right away.
+    new RXdgImportedV2(&importer, id, RXdgExportedBase::Find(handle));
 }

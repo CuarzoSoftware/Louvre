@@ -4,6 +4,7 @@
 #include <CZ/Louvre/Protocols/Wayland/RWlSurface.h>
 #include <CZ/Louvre/Roles/LSurface.h>
 #include <CZ/Louvre/LLog.h>
+#include <CZ/Louvre/LCompositor.h>
 using namespace CZ;
 using namespace CZ::Protocols::XdgForeign;
 
@@ -15,8 +16,15 @@ static const struct zxdg_exporter_v2_interface imp
 
 LGLOBAL_INTERFACE_IMP(GXdgExporterV2, LOUVRE_XDG_FOREIGN_V2_VERSION, zxdg_exporter_v2_interface)
 
-bool GXdgExporterV2::Probe(CZWeak<LGlobal> **/*slot*/) noexcept
+bool GXdgExporterV2::Probe(CZWeak<LGlobal> **slot) noexcept
 {
+    if (compositor()->wellKnownGlobals.XdgExporterV2)
+    {
+        LLog(CZError, CZLN, "Failed to create {} global (already created)", Interface()->name);
+        return false;
+    }
+
+    *slot = &compositor()->wellKnownGlobals.XdgExporterV2;
     return true;
 }
 
@@ -52,8 +60,8 @@ void GXdgExporterV2::export_toplevel(wl_client */*client*/, wl_resource *resourc
 
     if (!surfaceRes->surface() || !surfaceRes->surface()->toplevel())
     {
-        surfaceRes->postError(ZXDG_EXPORTER_V2_ERROR_INVALID_SURFACE,
-                              "The given wl_surface does not have the xdg_toplevel role assigned.");
+        exporter.postError(ZXDG_EXPORTER_V2_ERROR_INVALID_SURFACE,
+                           "The given wl_surface does not have the xdg_toplevel role assigned.");
         return;
     }
 

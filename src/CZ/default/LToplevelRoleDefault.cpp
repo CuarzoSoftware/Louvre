@@ -347,6 +347,16 @@ bool LToplevelRole::foreignHandleFilter(Protocols::ForeignToplevelList::GForeign
 }
 //! [foreignHandleFilter]
 
+//! [foreignParentFilter]
+bool LToplevelRole::foreignParentFilter(LToplevelRole *parent)
+{
+    CZ_UNUSED(parent)
+
+    /* Allow any client to parent its toplevels to exported ones (e.g. portal dialogs) */
+    return true;
+}
+//! [foreignParentFilter]
+
 //! [showWindowMenuRequest]
 void LToplevelRole::showWindowMenuRequest(const CZEvent &triggeringEvent, Int32 x, Int32 y)
 {

@@ -1,7 +1,6 @@
 #include <CZ/Louvre/Protocols/XdgForeign/xdg-foreign-unstable-v2.h>
 #include <CZ/Louvre/Protocols/XdgForeign/RXdgImportedV2.h>
 #include <CZ/Louvre/Protocols/XdgForeign/GXdgImporterV2.h>
-#include <CZ/Louvre/Protocols/XdgForeign/XdgForeignRegistry.h>
 #include <CZ/Louvre/LClient.h>
 #include <CZ/Louvre/Protocols/Wayland/RWlSurface.h>
 #include <CZ/Louvre/Roles/LSurface.h>
@@ -25,7 +24,11 @@ RXdgImportedV2::RXdgImportedV2(GXdgImporterV2 *importerRes, UInt32 id, RXdgExpor
         exported,
         &imp
     )
-{}
+{
+    // The handle was invalid (unknown, or its export or toplevel is gone): spec says destroyed.
+    if (!exported)
+        sendDestroyed();
+}
 
 /******************** REQUESTS ********************/
 

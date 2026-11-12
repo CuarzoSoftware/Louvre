@@ -1,7 +1,7 @@
 #ifndef RXDGIMPORTEDV1_H
 #define RXDGIMPORTEDV1_H
 
-#include <CZ/Louvre/Protocols/XdgForeign/XdgForeignRegistry.h>
+#include <CZ/Louvre/Protocols/XdgForeign/RXdgImportedBase.h>
 
 namespace CZ::Protocols::XdgForeign
 {

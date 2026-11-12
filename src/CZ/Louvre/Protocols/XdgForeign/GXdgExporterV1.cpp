@@ -3,8 +3,10 @@
 #include <CZ/Louvre/Protocols/XdgForeign/RXdgExportedV1.h>
 #include <CZ/Louvre/Protocols/Wayland/RWlSurface.h>
 #include <CZ/Louvre/Roles/LSurface.h>
+#include <CZ/Louvre/Roles/LToplevelRole.h>
 #include <CZ/Louvre/LLog.h>
 
+#include <CZ/Louvre/LCompositor.h>
 using namespace CZ;
 using namespace CZ::Protocols::XdgForeign;
 
@@ -16,8 +18,15 @@ static const struct zxdg_exporter_v1_interface imp
 
 LGLOBAL_INTERFACE_IMP(GXdgExporterV1, LOUVRE_XDG_FOREIGN_V1_VERSION, zxdg_exporter_v1_interface)
 
-bool GXdgExporterV1::Probe(CZWeak<LGlobal> **/*slot*/) noexcept
+bool GXdgExporterV1::Probe(CZWeak<LGlobal> **slot) noexcept
 {
+    if (compositor()->wellKnownGlobals.XdgExporterV1)
+    {
+        LLog(CZError, CZLN, "Failed to create {} global (already created)", Interface()->name);
+        return false;
+    }
+
+    *slot = &compositor()->wellKnownGlobals.XdgExporterV1;
     return true;
 }
 
@@ -53,13 +62,12 @@ void GXdgExporterV1::export_toplevel(wl_client */*client*/, wl_resource *resourc
     // The v1 `export` argument is a wl_surface on the wire.
     auto *surfaceRes { static_cast<Wayland::RWlSurface*>(wl_resource_get_user_data(surface)) };
 
-    // v1 defines no protocol error for a surface without the
-    // xdg_toplevel role: ignore the request instead.
-    if (!surfaceRes->surface() || !surfaceRes->surface()->toplevel())
-    {
-        LLog(CZWarning, "Ignoring zxdg_exporter_v1.export on a surface without the xdg_toplevel role.");
-        return;
-    }
+    // v1 defines no protocol error for a surface without the xdg_toplevel role. The object must
+    // still be created (the client already did): an inert one, without a handle.
+    LToplevelRole *toplevel { surfaceRes->surface() ? surfaceRes->surface()->toplevel() : nullptr };
 
-    new RXdgExportedV1(&exporter, id, surfaceRes->surface()->toplevel());
+    if (!toplevel)
+        LLog(CZWarning, CZLN, "zxdg_exporter_v1.export of a surface without the xdg_toplevel role: no handle sent");
+
+    new RXdgExportedV1(&exporter, id, toplevel);
 }

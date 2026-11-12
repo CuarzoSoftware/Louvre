@@ -24,7 +24,8 @@ RXdgExportedV2::RXdgExportedV2(GXdgExporterV2 *exporterRes, UInt32 id, LToplevel
         &imp
     )
 {
-    zxdg_exported_v2_send_handle(resource(), handle().c_str());
+    if (!handle().empty())
+        zxdg_exported_v2_send_handle(resource(), handle().c_str());
 }
 
 /******************** REQUESTS ********************/

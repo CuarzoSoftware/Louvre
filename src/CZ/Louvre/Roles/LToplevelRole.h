@@ -616,6 +616,24 @@ public:
     const std::string &title() const noexcept { return m_title; }
 
     const std::list<LToplevelRole*> &childToplevels() const noexcept { return m_childToplevels; }
+
+    /**
+     * @brief Parent set by another client (xdg-foreign).
+     *
+     * Through the [xdg-foreign](https://wayland.app/protocols/xdg-foreign-unstable-v2) protocol a
+     * client can make one of its toplevels a child of a toplevel exported by another client (or by
+     * itself), e.g. a portal's file chooser over the app that opened it. This returns that parent
+     * while it's still the parent of this toplevel (also available through LSurface::parent()).
+     *
+     * The relationship ends when the client destroys the imported object, the export or the
+     * exported toplevel is destroyed, or either toplevel is unmapped (as with any parent). The
+     * client can set it up again.
+     *
+     * @return `nullptr` if the parent wasn't set through xdg-foreign (or there's none).
+     *
+     * @see foreignParentFilter()
+     */
+    LToplevelRole *foreignParent() const noexcept;
     const std::list<LPopupRole*> &childPopups() const noexcept { return m_childPopups; }
 
     /**
@@ -903,6 +921,21 @@ public:
     virtual bool foreignHandleFilter(Protocols::ForeignToplevelList::GForeignToplevelList *foreignList);
 
     /**
+     * @brief Filter for parents set by other clients (xdg-foreign)
+     *
+     * Called when a client asks to make this toplevel a child of @p parent, a toplevel exported by
+     * another client (or by the same one) through the xdg-foreign protocol (see foreignParent()).
+     *
+     * @param parent The exported toplevel that would become the parent.
+     *
+     * @return `true` to set the parent, `false` to ignore the request.
+     *
+     * #### Default implementation
+     * @snippet LToplevelRoleDefault.cpp foreignParentFilter
+     */
+    virtual bool foreignParentFilter(LToplevelRole *parent);
+
+    /**
      * @brief Show window menu request.
      *
      * Triggered by the client expecting the compositor to display a popup menu with options
@@ -1019,6 +1052,7 @@ private:
 
     /* Foreign toplevel management */
     std::vector<LForeignToplevelController*> m_foreignControllers;
+    CZWeak<LToplevelRole> m_foreignParent; // Set through xdg-foreign (see foreignParent())
     LForeignToplevelController *m_requesterController { nullptr }; // Only set during requests
 
     /* Foreign toplevel list */

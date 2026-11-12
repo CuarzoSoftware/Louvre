@@ -1,7 +1,7 @@
 #ifndef RXDGEXPORTEDV1_H
 #define RXDGEXPORTEDV1_H
 
-#include <CZ/Louvre/Protocols/XdgForeign/XdgForeignRegistry.h>
+#include <CZ/Louvre/Protocols/XdgForeign/RXdgExportedBase.h>
 
 namespace CZ
 {
