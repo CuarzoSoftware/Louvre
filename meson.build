@@ -88,6 +88,7 @@ protocols = [
     'Wayland',
     'XdgActivation',
     'XdgDecoration',
+    'XdgForeign',
     'XdgShell',
     'XdgOutput',
     'PresentationTime',

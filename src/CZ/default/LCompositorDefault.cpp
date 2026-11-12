@@ -19,6 +19,10 @@
 #include <CZ/Louvre/Protocols/CursorShape/GCursorShapeManager.h>
 #include <CZ/Louvre/Protocols/PresentationTime/GPresentation.h>
 #include <CZ/Louvre/Protocols/XdgActivation/GXdgActivation.h>
+#include <CZ/Louvre/Protocols/XdgForeign/GXdgExporterV2.h>
+#include <CZ/Louvre/Protocols/XdgForeign/GXdgImporterV2.h>
+#include <CZ/Louvre/Protocols/XdgForeign/GXdgExporterV1.h>
+#include <CZ/Louvre/Protocols/XdgForeign/GXdgImporterV1.h>
 #include <CZ/Louvre/Protocols/XdgOutput/GXdgOutputManager.h>
 #include <CZ/Louvre/Protocols/Wayland/GDataDeviceManager.h>
 #include <CZ/Louvre/Protocols/LinuxDMABuf/GZwpLinuxDmaBufV1.h>
@@ -147,6 +151,12 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to activate other client's surfaces
     createGlobal<XdgActivation::GXdgActivation>();
+
+    // Allows clients to parent toplevels across client boundaries
+    createGlobal<XdgForeign::GXdgExporterV2>();
+    createGlobal<XdgForeign::GXdgImporterV2>();
+    createGlobal<XdgForeign::GXdgExporterV1>();
+    createGlobal<XdgForeign::GXdgImporterV1>();
 
     // Allows clients to arrange/set output properties
     createGlobal<WlrOutputManagement::GWlrOutputManager>();

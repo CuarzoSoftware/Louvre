@@ -16,6 +16,8 @@
 #define LOUVRE_XDG_ACTIVATION_VERSION 1
 #define LOUVRE_XDG_WM_BASE_VERSION 6
 #define LOUVRE_XDG_DECORATION_MANAGER_VERSION 1
+#define LOUVRE_XDG_FOREIGN_V2_VERSION 1
+#define LOUVRE_XDG_FOREIGN_V1_VERSION 1
 #define LOUVRE_XDG_OUTPUT_MANAGER_VERSION 3
 #define LOUVRE_PRESENTATION_VERSION 2
 #define LOUVRE_LINUX_DMA_BUF_VERSION 5
@@ -215,6 +217,22 @@ namespace CZ
             class GXdgDecorationManager;
 
             class RXdgToplevelDecoration;
+        };
+
+        namespace XdgForeign
+        {
+            class GXdgExporterV2;
+            class RXdgExportedV2;
+            class GXdgImporterV2;
+            class RXdgImportedV2;
+
+            class GXdgExporterV1;
+            class RXdgExportedV1;
+            class GXdgImporterV1;
+            class RXdgImportedV1;
+
+            class RXdgExportedBase;
+            class RXdgImportedBase;
         };
 
         namespace XdgOutput

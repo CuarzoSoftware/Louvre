@@ -955,6 +955,7 @@ private:
     friend class LForeignToplevelController;
     friend class Protocols::XdgShell::RXdgSurface;
     friend class Protocols::XdgShell::RXdgToplevel;
+    friend class Protocols::XdgForeign::RXdgImportedBase;
     friend class Protocols::XdgDecoration::RXdgToplevelDecoration;
     friend class Protocols::ForeignToplevelManagement::RForeignToplevelHandle;
     friend class Protocols::ForeignToplevelManagement::GForeignToplevelManager;
