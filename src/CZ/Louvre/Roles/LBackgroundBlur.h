@@ -206,16 +206,32 @@ public:
     /**
      * @brief Handle to the `lvr_background_blur` resource wrapper.
      *
-     * @returns `nullptr` if the protocol is not supported()
+     * @returns `nullptr` if the protocol is not used by the surface
      */
     Protocols::BackgroundBlur::RBackgroundBlur *backgroundBlurResource() const noexcept;
 
     /**
-     * @brief Indicates whether the surface supports the protocol.
+     * @brief Handle to the `ext_background_effect_surface_v1` resource wrapper.
+     *
+     * The ext_background_effect_v1 protocol drives the same state as the
+     * lvr_background_blur protocol but without a configure/acknowledge
+     * handshake: the blur is enabled while a non-null region is pending
+     * and disabled once the client sends a null region or destroys the
+     * object.
+     *
+     * @returns `nullptr` if the protocol is not used by the surface
+     */
+    Protocols::ExtBackgroundEffect::RExtBackgroundEffectSurface *backgroundEffectResource() const noexcept;
+
+    /**
+     * @brief Indicates whether the surface uses a background effect protocol.
+     *
+     * `true` when either the lvr_background_blur or the
+     * ext_background_effect_v1 protocol has a resource attached to the surface.
      *
      * @note If the client stops using the protocol, props() reverts to the default values, triggering propsChanged() when applicable.
      */
-    bool supported() const noexcept { return backgroundBlurResource() != nullptr; };
+    bool supported() const noexcept { return backgroundBlurResource() != nullptr || backgroundEffectResource() != nullptr; };
 
     /**
      * @brief Returns the last sent configuration parameters.
@@ -293,6 +309,7 @@ private:
     friend class LCompositor;
     friend class LSurface;
     friend class Protocols::BackgroundBlur::RBackgroundBlur;
+    friend class Protocols::ExtBackgroundEffect::RExtBackgroundEffectSurface;
     friend class Protocols::Wayland::RWlSurface;
 
     enum Flags : UInt8
@@ -322,6 +339,7 @@ private:
 
     LSurface &m_surface;
     CZWeak<Protocols::BackgroundBlur::RBackgroundBlur> m_backgroundBlurRes;
+    CZWeak<Protocols::ExtBackgroundEffect::RExtBackgroundEffectSurface> m_extBackgroundEffectRes;
     CZBitset<Flags> m_flags;
     Props m_props[2];
     UInt8 m_currentPropsIndex { 0 };

@@ -43,6 +43,7 @@
 #define LOUVRE_WLR_OUTPUT_MANAGER_VERSION 4
 #define LOUVRE_SVG_PATH_MANAGER_VERSION 1
 #define LOUVRE_BACKGROUND_BLUR_MANAGER_VERSION 1
+#define LOUVRE_EXT_BACKGROUND_EFFECT_VERSION 1
 #define LOUVRE_PRIVATE_HANDLE_MANAGER_VERSION 1
 #define LOUVRE_INVISIBLE_REGION_MANAGER_VERSION 1
 #define LOUVRE_CURSOR_SHAPE_MANAGER_VERSION 2
@@ -408,6 +409,13 @@ namespace CZ
             class GBackgroundBlurManager;
 
             class RBackgroundBlur;
+        }
+
+        namespace ExtBackgroundEffect
+        {
+            class GExtBackgroundEffectManager;
+
+            class RExtBackgroundEffectSurface;
         }
 
         namespace SvgPath

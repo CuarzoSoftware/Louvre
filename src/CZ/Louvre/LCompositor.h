@@ -66,6 +66,7 @@ public:
 
         CZWeak<LGlobal> LvrInvisibleRegionManager;
         CZWeak<LGlobal> LvrBackgroundBlurManager;
+        CZWeak<LGlobal> ExtBackgroundEffectManager;
         CZWeak<LGlobal> LvrSvgPathManager;
         CZWeak<LGlobal> LvrPrivateHandleManager;
 
