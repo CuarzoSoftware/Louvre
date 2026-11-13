@@ -73,6 +73,7 @@ This approach lets you see results from day one, potentially easing the learning
 - Wlr Output Management
 - XDG Activation
 - XDG Decoration
+- XDG Foreign (v1 and v2)
 - XDG Output
 - XDG Shell
 
