@@ -1,3 +1,4 @@
+#include <CZ/Louvre/Protocols/Wayland/GOutput.h>
 #include <CZ/Louvre/Protocols/ImageCaptureSource/GOutputImageCaptureSourceManager.h>
 #include <CZ/Louvre/Protocols/ImageCaptureSource/ext-image-capture-source-v1.h>
 #include <CZ/Louvre/Protocols/ImageCaptureSource/RImageCaptureSource.h>
@@ -65,5 +66,6 @@ void GOutputImageCaptureSourceManager::create_source(wl_client */*client*/, wl_r
         wl_resource_get_version(resource),
         id,
         LImageCaptureSourceType::Output,
-        static_cast<LResource*>(wl_resource_get_user_data(output)));
+        static_cast<Wayland::GOutput*>(wl_resource_get_user_data(output))->output(),
+        nullptr);
 }

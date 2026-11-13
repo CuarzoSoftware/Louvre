@@ -1,3 +1,4 @@
+#include <CZ/Louvre/Protocols/ForeignToplevelList/RForeignToplevelHandle.h>
 #include <CZ/Louvre/Protocols/ImageCaptureSource/GForeignToplevelImageCaptureSourceManager.h>
 #include <CZ/Louvre/Protocols/ImageCaptureSource/ext-image-capture-source-v1.h>
 #include <CZ/Louvre/Protocols/ImageCaptureSource/RImageCaptureSource.h>
@@ -65,5 +66,6 @@ void GForeignToplevelImageCaptureSourceManager::create_source(wl_client */*clien
         wl_resource_get_version(resource),
         id,
         LImageCaptureSourceType::ForeignToplevel,
-        static_cast<LResource*>(wl_resource_get_user_data(toplevel_handle)));
+        nullptr,
+        static_cast<ForeignToplevelList::RForeignToplevelHandle*>(wl_resource_get_user_data(toplevel_handle))->toplevelRole());
 }

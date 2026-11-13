@@ -463,6 +463,11 @@ void LToplevelRole::applyCommit() noexcept
             for (auto *foreignToplevelList : client->foreignToplevelListGlobals())
                 foreignToplevelList->toplevel(*this);
 
+        // The wlr handles (created on the first map) learn the new identifier (v4)
+        for (auto *controller : m_foreignControllers)
+            if (controller->resource().identifier(m_identifier))
+                controller->resource().done();
+
         surface()->imp()->setMapped(true, true);
 
         if (m_flags.has(HasPendingFirstMap))

@@ -13,7 +13,8 @@ RImageCaptureSource::RImageCaptureSource
      Int32 version,
      UInt32 id,
      LImageCaptureSourceType type,
-     LResource *source
+     LOutput *output,
+     LToplevelRole *toplevel
      ) noexcept
     :LResource
     (
@@ -23,7 +24,8 @@ RImageCaptureSource::RImageCaptureSource
         id,
         &imp
     ),
-    m_source(source),
+    m_output(output),
+    m_toplevel(toplevel),
     m_type(type)
 {}
 

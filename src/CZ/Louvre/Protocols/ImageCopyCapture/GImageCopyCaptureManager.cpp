@@ -69,13 +69,10 @@ void GImageCopyCaptureManager::create_session(wl_client */*client*/, wl_resource
     LOutput *output {};
     LToplevelRole *toplevel {};
 
-    if (sourceRes.source())
-    {
-        if (sourceRes.type() == LImageCaptureSourceType::Output)
-            output = static_cast<Wayland::GOutput*>(sourceRes.source())->output();
-        else
-            toplevel = static_cast<ForeignToplevelList::RForeignToplevelHandle*>(sourceRes.source())->toplevelRole();
-    }
+    if (sourceRes.type() == LImageCaptureSourceType::Output)
+        output = sourceRes.output();
+    else
+        toplevel = sourceRes.toplevel();
 
     // Nothing to capture anymore
     if (!output && !toplevel)
@@ -101,13 +98,10 @@ void GImageCopyCaptureManager::create_pointer_cursor_session(wl_client */*client
     LOutput *output {};
     LToplevelRole *toplevel {};
 
-    if (sourceRes.source())
-    {
-        if (sourceRes.type() == LImageCaptureSourceType::Output)
-            output = static_cast<Wayland::GOutput*>(sourceRes.source())->output();
-        else
-            toplevel = static_cast<ForeignToplevelList::RForeignToplevelHandle*>(sourceRes.source())->toplevelRole();
-    }
+    if (sourceRes.type() == LImageCaptureSourceType::Output)
+        output = sourceRes.output();
+    else
+        toplevel = sourceRes.toplevel();
 
     new RImageCopyCaptureCursorSession(res.client(), res.version(), id, sourceRes.type(), output, toplevel);
 }

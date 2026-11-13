@@ -45,6 +45,7 @@ public:
     void outputLeave(LOutput *output) noexcept;
     void state(wl_array *state) noexcept;
     void done() noexcept;
+    bool identifier(const std::string &identifier) noexcept; // Since v4
     void closed() noexcept;
 
     // Since 3

@@ -49,6 +49,7 @@ RForeignToplevelHandle::RForeignToplevelHandle
 
     title(toplevelRole.title());
     appId(toplevelRole.appId());
+    identifier(toplevelRole.foreignToplevelListIdentifier());
 
     for (LOutput *o : toplevelRole.surface()->outputs())
         outputEnter(o);
@@ -306,5 +307,17 @@ bool RForeignToplevelHandle::parent(RForeignToplevelHandle *parent) noexcept
     }
 #endif
     CZ_UNUSED(parent)
+    return false;
+}
+
+bool RForeignToplevelHandle::identifier(const std::string &identifier) noexcept
+{
+#if LOUVRE_FOREIGN_TOPLEVEL_MANAGER_VERSION >= 4
+    if (version() >= 4 && !identifier.empty())
+    {
+        zwlr_foreign_toplevel_handle_v1_send_identifier(resource(), identifier.c_str());
+        return true;
+    }
+#endif
     return false;
 }
