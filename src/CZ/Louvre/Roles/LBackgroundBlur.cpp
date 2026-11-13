@@ -1,5 +1,6 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Protocols/BackgroundBlur/RBackgroundBlur.h>
+#include <CZ/Louvre/Protocols/ExtBackgroundEffect/RExtBackgroundEffectSurface.h>
 #include <CZ/Louvre/Roles/LBackgroundBlur.h>
 #include <CZ/Louvre/Roles/LSurface.h>
 #include <CZ/Core/CZTime.h>
@@ -11,6 +12,11 @@ LBackgroundBlur::LBackgroundBlur(const void *params) noexcept : LFactoryObject(F
 Protocols::BackgroundBlur::RBackgroundBlur *LBackgroundBlur::backgroundBlurResource() const noexcept
 {
     return m_backgroundBlurRes;
+}
+
+Protocols::ExtBackgroundEffect::RExtBackgroundEffectSurface *LBackgroundBlur::backgroundEffectResource() const noexcept
+{
+    return m_extBackgroundEffectRes;
 }
 
 void LBackgroundBlur::handleCommit(bool sizeChanged) noexcept
@@ -63,12 +69,10 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
         changesToNotify.add(ColorSchemeChanged);
 
     if (currentProps().serial != pendingProps().serial)
-    {
         changesToNotify.add(SerialChanged);
 
-        if (currentProps().state != pendingProps().state)
-            changesToNotify.add(StateChanged);
-    }
+    if (currentProps().state != pendingProps().state)
+        changesToNotify.add(StateChanged);
 
     if (changesToNotify == 0)
         return;
