@@ -10,6 +10,7 @@
 #include <CZ/Core/CZBitset.h>
 #include <CZ/Core/CZWeak.h>
 #include <atomic>
+#include <deque>
 #include <future>
 #include <list>
 #include <mutex>
@@ -51,6 +52,15 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
 
     // Framebuffer for fractional scaling with oversampling
     std::shared_ptr<RSurface> osSurface;
+    UInt32 osAge { 0 }; // Age of osSurface for the compositor: 0 just (re)created, else 1
+
+    // Damage of the last frames (buffer coords), to blit osSurface into backend images of any age
+    std::deque<SkRegion> osDamageRing;
+
+    // Software cursor (outputs without a cursor plane), in output-local surface coordinates
+    SkIRect swCursorRect {};     // Where it's painted this frame (empty: not painted)
+    SkIRect swCursorPrevRect {}; // Where it was painted the previous frame
+    SkRegion swCursorDamage;     // See LOutput::softwareCursorDamage()
 
     // The wp_fractional_v1 scale set with setScale() returned with fractionalScale()
     Float32 fractionalScale { 1.f };
@@ -75,7 +85,15 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     void resizeOSSurface() noexcept;
     void damageToBufferCoords() noexcept;
     void blitFramebuffers() noexcept;
-    void blitFractionalScaleFb(bool cursorOnly) noexcept;
+    void blitFractionalScaleFb() noexcept;
+
+    // Software cursor
+    void updateSoftwareCursor() noexcept;
+    void drawSoftwareCursor() noexcept;
+    bool isOversampling() const noexcept { return stateFlags.hasAll(UsingFractionalScale | OversamplingEnabled) && osSurface; }
+
+    // An output-local surface coords region to buffer coords (transform and fractional scale)
+    SkRegion localToBuffer(const SkRegion &region) const noexcept;
 
     // DRM Lease
     bool leasable { false };

@@ -282,6 +282,12 @@ void LCursor::update() noexcept
         }
     }
 
+    // Outputs without an enabled plane paint the cursor in software (see LOutput::softwareCursorDamage()):
+    // repaint those it's over now, and those it was painted on (to erase it).
+    for (LOutput *o : compositor()->outputs())
+        if (!isPlaneEnabled(o) && (m_intersectedOutputs.contains(o) || !o->imp()->swCursorPrevRect.isEmpty()))
+            o->repaint();
+
     m_imageChanged = false;
     m_posChanged = false;
 

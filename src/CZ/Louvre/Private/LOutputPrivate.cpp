@@ -21,6 +21,8 @@
 #include <CZ/Louvre/Private/LFreezeWatchdog.h>
 
 #include <CZ/Ream/RCore.h>
+#include <CZ/Ream/RPass.h>
+#include <CZ/Ream/RPainter.h>
 #include <CZ/Core/Utils/CZRegionUtils.h>
 #include <CZ/Core/Utils/CZVectorUtils.h>
 
@@ -104,8 +106,16 @@ void LOutput::LOutputPrivate::backendPaintGL()
     /* Let users do their rendering*/
     stateFlags.add(IsInPaintGL);
     resizeOSSurface();
+    updateSoftwareCursor();
     output->paintGL();
     stateFlags.remove(IsInPaintGL);
+
+    /* The software cursor's previous and current rects are part of what changed on screen */
+    if (!swCursorPrevRect.isEmpty())
+        output->damage.op(swCursorPrevRect, SkRegion::kUnion_Op);
+
+    if (!swCursorRect.isEmpty())
+        output->damage.op(swCursorRect, SkRegion::kUnion_Op);
 
     handleUnpresentedSurfaces();
 
@@ -125,6 +135,7 @@ void LOutput::LOutputPrivate::backendPaintGL()
     damageToBufferCoords();
     blitFramebuffers();
     stateFlags.remove(IsBlittingFramebuffers);
+    swCursorPrevRect = swCursorRect;
 
     /* Ensure clients receive frame callbacks and pending roles configurations on time */
     compositor()->flushClients();
@@ -243,16 +254,18 @@ void LOutput::LOutputPrivate::logFrameTiming(UInt64 paintEventId, bool discarded
          wakeMs, lockMs, paintMs, discarded ? "discard" : "flip", flipMs);
 }
 
-void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
+SkRegion LOutput::LOutputPrivate::localToBuffer(const SkRegion &region) const noexcept
 {
-    CZRegionUtils::ApplyTransform(output->damage, rect.size(), transform);
+    SkRegion transformed { region };
+    CZRegionUtils::ApplyTransform(transformed, rect.size(), transform);
 
-    SkRegion tmp;
-    SkRegion::Iterator it { output->damage };
+    // Outset by 2 px: linear filtering (fractional scales) samples neighbor pixels
+    SkRegion result;
+    SkRegion::Iterator it { transformed };
 
     while (!it.done())
     {
-        tmp.op(
+        result.op(
             SkIRect::MakeXYWH(
             SkScalarFloorToInt(Float32(it.rect().x()) * fractionalScale) - 2,
             SkScalarFloorToInt(Float32(it.rect().y()) * fractionalScale) - 2,
@@ -262,58 +275,154 @@ void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
         it.next();
     }
 
-    output->damage.op(SkIRect::MakeSize(output->currentMode()->size()), tmp, SkRegion::kIntersect_Op);
+    result.op(SkIRect::MakeSize(output->currentMode()->size()), SkRegion::kIntersect_Op);
+    return result;
+}
+
+void LOutput::LOutputPrivate::damageToBufferCoords() noexcept
+{
+    output->damage = localToBuffer(output->damage);
     output->backend()->setDamage(output->damage);
 }
 
-void LOutput::LOutputPrivate::blitFractionalScaleFb(bool /*cursorOnly*/) noexcept
+void LOutput::LOutputPrivate::blitFractionalScaleFb() noexcept
 {
+    auto target { output->backendImage() };
 
-    /* TODO
-    stateFlags.remove(UsingFractionalScale);
-    const CZTransform prevTrasform { transform };
-    transform = CZTransform::Normal;
-    const Float32 prevScale { scale };
-    const Float32 prevFracScale { fractionalScale };
-    scale = 1.f;
-    const SkIPoint prevPos { rect.topLeft() };
-    const SkISize prevSize { rect.size() };
-    rect.offsetTo(0, 0);
-    updateRect();
-    painter->bindFramebuffer(&fb);
-    painter->enableCustomTextureColor(false);
-    painter->enableAutoBlendFunc(true);
-    painter->setAlpha(1.f);
-    painter->setColorFactor(1.f, 1.f, 1.f, 1.f);
-    fractionalFb.setFence();
-    painter->bindTextureMode({
-        .texture = fractionalFb.texture(0),
-        .pos = rect.topLeft(),
-        .srcRect = SkRect::MakeWH(fractionalFb.sizeB().width(), fractionalFb.sizeB().height()),
-        .dstSize = rect.size(),
-        .srcTransform = CZTransform::Normal,
-        .srcScale = 1.f
-    });
+    if (!target || !osSurface || !osSurface->image())
+        return;
 
+    /* The screen images rotate: the one painted now was last painted `age` frames ago, so it also
+     * misses what changed in the frames in between (osSurface has it all). */
+    const SkRegion &frameDamage { output->damage }; // Buffer coords (see damageToBufferCoords())
+    const UInt32 age { output->backend()->imageAge() };
+    const SkIRect full { SkIRect::MakeSize(target->size()) };
+    SkRegion blit;
 
-    if (cursorOnly)
+    if (age == 0 || age > osDamageRing.size() + 1)
+        blit.setRect(full);
+    else
     {
-        //painter->drawRegion(cursorDamage);
-    }
-    //else
-    //    painter->drawRegion(damage);
+        blit = frameDamage;
 
-    stateFlags.add(UsingFractionalScale);
-    transform = prevTrasform;
-    scale = prevScale;
-    rect.offsetTo(prevPos.x(), prevPos.y());
-    updateRect();
-    */
+        for (UInt32 i = 0; i + 1 < age; i++)
+            blit.op(osDamageRing[i], SkRegion::kUnion_Op);
+    }
+
+    osDamageRing.push_front(frameDamage);
+
+    while (osDamageRing.size() > 8)
+        osDamageRing.pop_back();
+
+    if (blit.isEmpty())
+        return;
+
+    // Pixel to pixel: osSurface is already transformed, just larger (ceil(scale) / fractional scale)
+    auto surface { RSurface::WrapImage(target) };
+
+    if (!surface)
+        return;
+
+    surface->setGeometry({
+        .viewport = SkRect::Make(full),
+        .dst = SkRect::Make(full),
+        .transform = CZTransform::Normal });
+
+    auto pass { surface->beginPass(RPassCap_Painter) };
+
+    if (!pass)
+        return;
+
+    auto *painter { pass->getPainter() };
+    painter->setBlendMode(RBlendMode::Src);
+    painter->setOpacity(1.f);
+
+    RDrawImageInfo info {};
+    info.image = osSurface->image();
+    info.src = osSurface->geometry().dst;
+    info.srcScale = 1.f;
+    info.srcTransform = CZTransform::Normal;
+    info.dst = full;
+    info.minFilter = RImageFilter::Linear;
+    info.magFilter = RImageFilter::Linear;
+    painter->drawImage(info, &blit);
 }
 
 void LOutput::LOutputPrivate::blitFramebuffers() noexcept
 {
+    if (isOversampling())
+        blitFractionalScaleFb();
 
+    drawSoftwareCursor();
+}
+
+void LOutput::LOutputPrivate::updateSoftwareCursor() noexcept
+{
+    // Where the cursor is painted this frame, if Louvre paints it on this output
+    swCursorRect.setEmpty();
+
+    if (cursor()->isVisible() && !cursor()->isPlaneEnabled(output) && cursor()->m_image)
+    {
+        SkIRect r { cursor()->rect() };
+        r.offset(-rect.x(), -rect.y());
+
+        if (SkIRect::Intersects(r, SkIRect::MakeSize(rect.size())))
+            swCursorRect = r;
+    }
+
+    // Without oversampling the compositor must repaint under the previous cursor (and where the new
+    // one goes, so it's part of the damage). With oversampling, Louvre restores it from osSurface.
+    swCursorDamage.setEmpty();
+
+    if (!isOversampling())
+    {
+        if (!swCursorPrevRect.isEmpty())
+            swCursorDamage.op(swCursorPrevRect, SkRegion::kUnion_Op);
+
+        if (!swCursorRect.isEmpty())
+            swCursorDamage.op(swCursorRect, SkRegion::kUnion_Op);
+    }
+}
+
+void LOutput::LOutputPrivate::drawSoftwareCursor() noexcept
+{
+    auto image { cursor()->m_image };
+    auto target { output->backendImage() };
+
+    if (swCursorRect.isEmpty() || !image || !target)
+        return;
+
+    // Output-local surface coords mapped to the real screen pixels (transform and fractional scale)
+    auto surface { RSurface::WrapImage(target) };
+
+    if (!surface)
+        return;
+
+    surface->setGeometry({
+        .viewport = SkRect::MakeWH(rect.width(), rect.height()),
+        .dst = SkRect::Make(SkIRect::MakeSize(target->size())),
+        .transform = transform });
+
+    auto pass { surface->beginPass(RPassCap_Painter) };
+
+    if (!pass)
+        return;
+
+    auto *painter { pass->getPainter() };
+    painter->setBlendMode(RBlendMode::SrcOver);
+    painter->setOpacity(1.f);
+
+    RDrawImageInfo info {};
+    info.image = image;
+    info.src = SkRect::Make(image->size());
+    info.srcScale = 1.f;
+    info.srcTransform = CZTransform::Normal;
+    info.dst = swCursorRect;
+    info.minFilter = RImageFilter::Linear;
+    info.magFilter = RImageFilter::Linear;
+
+    const SkRegion clip { swCursorRect };
+    painter->drawImage(info, &clip);
 }
 
 void LOutput::LOutputPrivate::updateRect()
@@ -497,11 +606,23 @@ void LOutput::LOutputPrivate::resizeOSSurface() noexcept
         fbSize.fWidth = fbSize.width() + fbSize.width() % (Int32)scale;
         fbSize.fHeight = fbSize.height() + fbSize.height() % (Int32)scale;
 
+        bool fresh { true };
+
         if (osSurface)
-            osSurface->resize(fbSize, 1, true);
+            fresh = osSurface->resize(fbSize, 1, true);
         else
             osSurface = RSurface::Make(fbSize, 1.f, false);
+
+        // A new/resized image has no content: fully repainted, and fully blitted (see blitFractionalScaleFb())
+        osAge = fresh ? 0 : 1;
+
+        if (fresh)
+            osDamageRing.clear();
     }
     else
+    {
         osSurface.reset();
+        osAge = 0;
+        osDamageRing.clear();
+    }
 }

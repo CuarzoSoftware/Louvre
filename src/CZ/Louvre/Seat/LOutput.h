@@ -260,11 +260,14 @@ public:
     UInt32 id() const noexcept { return m_backend->id(); }
 
     /**
-     * @brief Retrieves the age of the current image.
+     * @brief Retrieves the age of the current image().
      *
      * This method returns the age of the buffer as specified in the
      * [EGL_EXT_buffer_age](https://registry.khronos.org/EGL/extensions/EXT/EGL_EXT_buffer_age.txt)
      * extension specification.
+     *
+     * While oversampling (see oversamplingEnabled()), it's the age of the oversampled image (osImage()):
+     * 1 while it keeps its content from the previous frame, 0 when it was just (re)created.
      */
     UInt32 imageAge() const noexcept;
 
@@ -482,7 +485,9 @@ public:
      * Oversampling is enabled by default, however, it is never used when using an integer scale.
      *
      * When enabled with a fractional scale, rendering is performed into a pixel-perfect intermediate
-     * image, which Louvre then blits into the real screen image (see osImage()).
+     * image (osImage(), returned by image()), which Louvre then scales down into the real screen
+     * image (backendImage()) after paintGL(). Only what changed is copied: the damage reported in
+     * LOutput::damage, accumulated over the age of each screen image.
      * This helps eliminate aliasing artifacts but may generate blurry images and affect performance.
      *
      * To disable it, call enableOversampling(false).
@@ -848,6 +853,24 @@ public:
      * @return `true` if the repaint should proceed, `false` otherwise.
      */
     virtual bool repaintFilter();
+
+    /**
+     * @brief Region to repaint for the software cursor during a paintGL() event.
+     *
+     * On outputs without an enabled cursor plane (see LCursor::isPlaneEnabled()), Louvre paints the
+     * cursor itself on top of the screen image, after paintGL() (with oversampling, after scaling the
+     * content down, so it stays sharp).
+     *
+     * Without oversampling the compositor renders right into the screen image, so the area where the
+     * cursor was painted before must be repainted, and where it's painted now must be part of the
+     * damage. This region (the cursor's previous and current rects) must therefore be added to the
+     * damage of what is repainted (e.g. AKTarget::inDamage), otherwise the cursor leaves trails.
+     * It's empty while oversampling (Louvre repaints those areas from osImage()) or when no software
+     * cursor is involved.
+     *
+     * Defined in output-local coordinates. Only meaningful during paintGL().
+     */
+    const SkRegion &softwareCursorDamage() const noexcept;
 
     /**
      * @brief Damaged region during a paintGL event.

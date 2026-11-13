@@ -149,12 +149,21 @@ UInt32 LOutput::imageAge() const noexcept
     if (needsFullRepaint())
         return 0;
 
+    // Rendering into osImage(): its own age (it's a single image, not rotated like the backend's)
+    if (imp()->isOversampling())
+        return imp()->osAge;
+
     return m_backend->imageAge();
+}
+
+const SkRegion &LOutput::softwareCursorDamage() const noexcept
+{
+    return imp()->swCursorDamage;
 }
 
 std::shared_ptr<RImage> LOutput::image() const noexcept
 {
-    if (oversamplingEnabled() && usingFractionalScale())
+    if (imp()->isOversampling())
         return osImage();
 
     return backendImage();
