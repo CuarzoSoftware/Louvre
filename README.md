@@ -44,6 +44,7 @@ This approach lets you see results from day one, potentially easing the learning
 
 ## 🧩 Protocols
 
+- Background Effect
 - Content Type Hint
 - Cursor Shape
 - DRM Lease

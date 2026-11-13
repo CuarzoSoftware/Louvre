@@ -11,7 +11,7 @@
 #include <CZ/Louvre/Protocols/TearingControl/GTearingControlManager.h>
 #include <CZ/Louvre/Protocols/WlrOutputManagement/GWlrOutputManager.h>
 #include <CZ/Louvre/Protocols/BackgroundBlur/GBackgroundBlurManager.h>
-#include <CZ/Louvre/Protocols/ExtBackgroundEffect/GExtBackgroundEffectManager.h>
+#include <CZ/Louvre/Protocols/BackgroundEffect/GBackgroundEffectManager.h>
 #include <CZ/Louvre/Protocols/XdgDecoration/GXdgDecorationManager.h>
 #include <CZ/Louvre/Protocols/GammaControl/GZwlrGammaControlManagerV1.h>
 #include <CZ/Louvre/Protocols/PointerGestures/GPointerGestures.h>
@@ -173,7 +173,7 @@ bool LCompositor::createGlobalsRequest()
     createGlobal<BackgroundBlur::GBackgroundBlurManager>();
 
     // Allows clients to request background effects (blur) for their surfaces
-    createGlobal<ExtBackgroundEffect::GExtBackgroundEffectManager>();
+    createGlobal<BackgroundEffect::GBackgroundEffectManager>();
 
     // Allows clients to share SVG paths
     createGlobal<SvgPath::GSvgPathManager>();

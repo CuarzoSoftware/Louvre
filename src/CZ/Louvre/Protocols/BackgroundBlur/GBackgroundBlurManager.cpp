@@ -2,6 +2,8 @@
 #include <CZ/Louvre/Protocols/BackgroundBlur/GBackgroundBlurManager.h>
 #include <CZ/Louvre/Protocols/BackgroundBlur/RBackgroundBlur.h>
 #include <CZ/Louvre/Protocols/Wayland/RWlSurface.h>
+#include <CZ/Louvre/Roles/LSurface.h>
+#include <CZ/Louvre/Roles/LBackgroundBlur.h>
 #include <CZ/Louvre/Private/LClientPrivate.h>
 #include <CZ/Louvre/LCompositor.h>
 #include <CZ/Louvre/LLog.h>
@@ -73,7 +75,9 @@ void GBackgroundBlurManager::get_background_blur(wl_client */*client*/, wl_resou
     auto *res { static_cast<GBackgroundBlurManager*>(wl_resource_get_user_data(resource)) };
     auto *surfaceRes { static_cast<Wayland::RWlSurface*>(wl_resource_get_user_data(surface)) };
 
-    if (surfaceRes->contentTypeRes())
+    auto &blur { *surfaceRes->surface()->backgroundBlur() };
+
+    if (blur.backgroundBlurResource())
     {
         res->postError(
             LVR_BACKGROUND_BLUR_MANAGER_ERROR_ALREADY_CONSTRUCTED,
@@ -81,5 +85,6 @@ void GBackgroundBlurManager::get_background_blur(wl_client */*client*/, wl_resou
         return;
     }
 
-    new RBackgroundBlur(res->m_maskingCapabilities, surfaceRes, id, wl_resource_get_version(resource));
+    // Already using ext_background_effect_v1 (e.g. through another toolkit): this one is inert
+    new RBackgroundBlur(res->m_maskingCapabilities, surfaceRes, id, wl_resource_get_version(resource), blur.backgroundEffectResource() != nullptr);
 }

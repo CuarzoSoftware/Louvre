@@ -1,5 +1,5 @@
-#ifndef GEXTBACKGROUNDEFFECTMANAGER_H
-#define GEXTBACKGROUNDEFFECTMANAGER_H
+#ifndef GBACKGROUNDEFFECTMANAGER_H
+#define GBACKGROUNDEFFECTMANAGER_H
 
 #include <CZ/Louvre/LResource.h>
 
@@ -9,9 +9,10 @@
  * Front-door into the same per-surface state driven by
  * Protocols::BackgroundBlur (LBackgroundBlur), without that protocol's
  * configure/acknowledge handshake: the requested region is applied to
- * LSurface::backgroundBlur() on the next wl_surface.commit.
+ * LSurface::backgroundBlur() on the next wl_surface.commit, the state set by
+ * the compositor right away.
  */
-class CZ::Protocols::ExtBackgroundEffect::GExtBackgroundEffectManager final : public LResource
+class CZ::Protocols::BackgroundEffect::GBackgroundEffectManager final : public LResource
 {
 public:
     static void destroy(wl_client *client, wl_resource *resource);
@@ -19,8 +20,8 @@ public:
 
 private:
     LGLOBAL_INTERFACE
-    GExtBackgroundEffectManager(wl_client *client, Int32 version, UInt32 id);
-    ~GExtBackgroundEffectManager() noexcept;
+    GBackgroundEffectManager(wl_client *client, Int32 version, UInt32 id);
+    ~GBackgroundEffectManager() noexcept;
 };
 
-#endif // GEXTBACKGROUNDEFFECTMANAGER_H
+#endif // GBACKGROUNDEFFECTMANAGER_H

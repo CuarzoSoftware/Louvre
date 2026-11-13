@@ -15,11 +15,21 @@
  *
  * This class allows configuring the background blur effect for a surface and listening to client changes. See LSurface::backgroundBlur().
  *
- * When a client wants to apply a blur effect to a surface:
- * 1. The `configureRequest()` is triggered, typically before the surface is mapped.
- * 2. The compositor configures the blur state.
- * 3. The client specifies the region to blur and may optionally apply an additional clipping mask.
- * 4. The client acknowledges and commits the changes, which are notified via `propsChanged()`.
+ * Clients request it through one of two protocols (a surface uses at most one of them):
+ *
+ * - **lvr_background_blur** (Louvre's): blur state, region, color scheme and clipping masks.
+ *   1. The `configureRequest()` is triggered, typically before the surface is mapped.
+ *   2. The compositor configures the blur state.
+ *   3. The client specifies the region to blur and may optionally apply an additional clipping mask.
+ *   4. The client acknowledges and commits the changes, which are notified via `propsChanged()`.
+ *
+ * - **ext_background_effect_v1** (standard): only a blur region, no color scheme or masks. There is
+ *   no configure/acknowledge handshake: `configureRequest()` is triggered when the client creates
+ *   the object, and the state set with configureState() is applied right away (notified via
+ *   `propsChanged()`). A client removing the effect sets an empty region (the state is unchanged).
+ *
+ * In both cases the blur is shown while visible(): the compositor enabled it and the region isn't
+ * empty. See backgroundBlurResource() and backgroundEffectResource().
  *
  * The final blur region is determined by the intersection of the surface bounds, the region(), and the optional clipping mask.
  *
@@ -29,7 +39,9 @@
  * Compositors may support different masking capabilities depending on their rendering features. Modify @ref maskingCapabilities to
  * advertise the supported capabilities to clients.
  *
- * @note The SVG path and background blur protocols are experimental and thus not enabled by default in `LCompositor::createGlobalsRequest()`.
+ * @note Both globals are created by default in `LCompositor::createGlobalsRequest()` (except with the
+ *       Raster graphics API). Compositors that don't render background blur should remove them, so
+ *       clients don't rely on it (e.g. making their windows translucent).
  */
 class CZ::LBackgroundBlur : public LFactoryObject
 {
@@ -213,15 +225,13 @@ public:
     /**
      * @brief Handle to the `ext_background_effect_surface_v1` resource wrapper.
      *
-     * The ext_background_effect_v1 protocol drives the same state as the
-     * lvr_background_blur protocol but without a configure/acknowledge
-     * handshake: the blur is enabled while a non-null region is pending
-     * and disabled once the client sends a null region or destroys the
-     * object.
+     * The ext_background_effect_v1 protocol drives the same properties as the
+     * lvr_background_blur protocol (only the region), without a configure/acknowledge
+     * handshake: configureState() is applied right away.
      *
      * @returns `nullptr` if the protocol is not used by the surface
      */
-    Protocols::ExtBackgroundEffect::RExtBackgroundEffectSurface *backgroundEffectResource() const noexcept;
+    Protocols::BackgroundEffect::RBackgroundEffect *backgroundEffectResource() const noexcept;
 
     /**
      * @brief Indicates whether the surface uses a background effect protocol.
@@ -256,27 +266,23 @@ public:
     bool visible() const noexcept { return props().state && !props().isEmpty; };
 
     /**
-     * @brief Notifies the client of the blur state.
-     *
-     * This is an asynchronous operation. The current state should be maintained
-     * until the client acknowledges the change via propsChanged().
+     * @brief Sets the blur state.
      *
      * The configuration is immediately stored in pendingConfiguration().
      *
+     * - **lvr_background_blur**: asynchronous. The client is notified and the current state
+     *   is kept until it acknowledges the change (notified via propsChanged()).
+     * - **ext_background_effect_v1**: no handshake, the state is applied right away (propsChanged()
+     *   is called from here if it changed).
+     *
      * If blur is not supported() calling this function is a no-op.
      */
-    void configureState(State state) noexcept
-    {
-        if (!supported() || state == m_pendingConfiguration.state)
-            return;
-        updateSerial();
-        m_flags.add(HasStateToSend);
-        m_pendingConfiguration.state = state;
-    }
+    void configureState(State state) noexcept;
 
     /**
      * @brief Triggered when the client creates a background blur resource for the surface.
      *
+     * Either protocol (see backgroundBlurResource() and backgroundEffectResource()).
      * The compositor should respond by configuring both the blur state and color hint.
      * If no configuration is explicitly sent, Louvre will automatically apply
      * the current pending configuration values, which default to @ref Disabled for the state
@@ -309,7 +315,7 @@ private:
     friend class LCompositor;
     friend class LSurface;
     friend class Protocols::BackgroundBlur::RBackgroundBlur;
-    friend class Protocols::ExtBackgroundEffect::RExtBackgroundEffectSurface;
+    friend class Protocols::BackgroundEffect::RBackgroundEffect;
     friend class Protocols::Wayland::RWlSurface;
 
     enum Flags : UInt8
@@ -336,10 +342,11 @@ private:
     void sendPendingConfiguration() noexcept;
     void updateSerial() noexcept;
     void reset() noexcept;
+    void applyStateNow(State state) noexcept; // ext_background_effect_v1 (no handshake)
 
     LSurface &m_surface;
     CZWeak<Protocols::BackgroundBlur::RBackgroundBlur> m_backgroundBlurRes;
-    CZWeak<Protocols::ExtBackgroundEffect::RExtBackgroundEffectSurface> m_extBackgroundEffectRes;
+    CZWeak<Protocols::BackgroundEffect::RBackgroundEffect> m_backgroundEffectRes;
     CZBitset<Flags> m_flags;
     Props m_props[2];
     UInt8 m_currentPropsIndex { 0 };

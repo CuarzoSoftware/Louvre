@@ -22,7 +22,8 @@ RBackgroundBlur::RBackgroundBlur(
     CZBitset<LBackgroundBlur::MaskingCapabilities> maskCaps,
      Wayland::RWlSurface *surfaceRes,
      UInt32 id,
-     Int32 version
+     Int32 version,
+     bool inert
      ) noexcept
     :LResource
     (
@@ -33,14 +34,23 @@ RBackgroundBlur::RBackgroundBlur(
         &imp
     ),
     m_surfaceRes(surfaceRes),
-    m_maskingCapabilities(maskCaps)
+    m_maskingCapabilities(maskCaps),
+    m_inert(inert)
 {
+    if (m_inert)
+        return;
+
     auto &blur { *surfaceRes->surface()->backgroundBlur() };
     blur.m_backgroundBlurRes.reset(this);
     blur.m_sentConfigurations.clear();
 
+    // A previous object was destroyed without a commit since: start clean now (and not on the
+    // next commit, which would drop what this object sets until then)
     if (blur.m_flags.has(LBackgroundBlur::Destroyed))
-        surfaceRes->surface()->backgroundBlur()->reset();
+    {
+        blur.m_flags.remove(LBackgroundBlur::Destroyed);
+        blur.reset();
+    }
 
     blur.configureRequest();
 
@@ -50,7 +60,7 @@ RBackgroundBlur::RBackgroundBlur(
 
 RBackgroundBlur::~RBackgroundBlur() noexcept
 {
-    if (surfaceRes())
+    if (!m_inert && surfaceRes())
     {
         auto &blur { *surfaceRes()->surface()->backgroundBlur() };
         blur.m_flags.add(LBackgroundBlur::Destroyed);
@@ -94,6 +104,9 @@ void RBackgroundBlur::ack_configure(wl_client */*client*/, wl_resource *resource
         return;
     }
 
+    if (res.inert())
+        return;
+
     auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
 
     while (!blur.m_sentConfigurations.empty())
@@ -122,6 +135,9 @@ void RBackgroundBlur::set_color_scheme(wl_client */*client*/, wl_resource *resou
         return;
     }
 
+    if (res.inert())
+        return;
+
     if (colorScheme > LVR_BACKGROUND_BLUR_COLOR_SCHEME_LIGHT)
     {
         res.postError(LVR_BACKGROUND_BLUR_ERROR_INVALID_COLOR_SCHEME, "invalid color scheme value");
@@ -146,6 +162,9 @@ void RBackgroundBlur::set_region(wl_client */*client*/, wl_resource *resource, w
         res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
+
+    if (res.inert())
+        return;
 
     auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
 
@@ -176,6 +195,9 @@ void RBackgroundBlur::clear_mask(wl_client */*client*/, wl_resource *resource)
         return;
     }
 
+    if (res.inert())
+        return;
+
     // Noop
     if (res.m_maskingCapabilities.get() == 0)
         return;
@@ -200,6 +222,9 @@ void RBackgroundBlur::set_round_rect_mask(wl_client */*client*/, wl_resource *re
         res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
+
+    if (res.inert())
+        return;
 
     if (!res.m_maskingCapabilities.has(LBackgroundBlur::RoundRectMaskCap))
     {
@@ -235,6 +260,9 @@ void RBackgroundBlur::set_svg_path_mask(wl_client */*client*/, wl_resource *reso
         res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
         return;
     }
+
+    if (res.inert())
+        return;
 
     if (!res.m_maskingCapabilities.has(LBackgroundBlur::SVGPathMaskCap))
     {

@@ -58,7 +58,7 @@ public:
     std::vector<ImageCaptureSource::GForeignToplevelImageCaptureSourceManager*> foreignToplevelImageCaptureSourceManagerGlobals;
     std::vector<WlrOutputManagement::GWlrOutputManager*> wlrOutputManagerGlobals;
     std::vector<BackgroundBlur::GBackgroundBlurManager*> backgroundBlurManagerGlobals;
-    std::vector<ExtBackgroundEffect::GExtBackgroundEffectManager*> extBackgroundEffectManagerGlobals;
+    std::vector<BackgroundEffect::GBackgroundEffectManager*> backgroundEffectManagerGlobals;
     std::vector<CursorShape::GCursorShapeManager*> cursorShapeManagerGlobals;
     std::vector<SvgPath::GSvgPathManager*> svgPathManagerGlobals;
     std::vector<InvisibleRegion::GInvisibleRegionManager*> invisibleRegionManagerGlobals;

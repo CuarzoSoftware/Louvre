@@ -10,6 +10,9 @@ class CZ::Protocols::BackgroundBlur::RBackgroundBlur final : public LResource
 public:
     Wayland::RWlSurface *surfaceRes() const noexcept { return m_surfaceRes; }
 
+    /// Ignored: the surface already uses the ext_background_effect_v1 protocol.
+    bool inert() const noexcept { return m_inert; }
+
     /******************** EVENTS ********************/
 
     void state(LBackgroundBlur::State state) noexcept;
@@ -28,12 +31,13 @@ public:
     static void set_svg_path_mask(wl_client *client, wl_resource *resource, wl_resource *svgPath);
 private:
     friend class GBackgroundBlurManager;
-    RBackgroundBlur(CZBitset<LBackgroundBlur::MaskingCapabilities> maskCaps, Wayland::RWlSurface *surfaceRes, UInt32 id, Int32 version) noexcept;
+    RBackgroundBlur(CZBitset<LBackgroundBlur::MaskingCapabilities> maskCaps, Wayland::RWlSurface *surfaceRes, UInt32 id, Int32 version, bool inert) noexcept;
     ~RBackgroundBlur() noexcept;
     CZWeak<Wayland::RWlSurface> m_surfaceRes;
 
     // Copy in case the client destroys the manager
     CZBitset<LBackgroundBlur::MaskingCapabilities> m_maskingCapabilities;
+    bool m_inert;
 };
 
 #endif // RBACKGROUNDBLUR_H

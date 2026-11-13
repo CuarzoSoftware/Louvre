@@ -1,6 +1,6 @@
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 #include <CZ/Louvre/Protocols/BackgroundBlur/RBackgroundBlur.h>
-#include <CZ/Louvre/Protocols/ExtBackgroundEffect/RExtBackgroundEffectSurface.h>
+#include <CZ/Louvre/Protocols/BackgroundEffect/RBackgroundEffect.h>
 #include <CZ/Louvre/Roles/LBackgroundBlur.h>
 #include <CZ/Louvre/Roles/LSurface.h>
 #include <CZ/Core/CZTime.h>
@@ -14,9 +14,9 @@ Protocols::BackgroundBlur::RBackgroundBlur *LBackgroundBlur::backgroundBlurResou
     return m_backgroundBlurRes;
 }
 
-Protocols::ExtBackgroundEffect::RExtBackgroundEffectSurface *LBackgroundBlur::backgroundEffectResource() const noexcept
+Protocols::BackgroundEffect::RBackgroundEffect *LBackgroundBlur::backgroundEffectResource() const noexcept
 {
-    return m_extBackgroundEffectRes;
+    return m_backgroundEffectRes;
 }
 
 void LBackgroundBlur::handleCommit(bool sizeChanged) noexcept
@@ -84,9 +84,44 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
     m_flags.remove(RegionModified | MaskModified | SchemeModified);
 }
 
+void LBackgroundBlur::configureState(State state) noexcept
+{
+    if (!supported())
+        return;
+
+    // ext_background_effect_v1: no handshake
+    if (!m_backgroundBlurRes)
+    {
+        m_pendingConfiguration.state = state;
+        applyStateNow(state);
+        return;
+    }
+
+    if (state == m_pendingConfiguration.state)
+        return;
+
+    updateSerial();
+    m_flags.add(HasStateToSend);
+    m_pendingConfiguration.state = state;
+}
+
+void LBackgroundBlur::applyStateNow(State state) noexcept
+{
+    // Also pending: the next commit keeps it
+    pendingProps().state = state;
+
+    if (currentProps().state == state)
+        return;
+
+    const Props prev { currentProps() };
+    currentProps().state = state;
+    propsChanged(StateChanged, prev);
+}
+
 void LBackgroundBlur::sendPendingConfiguration() noexcept
 {
-    if (!supported() || !m_flags.has(HasStateToSend))
+    // Only lvr_background_blur has configurations to send
+    if (!m_backgroundBlurRes || !m_flags.has(HasStateToSend))
         return;
 
     surface()->requestNextFrame(false);

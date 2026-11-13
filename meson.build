@@ -112,7 +112,7 @@ protocols = [
     'WlrOutputManagement',
     'SvgPath',
     'BackgroundBlur',
-    'ExtBackgroundEffect',
+    'BackgroundEffect',
     'InvisibleRegion',
     'CursorShape',
     'Tablet',
