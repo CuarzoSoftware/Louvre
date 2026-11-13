@@ -53,10 +53,12 @@ This approach lets you see results from day one, potentially easing the learning
 - Idle Inhibit
 - Idle Notify
 - Image Capture Source
+- Image Copy Capture
 - Mesa Wayland DRM
 - Linux DMA-Buf
 - Lvr Background Blur
 - Lvr Invisible Region
+- Lvr Private Handle
 - Lvr SVG Path
 - Pointer Constraints
 - Pointer Gestures

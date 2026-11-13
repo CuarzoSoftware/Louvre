@@ -936,6 +936,25 @@ public:
     virtual bool foreignParentFilter(LToplevelRole *parent);
 
     /**
+     * @brief Render a frame of an image capture session capturing this toplevel
+     *
+     * Called when a client captures this toplevel (see LImageCaptureManager) and there's something new
+     * to send: the first frame of the session, or after its surfaces (or LImageCaptureSession::addDamage())
+     * damaged it.
+     *
+     * Render LImageCaptureFrame::paintRegion() into LImageCaptureFrame::surface() (buffer pixels) and call
+     * LImageCaptureFrame::ready(), or call LImageCaptureFrame::fail(). It can also be completed later.
+     *
+     * The default implementation draws the toplevel's surface and subsurfaces (its window geometry, at
+     * its buffer scale). Override it to e.g. include server-side decorations (see
+     * LImageCaptureSession::setBufferSize()).
+     *
+     * #### Default implementation
+     * @snippet LToplevelRoleDefault.cpp imageCaptureFrameRequest
+     */
+    virtual void imageCaptureFrameRequest(LImageCaptureFrame *frame);
+
+    /**
      * @brief Show window menu request.
      *
      * Triggered by the client expecting the compositor to display a popup menu with options

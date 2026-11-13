@@ -1,3 +1,4 @@
+#include <CZ/Louvre/Manager/LImageCaptureSession.h>
 #include <CZ/Louvre/Protocols/PresentationTime/presentation-time.h>
 #include <CZ/Louvre/Protocols/PresentationTime/RPresentationFeedback.h>
 #include <CZ/Louvre/Protocols/SinglePixelBuffer/LSinglePixelBuffer.h>
@@ -1112,6 +1113,12 @@ void LSurface::LSurfacePrivate::applyCommit(Uncommitted &pending) noexcept
         surface->role()->applyCommit();
 
     surface->backgroundBlur()->handleCommit(changes.has(Changes::SizeChanged));
+
+    if (!ref)
+        return;
+
+    /* Captured toplevels: what changed (see LImageCaptureSession) */
+    LImageCaptureSession::SurfaceCommitted(*surface);
 
     if (!ref)
         return;

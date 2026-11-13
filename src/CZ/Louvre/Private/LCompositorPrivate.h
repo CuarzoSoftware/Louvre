@@ -36,6 +36,7 @@ LPRIVATE_CLASS(LCompositor)
         wl_listener clientConnectedListener;
         LSessionLockManager *sessionLockManager { nullptr };
         LActivationTokenManager *activationTokenManager { nullptr };
+        LImageCaptureManager *imageCaptureManager { nullptr };
     void unitWayland();
 
     bool initBackend() noexcept;

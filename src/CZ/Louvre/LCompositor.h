@@ -53,6 +53,7 @@ public:
         CZWeak<LGlobal> ForeignToplevelList;
         CZWeak<LGlobal> ForeignToplevelImageCaptureSourceManager;
         CZWeak<LGlobal> OutputImageCaptureSourceManager;
+        CZWeak<LGlobal> ImageCopyCaptureManager;
 
         CZWeak<LGlobal> XdgWmBase;
         CZWeak<LGlobal> XdgDecorationManager;
@@ -207,6 +208,13 @@ public:
      * The activation token manager allows you to handle client requests to activate surfaces of other clients.
      */
     LActivationTokenManager *activationTokenManager() const noexcept;
+
+    /**
+     * @brief Provides access to the image capture manager.
+     *
+     * The image capture manager allows you to accept or deny clients capturing outputs and toplevels.
+     */
+    LImageCaptureManager *imageCaptureManager() const noexcept;
 
     /**
      * @brief List of all surfaces created by clients.

@@ -18,6 +18,7 @@
 #define LOUVRE_XDG_DECORATION_MANAGER_VERSION 1
 #define LOUVRE_XDG_FOREIGN_V2_VERSION 1
 #define LOUVRE_XDG_FOREIGN_V1_VERSION 1
+#define LOUVRE_IMAGE_COPY_CAPTURE_MANAGER_VERSION 1
 #define LOUVRE_XDG_OUTPUT_MANAGER_VERSION 3
 #define LOUVRE_PRESENTATION_VERSION 2
 #define LOUVRE_LINUX_DMA_BUF_VERSION 5
@@ -107,6 +108,9 @@ namespace CZ
     class LForeignToplevelController;
     class LSessionLockManager;
     class LActivationTokenManager;
+    class LImageCaptureManager;
+    class LImageCaptureSession;
+    class LImageCaptureFrame;
     class LActivationToken;
     class LIdleListener;
     class LBackgroundBlur;
@@ -317,6 +321,14 @@ namespace CZ
             class RImageCaptureSource;
         }
 
+        namespace ImageCopyCapture
+        {
+            class GImageCopyCaptureManager;
+            class RImageCopyCaptureSession;
+            class RImageCopyCaptureFrame;
+            class RImageCopyCaptureCursorSession;
+        }
+
         namespace PointerConstraints
         {
             class GPointerConstraints;
@@ -477,6 +489,13 @@ namespace CZ
      * @warning Must be accessed within or after the LCompositor::initialized() event.
      */
     LActivationTokenManager *activationTokenManager() noexcept;
+
+    /**
+     * @brief Gets the image capture manager (screenshots, screen recording and sharing).
+     *
+     * @see LImageCaptureManager
+     */
+    LImageCaptureManager *imageCaptureManager() noexcept;
 };
 
 #endif // LNAMESPACES_H

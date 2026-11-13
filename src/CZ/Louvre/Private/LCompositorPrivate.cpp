@@ -9,6 +9,7 @@
 #include <CZ/Louvre/Private/LPopupRolePrivate.h>
 #include <CZ/Louvre/Private/LFactory.h>
 #include <CZ/Louvre/Manager/LActivationTokenManager.h>
+#include <CZ/Louvre/Manager/LImageCaptureManager.h>
 #include <CZ/Louvre/Manager/LSessionLockManager.h>
 #include <CZ/Louvre/Roles/LSessionLockRole.h>
 #include <CZ/Louvre/Roles/LBackgroundBlur.h>
@@ -141,6 +142,7 @@ bool LCompositor::LCompositorPrivate::initWayland()
     wl_display_add_client_created_listener(display, &clientConnectedListener);
     LFactory::createObject<LSessionLockManager>(&sessionLockManager);
     LFactory::createObject<LActivationTokenManager>(&activationTokenManager);
+    LFactory::createObject<LImageCaptureManager>(&imageCaptureManager);
     wl_display_set_global_filter(display, [](const wl_client *client, const wl_global *global, void */*data*/) -> bool
     {
         LGlobal *lGlobal { nullptr };
@@ -181,6 +183,13 @@ void LCompositor::LCompositorPrivate::unitWayland()
 
         wl_display_destroy(display);
         display = nullptr;
+    }
+
+    if (imageCaptureManager)
+    {
+        compositor()->onAnticipatedObjectDestruction(imageCaptureManager);
+        delete imageCaptureManager;
+        imageCaptureManager = nullptr;
     }
 
     if (activationTokenManager)

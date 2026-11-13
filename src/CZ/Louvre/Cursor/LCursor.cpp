@@ -1,3 +1,4 @@
+#include <CZ/Louvre/Manager/LImageCaptureSession.h>
 #include <CZ/Louvre/Private/LOutputPrivate.h>
 #include <CZ/Louvre/Private/LCompositorPrivate.h>
 
@@ -288,6 +289,9 @@ void LCursor::update() noexcept
         if (!isPlaneEnabled(o) && (m_intersectedOutputs.contains(o) || !o->imp()->swCursorPrevRect.isEmpty()))
             o->repaint();
 
+    // Cursor capture sessions: image and position
+    LImageCaptureSession::CursorChanged(m_imageChanged);
+
     m_imageChanged = false;
     m_posChanged = false;
 
@@ -408,7 +412,9 @@ bool LCursor::isPlaneEnabled(const LOutput *output) const noexcept
     if (!output)
         return false;
 
-    return output->imp()->stateFlags.has(LOutput::LOutputPrivate::CursorPlaneEnabled) && hasPlane(output);
+    // Captures painting the cursor need it in software (see LImageCaptureSession::paintsCursors())
+    return output->imp()->stateFlags.has(LOutput::LOutputPrivate::CursorPlaneEnabled) && hasPlane(output) &&
+           output->imp()->softwareCursorCaptures == 0;
 }
 
 LOutput *LCursor::output() const noexcept

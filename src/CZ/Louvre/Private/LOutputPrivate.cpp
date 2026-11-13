@@ -21,6 +21,8 @@
 #include <CZ/Louvre/Private/LFreezeWatchdog.h>
 
 #include <CZ/Ream/RCore.h>
+#include <CZ/Louvre/Manager/LImageCaptureManager.h>
+#include <CZ/Louvre/Manager/LImageCaptureSession.h>
 #include <CZ/Ream/RPass.h>
 #include <CZ/Ream/RPainter.h>
 #include <CZ/Core/Utils/CZRegionUtils.h>
@@ -353,7 +355,38 @@ void LOutput::LOutputPrivate::blitFramebuffers() noexcept
     if (isOversampling())
         blitFractionalScaleFb();
 
+    // Captures without the cursor before painting it, with the cursor after
+    accumulateCaptureDamage();
+    captureFrames(false);
     drawSoftwareCursor();
+    captureFrames(true);
+}
+
+void LOutput::LOutputPrivate::accumulateCaptureDamage() noexcept
+{
+    auto *manager { imageCaptureManager() };
+
+    if (!manager)
+        return;
+
+    // What changed on screen this frame (buffer coords, see damageToBufferCoords())
+    for (auto *session : manager->sessions())
+        if (session->output() == output && session->state() == LImageCaptureSession::Accepted)
+            session->m_damage.op(output->damage, SkRegion::kUnion_Op);
+}
+
+void LOutput::LOutputPrivate::captureFrames(bool withCursor) noexcept
+{
+    auto *manager { imageCaptureManager() };
+
+    if (!manager)
+        return;
+
+    const auto sessions { manager->sessions() };
+
+    for (auto *session : sessions)
+        if (session->output() == output)
+            session->captureOutput(withCursor);
 }
 
 void LOutput::LOutputPrivate::updateSoftwareCursor() noexcept

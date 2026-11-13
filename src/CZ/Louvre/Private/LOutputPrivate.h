@@ -62,6 +62,13 @@ LPRIVATE_CLASS_NO_COPY(LOutput)
     SkIRect swCursorPrevRect {}; // Where it was painted the previous frame
     SkRegion swCursorDamage;     // See LOutput::softwareCursorDamage()
 
+    // Accepted image capture sessions painting the cursor (the cursor plane is off while > 0)
+    Int32 softwareCursorCaptures { 0 };
+
+    // Image capture sessions of this output: damage, and frames copied with or without the cursor
+    void accumulateCaptureDamage() noexcept;
+    void captureFrames(bool withCursor) noexcept;
+
     // The wp_fractional_v1 scale set with setScale() returned with fractionalScale()
     Float32 fractionalScale { 1.f };
 

@@ -1,5 +1,6 @@
 #include <CZ/Louvre/Protocols/ImageCaptureSource/GForeignToplevelImageCaptureSourceManager.h>
 #include <CZ/Louvre/Protocols/ImageCaptureSource/GOutputImageCaptureSourceManager.h>
+#include <CZ/Louvre/Protocols/ImageCopyCapture/GImageCopyCaptureManager.h>
 #include <CZ/Louvre/Protocols/ForeignToplevelManagement/GForeignToplevelManager.h>
 #include <CZ/Louvre/Protocols/SinglePixelBuffer/GWpSinglePixelBufferManagerV1.h>
 #include <CZ/Louvre/Protocols/ForeignToplevelList/GForeignToplevelList.h>
@@ -129,10 +130,13 @@ bool LCompositor::createGlobalsRequest()
     createGlobal<Viewporter::GViewporter>();
 
     // Allows toplevels to be used as image capture sources
-    //createGlobal<ImageCaptureSource::GForeignToplevelImageCaptureSourceManager>();
+    createGlobal<ImageCaptureSource::GForeignToplevelImageCaptureSourceManager>();
 
     // Allows outputs to be used as image capture sources
-    //createGlobal<ImageCaptureSource::GOutputImageCaptureSourceManager>();
+    createGlobal<ImageCaptureSource::GOutputImageCaptureSourceManager>();
+
+    // Allows clients to capture outputs and toplevels (see LImageCaptureManager)
+    createGlobal<ImageCopyCapture::GImageCopyCaptureManager>();
 
     // Allows clients to create wlr_layer_shell surfaces
     createGlobal<LayerShell::GLayerShell>();

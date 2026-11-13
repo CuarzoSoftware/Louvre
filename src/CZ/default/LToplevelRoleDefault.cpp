@@ -1,3 +1,10 @@
+#include <functional>
+#include <CZ/Ream/RPainter.h>
+#include <CZ/Ream/RPass.h>
+#include <CZ/Ream/RSurface.h>
+#include <CZ/Louvre/Roles/LSubsurfaceRole.h>
+#include <CZ/Louvre/Manager/LImageCaptureSession.h>
+#include <CZ/Louvre/Manager/LImageCaptureFrame.h>
 #include <CZ/Louvre/Roles/LToplevelRole.h>
 #include <CZ/Louvre/Seat/LTouchPoint.h>
 #include <CZ/Louvre/Seat/LPointer.h>
@@ -356,6 +363,78 @@ bool LToplevelRole::foreignParentFilter(LToplevelRole *parent)
     return true;
 }
 //! [foreignParentFilter]
+
+//! [imageCaptureFrameRequest]
+void LToplevelRole::imageCaptureFrameRequest(LImageCaptureFrame *frame)
+{
+    auto target { frame->surface() };
+
+    if (!target)
+    {
+        frame->fail(LImageCaptureFrame::Unknown);
+        return;
+    }
+
+    const SkRegion region { frame->paintRegion() };
+
+    if (!region.isEmpty())
+    {
+        auto pass { target->beginPass(RPassCap_Painter) };
+
+        if (!pass)
+        {
+            frame->fail(LImageCaptureFrame::Unknown);
+            return;
+        }
+
+        auto *painter { pass->getPainter() };
+
+        /* Transparent where nothing is drawn */
+        painter->setBlendMode(RBlendMode::Src);
+        painter->setColor(SK_ColorTRANSPARENT);
+        painter->drawColor(region);
+        painter->setBlendMode(RBlendMode::SrcOver);
+
+        /* Surface coordinates relative to the window geometry, to buffer pixels */
+        const SkIPoint origin { -windowGeometry().x(), -windowGeometry().y() };
+        const SkISize geometry { windowGeometry().isEmpty() ? surface()->size() : windowGeometry().size() };
+        const SkScalar sx { SkScalar(frame->session().bufferSize().width()) / SkScalar(std::max(1, geometry.width())) };
+        const SkScalar sy { SkScalar(frame->session().bufferSize().height()) / SkScalar(std::max(1, geometry.height())) };
+
+        /* Back to front: subsurfaces below, the surface, subsurfaces above */
+        const std::function<void(LSurface*, SkIPoint)> draw = [&](LSurface *s, SkIPoint pos)
+        {
+            for (auto *sub : s->subsurfacesBelow())
+                if (sub->surface()->mapped())
+                    draw(sub->surface(), pos + sub->localPos());
+
+            if (auto image { s->image() })
+            {
+                RDrawImageInfo info {};
+                info.image = image;
+                info.src = s->srcRect();
+                info.srcScale = s->scale();
+                info.srcTransform = s->bufferTransform();
+                info.dst = SkIRect::MakeLTRB(
+                    SkScalarRoundToInt(pos.x() * sx),
+                    SkScalarRoundToInt(pos.y() * sy),
+                    SkScalarRoundToInt((pos.x() + s->size().width()) * sx),
+                    SkScalarRoundToInt((pos.y() + s->size().height()) * sy));
+                info.minFilter = info.magFilter = RImageFilter::Linear;
+                painter->drawImage(info, &region);
+            }
+
+            for (auto *sub : s->subsurfacesAbove())
+                if (sub->surface()->mapped())
+                    draw(sub->surface(), pos + sub->localPos());
+        };
+
+        draw(surface(), origin);
+    }
+
+    frame->ready();
+}
+//! [imageCaptureFrameRequest]
 
 //! [showWindowMenuRequest]
 void LToplevelRole::showWindowMenuRequest(const CZEvent &triggeringEvent, Int32 x, Int32 y)

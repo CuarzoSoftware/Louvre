@@ -99,6 +99,9 @@ public:
         /// Represents the LActivationTokenManager class.
         LActivationTokenManager,
 
+        /// Represents the LImageCaptureManager class.
+        LImageCaptureManager,
+
         /// Represents the LBackgroundBlur class.
         LBackgroundBlur
     };

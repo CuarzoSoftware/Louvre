@@ -100,6 +100,7 @@ protocols = [
     'PointerGestures',
     'SessionLock',
     'ImageCaptureSource',
+    'ImageCopyCapture',
     'LayerShell',
     'ForeignToplevelManagement',
     'ForeignToplevelList',

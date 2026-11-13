@@ -169,6 +169,7 @@ public:
 private:
     friend class CZ::LCompositor;
     friend class CZ::LOutput;
+    friend class CZ::LImageCaptureSession;
     LCursor() noexcept;
     void setOutput(LOutput *output) noexcept;
     void updateLater() const noexcept;

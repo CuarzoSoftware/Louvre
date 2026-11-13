@@ -66,6 +66,11 @@ LActivationTokenManager *CZ::activationTokenManager() noexcept
     return s_compositor->imp()->activationTokenManager;
 }
 
+LImageCaptureManager *CZ::imageCaptureManager() noexcept
+{
+    return s_compositor ? s_compositor->imp()->imageCaptureManager : nullptr;
+}
+
 void LCompositor::removeGlobal(LGlobal *global) noexcept
 {
     if (global->m_removed)
@@ -399,6 +404,11 @@ LSessionLockManager *LCompositor::sessionLockManager() const noexcept
 LActivationTokenManager *LCompositor::activationTokenManager() const noexcept
 {
     return imp()->activationTokenManager;
+}
+
+LImageCaptureManager *LCompositor::imageCaptureManager() const noexcept
+{
+    return imp()->imageCaptureManager;
 }
 
 void LCompositor::repaintAllOutputs() noexcept
