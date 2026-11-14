@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <sys/prctl.h>
 #include <poll.h>
+#include <mutex>
 
 using namespace CZ;
 
@@ -28,6 +29,49 @@ static int pipeB[2] =
 
 static pid_t daemonPID = -1;
 static pid_t daemonGID = -1;
+
+// Serializes pipe messages: commands and env updates must not interleave.
+static std::mutex launchMutex;
+
+// Reads "\x01KEY=VALUE\0" pairs until an empty line; applies each to the
+// daemon environment, so system() children launched afterwards inherit it.
+static bool readEnvBlock()
+{
+    while (true)
+    {
+        std::string line;
+        char c = 0;
+
+        while (true)
+        {
+            ssize_t n = read(pipeA[0], &c, 1);
+
+            if (n <= 0)
+                return false;
+
+            if (c == '\0')
+                break;
+
+            line += c;
+        }
+
+        if (line.empty())
+            return true;
+
+        size_t eq = line.find('=');
+
+        if (eq == std::string::npos || eq == 0)
+            continue;
+
+        std::string key = line.substr(0, eq);
+        std::string value = line.substr(eq + 1);
+
+        if (value.empty())
+            unsetenv(key.c_str());
+        else
+            setenv(key.c_str(), value.c_str(), 1);
+    }
+}
 
 static Int32 daemonLoop()
 {
@@ -62,6 +106,16 @@ static Int32 daemonLoop()
 
         while (n > 0)
         {
+            // Env update block
+            if (c == '\x01')
+            {
+                if (!readEnvBlock())
+                    return 0;
+
+                cmd = "";
+                break;
+            }
+
             // Reached end of command
             if (c == '\0')
             {
@@ -210,6 +264,8 @@ pid_t LLauncher::launch(const std::string &command)
         return -1;
     }
 
+    std::lock_guard<std::mutex> lock(launchMutex);
+
     pollfd fds;
     fds.events = POLLIN;
     fds.revents = 0;
@@ -230,7 +286,11 @@ pid_t LLauncher::launch(const std::string &command)
         s = write(pipeA[1], cmd, 1);
 
         if (s < 0)
-            goto stop;
+        {
+            LauncherLog(CZError, "Command {} failed. Daemon died", command.c_str());
+            stopDaemon();
+            return -1;
+        }
 
         if (s == 0)
             continue;
@@ -250,7 +310,11 @@ pid_t LLauncher::launch(const std::string &command)
         s = read(pipeB[0], &c, 1);
 
         if (s <= 0)
-            goto stop;
+        {
+            LauncherLog(CZError, "Command {} failed. Daemon died", command.c_str());
+            stopDaemon();
+            return -1;
+        }
 
         if (c == '\0')
         {
@@ -268,11 +332,47 @@ pid_t LLauncher::launch(const std::string &command)
     }
 
     return -1;
+}
 
-stop:
-    LauncherLog(CZError, "Command {} failed. Daemon died", command.c_str());
-    stopDaemon();
-    return -1;
+bool LLauncher::setEnv(const std::string &key, const std::string &value)
+{
+    std::lock_guard<std::mutex> lock(launchMutex);
+
+    if (daemonPID < 0)
+    {
+        LauncherLog(CZError, CZLN, "Cannot set env {}. Daemon is not running", key);
+        return false;
+    }
+
+    if (key.empty() || key.find('=') != std::string::npos)
+    {
+        LauncherLog(CZError, CZLN, "Cannot set env {}. Invalid variable name", key);
+        return false;
+    }
+
+    // \x01 tags an env update; the trailing empty line closes the block.
+    std::string msg = std::string(1, '\x01') + key + "=" + value;
+    msg.push_back('\0');
+    msg.push_back('\0');
+
+    const char *ptr = msg.c_str();
+    size_t left = msg.size();
+
+    while (left > 0)
+    {
+        ssize_t w = write(pipeA[1], ptr, left);
+
+        if (w <= 0)
+        {
+            LauncherLog(CZError, CZLN, "Failed to send the env update to the daemon");
+            return false;
+        }
+
+        ptr += w;
+        left -= (size_t)w;
+    }
+
+    return true;
 }
 
 void LLauncher::stopDaemon()
