@@ -69,7 +69,7 @@ static const struct wl_message lvr_background_blur_manager_events[] = {
 };
 
 WL_PRIVATE const struct wl_interface lvr_background_blur_manager_interface = {
-	"lvr_background_blur_manager", 1,
+	"lvr_background_blur_manager", 2,
 	2, lvr_background_blur_manager_requests,
 	1, lvr_background_blur_manager_events,
 };
@@ -82,6 +82,9 @@ static const struct wl_message lvr_background_blur_requests[] = {
 	{ "clear_mask", "", lvr_background_blur_types + 0 },
 	{ "set_round_rect_mask", "iiiiiiii", lvr_background_blur_types + 0 },
 	{ "set_svg_path_mask", "o", lvr_background_blur_types + 11 },
+	{ "set_material", "2ffu", lvr_background_blur_types + 0 },
+	{ "unset_material", "2", lvr_background_blur_types + 0 },
+	{ "set_opacity", "2f", lvr_background_blur_types + 0 },
 };
 
 static const struct wl_message lvr_background_blur_events[] = {
@@ -90,8 +93,8 @@ static const struct wl_message lvr_background_blur_events[] = {
 };
 
 WL_PRIVATE const struct wl_interface lvr_background_blur_interface = {
-	"lvr_background_blur", 1,
-	7, lvr_background_blur_requests,
+	"lvr_background_blur", 2,
+	10, lvr_background_blur_requests,
 	2, lvr_background_blur_events,
 };
 

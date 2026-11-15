@@ -68,6 +68,12 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
     if (currentProps().colorScheme != pendingProps().colorScheme)
         changesToNotify.add(ColorSchemeChanged);
 
+    if (currentProps().material != pendingProps().material)
+        changesToNotify.add(MaterialChanged);
+
+    if (currentProps().opacity != pendingProps().opacity)
+        changesToNotify.add(OpacityChanged);
+
     if (currentProps().serial != pendingProps().serial)
         changesToNotify.add(SerialChanged);
 
@@ -81,7 +87,7 @@ void LBackgroundBlur::fullPropsUpdate(bool sizeChanged) noexcept
 
     propsChanged(changesToNotify, pendingProps());
     pendingProps() = currentProps();
-    m_flags.remove(RegionModified | MaskModified | SchemeModified);
+    m_flags.remove(RegionModified | MaskModified | SchemeModified | MaterialModified | OpacityModified);
 }
 
 void LBackgroundBlur::configureState(State state) noexcept

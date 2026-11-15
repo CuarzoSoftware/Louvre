@@ -16,6 +16,9 @@ static const struct lvr_background_blur_interface imp
     .clear_mask = &RBackgroundBlur::clear_mask,
     .set_round_rect_mask = &RBackgroundBlur::set_round_rect_mask,
     .set_svg_path_mask = &RBackgroundBlur::set_svg_path_mask,
+    .set_material = &RBackgroundBlur::set_material,
+    .unset_material = &RBackgroundBlur::unset_material,
+    .set_opacity = &RBackgroundBlur::set_opacity,
 };
 
 RBackgroundBlur::RBackgroundBlur(
@@ -283,4 +286,85 @@ void RBackgroundBlur::set_svg_path_mask(wl_client */*client*/, wl_resource *reso
     blur.pendingProps().roundRectMask = {};
     blur.pendingProps().svgPathMask = rSvgPath.path();
     blur.pendingProps().maskType = LBackgroundBlur::SVGPath;
+}
+
+void RBackgroundBlur::set_material(wl_client */*client*/, wl_resource *resource, wl_fixed_t radius, wl_fixed_t saturation, UInt32 tint)
+{
+    auto &res { *static_cast<RBackgroundBlur*>(wl_resource_get_user_data(resource)) };
+
+    if (!res.surfaceRes())
+    {
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        return;
+    }
+
+    if (res.inert())
+        return;
+
+    if (radius < 0 || saturation < 0)
+    {
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_INVALID_MATERIAL, "negative radius or saturation");
+        return;
+    }
+
+    const LBackgroundBlur::Material material {
+        .radius = Float32(wl_fixed_to_double(radius)),
+        .saturation = Float32(wl_fixed_to_double(saturation)),
+        .tint = SkColor4f::FromColor(tint) // 0xAARRGGBB, as SkColor
+    };
+
+    auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
+
+    if (blur.pendingProps().material == material)
+        return;
+
+    blur.pendingProps().material = material;
+    blur.m_flags.add(LBackgroundBlur::MaterialModified);
+}
+
+void RBackgroundBlur::unset_material(wl_client */*client*/, wl_resource *resource)
+{
+    auto &res { *static_cast<RBackgroundBlur*>(wl_resource_get_user_data(resource)) };
+
+    if (!res.surfaceRes())
+    {
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        return;
+    }
+
+    if (res.inert() || !res.surfaceRes()->surface()->backgroundBlur()->pendingProps().material)
+        return;
+
+    auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
+    blur.pendingProps().material.reset();
+    blur.m_flags.add(LBackgroundBlur::MaterialModified);
+}
+
+void RBackgroundBlur::set_opacity(wl_client */*client*/, wl_resource *resource, wl_fixed_t opacity)
+{
+    auto &res { *static_cast<RBackgroundBlur*>(wl_resource_get_user_data(resource)) };
+
+    if (!res.surfaceRes())
+    {
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_DESTROYED_SURFACE, "surface destroyed before object");
+        return;
+    }
+
+    if (res.inert())
+        return;
+
+    if (opacity < 0 || opacity > wl_fixed_from_int(1))
+    {
+        res.postError(LVR_BACKGROUND_BLUR_ERROR_INVALID_OPACITY, "opacity out of the [0, 1] range");
+        return;
+    }
+
+    auto &blur { *res.surfaceRes()->surface()->backgroundBlur() };
+    const Float32 value { Float32(wl_fixed_to_double(opacity)) };
+
+    if (blur.pendingProps().opacity == value)
+        return;
+
+    blur.pendingProps().opacity = value;
+    blur.m_flags.add(LBackgroundBlur::OpacityModified);
 }

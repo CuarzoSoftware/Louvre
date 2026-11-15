@@ -8,7 +8,9 @@
 #include <CZ/Core/CZBitset.h>
 #include <CZ/Core/CZWeak.h>
 #include <CZ/Core/CZColorScheme.h>
+#include <CZ/skia/core/SkColor.h>
 #include <list>
+#include <optional>
 
 /**
  * @brief Background blur controller for surfaces.
@@ -17,7 +19,9 @@
  *
  * Clients request it through one of two protocols (a surface uses at most one of them):
  *
- * - **lvr_background_blur** (Louvre's): blur state, region, color scheme and clipping masks.
+ * - **lvr_background_blur** (Louvre's): blur state, region, color scheme, clipping masks and,
+ *   since version 2, the material (blur radius, saturation and tint, see Props::material) and
+ *   the effect's opacity (Props::opacity).
  *   1. The `configureRequest()` is triggered, typically before the surface is mapped.
  *   2. The compositor configures the blur state.
  *   3. The client specifies the region to blur and may optionally apply an additional clipping mask.
@@ -122,6 +126,34 @@ public:
 
         /** Indicates that the serial has changed. */
         SerialChanged         = static_cast<UInt8>(1) << 4,
+
+        /** Indicates that the material has changed. */
+        MaterialChanged       = static_cast<UInt8>(1) << 5,
+
+        /** Indicates that the opacity has changed. */
+        OpacityChanged        = static_cast<UInt8>(1) << 6,
+    };
+
+    /**
+     * @brief How the client wants its backdrop rendered (lvr_background_blur version 2).
+     *
+     * The backdrop is blurred, then saturated, then covered by the tint.
+     */
+    struct Material
+    {
+        /// Gaussian standard deviation in surface-local logical units (like CSS `blur()`), >= 0.
+        Float32 radius { 0.f };
+
+        /// Saturation multiplier: 1 unchanged, 0 grayscale (like CSS `saturate()`), >= 0.
+        Float32 saturation { 1.f };
+
+        /// Unpremultiplied tint drawn over the saturated backdrop, its alpha being the opacity.
+        SkColor4f tint { 0.f, 0.f, 0.f, 0.f };
+
+        bool operator==(const Material &other) const noexcept
+        {
+            return radius == other.radius && saturation == other.saturation && tint == other.tint;
+        }
     };
 
     /**
@@ -182,6 +214,22 @@ public:
          * from @ref maskingCapabilities to prevent clients from using it.
          */
         SkPath svgPathMask;
+
+        /**
+         * @brief The material requested by the client, or `std::nullopt` to let the compositor choose.
+         *
+         * Always `std::nullopt` with ext_background_effect_v1 and lvr_background_blur version 1.
+         * The values are validated (non-negative) but not clamped.
+         */
+        std::optional<Material> material;
+
+        /**
+         * @brief Opacity of the whole effect requested by the client, in [0, 1].
+         *
+         * Clients fade it along with their content (lvr_background_blur version 2). Always 1 with
+         * ext_background_effect_v1 and lvr_background_blur version 1.
+         */
+        Float32 opacity { 1.f };
 
         /**
          * @brief Returns the last acknowledged configuration serial.
@@ -325,6 +373,8 @@ private:
         RegionModified       = static_cast<UInt8>(1) << 2,
         MaskModified         = static_cast<UInt8>(1) << 3,
         Destroyed            = static_cast<UInt8>(1) << 4,
+        MaterialModified     = static_cast<UInt8>(1) << 5,
+        OpacityModified      = static_cast<UInt8>(1) << 6,
     };
 
     Props &currentProps() noexcept

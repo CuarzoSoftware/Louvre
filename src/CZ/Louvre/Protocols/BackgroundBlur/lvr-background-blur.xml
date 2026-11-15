@@ -29,7 +29,7 @@
     made in the future.
   </description>
 
-  <interface name="lvr_background_blur_manager" version="1">
+  <interface name="lvr_background_blur_manager" version="2">
     <description summary="background blur manager">
       This interface allows a compositor to declare support for blurring surface 
       backgrounds.
@@ -106,7 +106,7 @@
 
   </interface>
 
-  <interface name="lvr_background_blur" version="1">
+  <interface name="lvr_background_blur" version="2">
     <description summary="blur effect applied to the background of a surface">
       A single instance of this object can be used to blur multiple sections of a surface.
 
@@ -136,6 +136,11 @@
       commits a new configuration.
 
       Initially, the blur region is empty (no blur is applied).
+
+      Since version 2, the client can also describe how the backdrop is rendered with
+      set_material: the blur radius, a saturation boost and a translucent tint drawn over it.
+      Otherwise the compositor uses its own material. It can also fade the effect with
+      set_opacity (e.g. to animate it along with the surface's content).
     </description>
 
     <enum name="error">
@@ -151,6 +156,10 @@
         value="4" summary="invalid round rect"/>
       <entry name="invalid_svg_path" 
         value="5" summary="invalid svg path"/>
+      <entry name="invalid_material"
+        value="6" summary="invalid material parameters" since="2"/>
+      <entry name="invalid_opacity"
+        value="7" summary="opacity out of the [0, 1] range" since="2"/>
     </enum>
     
     <enum name="state">
@@ -304,5 +313,60 @@
       <arg name="serial" type="uint" summary="serial of the configure event"/>
     </event>
     
+    <request name="set_material" since="2">
+      <description summary="set how the backdrop is rendered">
+        This is a double-buffered operation, refer to wl_surface.commit.
+
+        The backdrop is processed in this order:
+
+        1. Blurred with a Gaussian of standard deviation radius, in surface-local logical
+           units (like the CSS blur() function).
+        2. Saturated by saturation: 1 leaves the colors unchanged, 0 makes them grayscale and
+           larger values boost them (like the CSS saturate() function, Rec. 709 luma).
+        3. Covered by tint, a color in unpremultiplied 0xAARRGGBB format whose alpha is its
+           opacity. A fully transparent tint leaves the saturated backdrop as is.
+
+        The material applies regardless of the color scheme set with set_color_scheme: clients
+        should set a new one when their color scheme changes.
+
+        Compositors may clamp the radius and saturation to the ranges they can render, and may
+        ignore the material entirely (e.g. for accessibility settings such as reduced
+        transparency).
+
+        A negative radius or saturation triggers the invalid_material error.
+
+        Until this request is sent, or after unset_material, the compositor uses its own
+        material, which may depend on the color scheme.
+      </description>
+      <arg name="radius" type="fixed" summary="blur standard deviation, in logical units"/>
+      <arg name="saturation" type="fixed" summary="saturation multiplier (1 = unchanged)"/>
+      <arg name="tint" type="uint" summary="unpremultiplied tint color, 0xAARRGGBB"/>
+    </request>
+
+    <request name="unset_material" since="2">
+      <description summary="use the compositor's material">
+        This is a double-buffered operation, refer to wl_surface.commit.
+
+        Reverts a material set with set_material: the compositor chooses it again.
+        If no material was set, this is a no-op.
+      </description>
+    </request>
+
+    <request name="set_opacity" since="2">
+      <description summary="fade the blur effect">
+        This is a double-buffered operation, refer to wl_surface.commit.
+
+        Multiplies the opacity of the whole effect (the blurred, saturated and tinted backdrop):
+        0 makes it invisible, showing what's behind the surface as is, and 1 shows it fully.
+        Clients typically set it along with the opacity of their own content while animating it,
+        so the blur doesn't linger behind a fading surface.
+
+        Values outside the [0, 1] range trigger the invalid_opacity error.
+
+        The initial value is 1.
+      </description>
+      <arg name="opacity" type="fixed" summary="effect opacity, from 0 to 1"/>
+    </request>
+
   </interface>
 </protocol>
