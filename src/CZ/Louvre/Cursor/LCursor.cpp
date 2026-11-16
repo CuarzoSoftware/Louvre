@@ -241,45 +241,36 @@ void LCursor::update() noexcept
 
         if (cursor()->isPlaneEnabled(o))
         {
-            SkPoint p { newPosS - SkPoint::Make(o->pos().x(), o->pos().y()) };
+            // Where a rect of size s at p (in an area of w x h, as laid out) lands once transformed
+            // (its top-left corner)
+            const auto transformed = [](CZTransform t, SkPoint p, SkSize s, SkSize area) -> SkPoint {
+                switch (t)
+                {
+                case CZTransform::Flipped:    return { area.width() - p.x() - s.width(), p.y() };
+                case CZTransform::Rotated270: return { area.height() - p.y() - s.height(), p.x() };
+                case CZTransform::Rotated180: return { area.width() - p.x() - s.width(), area.height() - p.y() - s.height() };
+                case CZTransform::Rotated90:  return { p.y(), area.width() - p.x() - s.height() };
+                case CZTransform::Flipped270: return { area.height() - p.y() - s.height(), area.width() - p.x() - s.width() };
+                case CZTransform::Flipped180: return { p.x(), area.height() - p.y() - s.height() };
+                case CZTransform::Flipped90:  return { p.y(), p.x() };
+                default:                      return p;
+                }
+            };
 
-            if (o->transform() == CZTransform::Flipped)
-                p.fX = o->rect().width() - p.x() - m_size.width();
-            else if (o->transform() == CZTransform::Rotated270)
-            {
-                const Float32 tmp { p.x() };
-                p.fX = o->rect().height() - p.y() - m_size.height();
-                p.fY = tmp;
-            }
-            else if (o->transform() == CZTransform::Rotated180)
-            {
-                p.fX = o->rect().width() - p.x() - m_size.width();
-                p.fY = o->rect().height() - p.y() - m_size.height();
-            }
-            else if (o->transform() == CZTransform::Rotated90)
-            {
-                const Float32 tmp { p.x() };
-                p.fX = p.y();
-                p.fY = o->rect().width() - tmp - m_size.height();
-            }
-            else if (o->transform() == CZTransform::Flipped270)
-            {
-                const Float32 tmp { p.x() };
-                p.fX = o->rect().height() - p.y() - m_size.height();
-                p.fY = o->rect().width() - tmp - m_size.width();
-            }
-            else if (o->transform() == CZTransform::Flipped180)
-                p.fY = o->rect().height() - p.y() - m_size.height();
-            else if (o->transform() == CZTransform::Flipped90)
-            {
-                const Float32 tmp { p.x() };
-                p.fX = p.y();
-                p.fY = tmp;
-            }
+            // In physical pixels. The cursor image is drawn at the top-left of the 64x64 buffer, which
+            // is then transformed too (see Image2Buffer()): unless untransformed, the image isn't at
+            // the buffer's top-left anymore, so the plane is placed where the image (not the buffer)
+            // lands where it must.
+            const Float32 fs { o->fractionalScale() };
+            const SkPoint pos { (newPosS.x() - o->pos().x()) * fs, (newPosS.y() - o->pos().y()) * fs };
+            const SkSize size { m_size.width() * fs, m_size.height() * fs };
+            const SkSize area { o->rect().width() * fs, o->rect().height() * fs };
+            const SkPoint onScreen { transformed(o->transform(), pos, size, area) };
+            const SkPoint inBuffer { transformed(o->transform(), { 0.f, 0.f }, size, { 64.f, 64.f }) };
 
             o->backend()->setCursorPos(SkIPoint::Make(
-                p.x() * o->fractionalScale(),
-                p.y() * o->fractionalScale()));
+                SkScalarRoundToInt(onScreen.x() - inBuffer.x()),
+                SkScalarRoundToInt(onScreen.y() - inBuffer.y())));
         }
     }
 

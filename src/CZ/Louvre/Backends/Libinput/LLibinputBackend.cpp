@@ -1,3 +1,4 @@
+#include <CZ/Louvre/Seat/LTouch.h>
 #include <CZ/Louvre/Backends/DRM/LDRMBackend.h>
 #include <CZ/Louvre/LCompositor.h>
 #include <CZ/Louvre/Seat/LOutput.h>
@@ -173,12 +174,13 @@ void LDRMBackend::inputDispatch() noexcept
 
             if (cursor() && cursor()->output())
             {
-                dx = SkScalar(cursor()->output()->pos().x()) +
-                     libinput_event_pointer_get_absolute_x_transformed(nativeEvent, cursor()->output()->size().width()) -
-                     cursor()->pos().x();
-                dy = SkScalar(cursor()->output()->pos().y()) +
-                     libinput_event_pointer_get_absolute_y_transformed(nativeEvent, cursor()->output()->size().height()) -
-                     cursor()->pos().y();
+                // The device covers the panel as it is (like a touchscreen): rotated/flipped with the
+                // output's transform (see LTouch::toGlobal())
+                const SkPoint pos { LTouch::toGlobal(cursor()->output(), SkPoint::Make(
+                    SkScalar(libinput_event_pointer_get_absolute_x_transformed(nativeEvent, 1)),
+                    SkScalar(libinput_event_pointer_get_absolute_y_transformed(nativeEvent, 1)))) };
+                dx = pos.x() - cursor()->pos().x();
+                dy = pos.y() - cursor()->pos().y();
             }
             else
                 dx = dy = 0.f;
