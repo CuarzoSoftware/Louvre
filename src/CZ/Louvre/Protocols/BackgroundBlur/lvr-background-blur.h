@@ -119,6 +119,11 @@ extern const struct wl_interface lvr_background_blur_manager_interface;
  * commits a new configuration.
  *
  * Initially, the blur region is empty (no blur is applied).
+ *
+ * Since version 2, the client can also describe how the backdrop is rendered with
+ * set_material: the blur radius, a saturation boost and a translucent tint drawn over it.
+ * Otherwise the compositor uses its own material. It can also fade the effect with
+ * set_opacity (e.g. to animate it along with the surface's content).
  * @section page_iface_lvr_background_blur_api API
  * See @ref iface_lvr_background_blur.
  */
@@ -153,6 +158,11 @@ extern const struct wl_interface lvr_background_blur_manager_interface;
  * commits a new configuration.
  *
  * Initially, the blur region is empty (no blur is applied).
+ *
+ * Since version 2, the client can also describe how the backdrop is rendered with
+ * set_material: the blur radius, a saturation boost and a translucent tint drawn over it.
+ * Otherwise the compositor uses its own material. It can also fade the effect with
+ * set_opacity (e.g. to animate it along with the surface's content).
  */
 extern const struct wl_interface lvr_background_blur_interface;
 #endif
@@ -337,7 +347,25 @@ enum lvr_background_blur_error {
 	 * invalid svg path
 	 */
 	LVR_BACKGROUND_BLUR_ERROR_INVALID_SVG_PATH = 5,
+	/**
+	 * invalid material parameters
+	 * @since 2
+	 */
+	LVR_BACKGROUND_BLUR_ERROR_INVALID_MATERIAL = 6,
+	/**
+	 * opacity out of the [0, 1] range
+	 * @since 2
+	 */
+	LVR_BACKGROUND_BLUR_ERROR_INVALID_OPACITY = 7,
 };
+/**
+ * @ingroup iface_lvr_background_blur
+ */
+#define LVR_BACKGROUND_BLUR_ERROR_INVALID_MATERIAL_SINCE_VERSION 2
+/**
+ * @ingroup iface_lvr_background_blur
+ */
+#define LVR_BACKGROUND_BLUR_ERROR_INVALID_OPACITY_SINCE_VERSION 2
 #endif /* LVR_BACKGROUND_BLUR_ERROR_ENUM */
 
 #ifndef LVR_BACKGROUND_BLUR_ERROR_ENUM_IS_VALID
@@ -364,6 +392,10 @@ lvr_background_blur_error_is_valid(uint32_t value, uint32_t version) {
 		return version >= 1;
 	case LVR_BACKGROUND_BLUR_ERROR_INVALID_SVG_PATH:
 		return version >= 1;
+	case LVR_BACKGROUND_BLUR_ERROR_INVALID_MATERIAL:
+		return version >= 2;
+	case LVR_BACKGROUND_BLUR_ERROR_INVALID_OPACITY:
+		return version >= 2;
 	default:
 		return false;
 	}
@@ -586,6 +618,81 @@ struct lvr_background_blur_interface {
 	void (*set_svg_path_mask)(struct wl_client *client,
 				  struct wl_resource *resource,
 				  struct wl_resource *path);
+	/**
+	 * set how the backdrop is rendered
+	 *
+	 * This is a double-buffered operation, refer to
+	 * wl_surface.commit.
+	 *
+	 * The backdrop is processed in this order:
+	 *
+	 * 1. Blurred with a Gaussian of standard deviation radius, in
+	 * surface-local logical units (like the CSS blur() function). 2.
+	 * Saturated by saturation: 1 leaves the colors unchanged, 0 makes
+	 * them grayscale and larger values boost them (like the CSS
+	 * saturate() function, Rec. 709 luma). 3. Covered by tint, a color
+	 * in unpremultiplied 0xAARRGGBB format whose alpha is its opacity.
+	 * A fully transparent tint leaves the saturated backdrop as is.
+	 *
+	 * The material applies regardless of the color scheme set with
+	 * set_color_scheme: clients should set a new one when their color
+	 * scheme changes.
+	 *
+	 * Compositors may clamp the radius and saturation to the ranges
+	 * they can render, and may ignore the material entirely (e.g. for
+	 * accessibility settings such as reduced transparency).
+	 *
+	 * A negative radius or saturation triggers the invalid_material
+	 * error.
+	 *
+	 * Until this request is sent, or after unset_material, the
+	 * compositor uses its own material, which may depend on the color
+	 * scheme.
+	 * @param radius blur standard deviation, in logical units
+	 * @param saturation saturation multiplier (1 = unchanged)
+	 * @param tint unpremultiplied tint color, 0xAARRGGBB
+	 * @since 2
+	 */
+	void (*set_material)(struct wl_client *client,
+			     struct wl_resource *resource,
+			     wl_fixed_t radius,
+			     wl_fixed_t saturation,
+			     uint32_t tint);
+	/**
+	 * use the compositor's material
+	 *
+	 * This is a double-buffered operation, refer to
+	 * wl_surface.commit.
+	 *
+	 * Reverts a material set with set_material: the compositor chooses
+	 * it again. If no material was set, this is a no-op.
+	 * @since 2
+	 */
+	void (*unset_material)(struct wl_client *client,
+			       struct wl_resource *resource);
+	/**
+	 * fade the blur effect
+	 *
+	 * This is a double-buffered operation, refer to
+	 * wl_surface.commit.
+	 *
+	 * Multiplies the opacity of the whole effect (the blurred,
+	 * saturated and tinted backdrop): 0 makes it invisible, showing
+	 * what's behind the surface as is, and 1 shows it fully. Clients
+	 * typically set it along with the opacity of their own content
+	 * while animating it, so the blur doesn't linger behind a fading
+	 * surface.
+	 *
+	 * Values outside the [0, 1] range trigger the invalid_opacity
+	 * error.
+	 *
+	 * The initial value is 1.
+	 * @param opacity effect opacity, from 0 to 1
+	 * @since 2
+	 */
+	void (*set_opacity)(struct wl_client *client,
+			    struct wl_resource *resource,
+			    wl_fixed_t opacity);
 };
 
 #define LVR_BACKGROUND_BLUR_STATE 0
@@ -628,6 +735,18 @@ struct lvr_background_blur_interface {
  * @ingroup iface_lvr_background_blur
  */
 #define LVR_BACKGROUND_BLUR_SET_SVG_PATH_MASK_SINCE_VERSION 1
+/**
+ * @ingroup iface_lvr_background_blur
+ */
+#define LVR_BACKGROUND_BLUR_SET_MATERIAL_SINCE_VERSION 2
+/**
+ * @ingroup iface_lvr_background_blur
+ */
+#define LVR_BACKGROUND_BLUR_UNSET_MATERIAL_SINCE_VERSION 2
+/**
+ * @ingroup iface_lvr_background_blur
+ */
+#define LVR_BACKGROUND_BLUR_SET_OPACITY_SINCE_VERSION 2
 
 /**
  * @ingroup iface_lvr_background_blur

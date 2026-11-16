@@ -129,15 +129,17 @@ void LOutput::setTransform(CZTransform transform) noexcept
     if (transform == imp()->transform)
         return;
 
-    const auto prevBufferSize { imp()->bufferSize };
     imp()->transform = transform;
     imp()->updateRect();
 
-    if (state() == Initialized && prevBufferSize != imp()->bufferSize)
+    // Whether the size changes or not (e.g. rotated 180 degrees, flipped): repainted, clients told,
+    // and the cursor plane image rendered again with the new transform (and placed again)
+    if (state() == Initialized)
     {
         repaint();
         imp()->updateGlobals();
         cursor()->m_imageChanged = true;
+        cursor()->updateLater();
     }
 
     for (auto *head : imp()->wlrOutputHeads)

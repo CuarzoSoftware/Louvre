@@ -224,10 +224,15 @@ public:
      *
      * @note Some surface roles do not have an input region such as LCursorRole or LDNDIconRole so these surfaces are always ignored.
      *
+     * Used by the default pointer and touch implementations to pick the surface to focus. The
+     * default implementation walks the layers top-down (each surface tree as LSurface::raise()
+     * stacked it). Override it if the compositor stacks surfaces differently (e.g. drawing popups
+     * above everything), so input matches what's shown.
+     *
      * @param point Point in compositor-global coordinates.
      * @returns Returns the first surface that contains the point or `nullptr` if no surface is found.
      */
-    LSurface *surfaceAt(SkIPoint point) const noexcept;
+    virtual LSurface *surfaceAt(SkIPoint point) const noexcept;
     LSurface *surfaceAt(SkPoint point) const noexcept { return surfaceAt(point.x(), point.y()); };
     LSurface *surfaceAt(Int32 x, Int32 y) const noexcept { return surfaceAt(SkIPoint(x, y)); }
 

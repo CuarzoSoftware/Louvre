@@ -29,6 +29,9 @@ public:
         Int32 x, Int32 y, Int32 width, Int32 height,
         Int32 radTL, Int32 radTR, Int32 radBR, Int32 radBL);
     static void set_svg_path_mask(wl_client *client, wl_resource *resource, wl_resource *svgPath);
+    static void set_material(wl_client *client, wl_resource *resource, wl_fixed_t radius, wl_fixed_t saturation, UInt32 tint);
+    static void unset_material(wl_client *client, wl_resource *resource);
+    static void set_opacity(wl_client *client, wl_resource *resource, wl_fixed_t opacity);
 private:
     friend class GBackgroundBlurManager;
     RBackgroundBlur(CZBitset<LBackgroundBlur::MaskingCapabilities> maskCaps, Wayland::RWlSurface *surfaceRes, UInt32 id, Int32 version, bool inert) noexcept;
