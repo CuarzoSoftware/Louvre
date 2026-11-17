@@ -10,6 +10,7 @@
 #include <sys/prctl.h>
 #include <poll.h>
 #include <mutex>
+#include <cerrno>
 
 using namespace CZ;
 
@@ -32,6 +33,47 @@ static pid_t daemonGID = -1;
 
 // Serializes pipe messages: commands and env updates must not interleave.
 static std::mutex launchMutex;
+
+/* Writes the whole buffer to the daemon. SIGPIPE is blocked during the write
+ * so a dead daemon makes it fail with EPIPE instead of killing the compositor;
+ * a SIGPIPE raised here is consumed unless one was already pending. */
+static bool writeToDaemon(const char *data, size_t size)
+{
+    sigset_t pipeSet, prevMask, pending;
+    sigemptyset(&pipeSet);
+    sigaddset(&pipeSet, SIGPIPE);
+    sigpending(&pending);
+    const bool wasPending { sigismember(&pending, SIGPIPE) == 1 };
+    pthread_sigmask(SIG_BLOCK, &pipeSet, &prevMask);
+
+    bool ok { true };
+
+    while (size > 0)
+    {
+        const ssize_t w { write(pipeA[1], data, size) };
+
+        if (w < 0)
+        {
+            if (errno == EINTR)
+                continue;
+
+            ok = false;
+            break;
+        }
+
+        data += w;
+        size -= (size_t)w;
+    }
+
+    if (!ok && !wasPending)
+    {
+        const timespec zero {};
+        sigtimedwait(&pipeSet, nullptr, &zero);
+    }
+
+    pthread_sigmask(SIG_SETMASK, &prevMask, nullptr);
+    return ok;
+}
 
 // Reads "\x01KEY=VALUE\0" pairs until an empty line; applies each to the
 // daemon environment, so system() children launched afterwards inherit it.
@@ -271,34 +313,21 @@ pid_t LLauncher::launch(const std::string &command)
     fds.revents = 0;
     fds.fd = pipeB[0];
     char c;
-    const char *cmd = command.c_str();
 
-    // Read prev message if any
-    if (poll(&fds, 1, 0) == 1)
-        while (read(pipeB[0], &c, 1) > 0) {}
+    /* Discard a late reply from a previous launch() that timed out. Poll before
+     * every read: the pipe is blocking, so reading past the available bytes
+     * would hang the compositor. */
+    while (poll(&fds, 1, 0) == 1 && read(pipeB[0], &c, 1) > 0) {}
 
     ssize_t s;
     std::string res = "";
 
-    // Send the command
-    while (true)
+    // Send the command, including its null terminator
+    if (!writeToDaemon(command.c_str(), command.size() + 1))
     {
-        s = write(pipeA[1], cmd, 1);
-
-        if (s < 0)
-        {
-            LauncherLog(CZError, "Command {} failed. Daemon died", command.c_str());
-            stopDaemon();
-            return -1;
-        }
-
-        if (s == 0)
-            continue;
-
-        if (*cmd == '\0')
-            break;
-
-        cmd += s;
+        LauncherLog(CZError, "Command {} failed. Daemon died", command.c_str());
+        stopDaemon();
+        return -1;
     }
 
     // the launched app PID
@@ -344,9 +373,16 @@ bool LLauncher::setEnv(const std::string &key, const std::string &value)
         return false;
     }
 
-    if (key.empty() || key.find('=') != std::string::npos)
+    // '\0' would split the message (the daemon reads null-terminated pairs)
+    if (key.empty() || key.find('=') != std::string::npos || key.find('\0') != std::string::npos)
     {
         LauncherLog(CZError, CZLN, "Cannot set env {}. Invalid variable name", key);
+        return false;
+    }
+
+    if (value.find('\0') != std::string::npos)
+    {
+        LauncherLog(CZError, CZLN, "Cannot set env {}. The value contains a null character", key);
         return false;
     }
 
@@ -355,21 +391,11 @@ bool LLauncher::setEnv(const std::string &key, const std::string &value)
     msg.push_back('\0');
     msg.push_back('\0');
 
-    const char *ptr = msg.c_str();
-    size_t left = msg.size();
-
-    while (left > 0)
+    if (!writeToDaemon(msg.data(), msg.size()))
     {
-        ssize_t w = write(pipeA[1], ptr, left);
-
-        if (w <= 0)
-        {
-            LauncherLog(CZError, CZLN, "Failed to send the env update to the daemon");
-            return false;
-        }
-
-        ptr += w;
-        left -= (size_t)w;
+        LauncherLog(CZError, CZLN, "Failed to send the env update {}. Daemon died", key);
+        stopDaemon();
+        return false;
     }
 
     return true;
