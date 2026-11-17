@@ -54,6 +54,19 @@ public:
     static pid_t launch(const std::string &command);
 
     /**
+     * @brief Sets an environment variable for every command launched from now on.
+     *
+     * The daemon applies the variable to its own environment, so each command
+     * launched afterwards with launch() inherits it. An empty @p value unsets
+     * @p key.
+     *
+     * @param key The variable name. Must be non-empty and must not contain '='.
+     * @param value The variable value; empty unsets the variable.
+     * @return true if the update was delivered to the daemon.
+     */
+    static bool setEnv(const std::string &key, const std::string &value);
+
+    /**
      * @brief Terminates the daemon.
      *
      * Calling this method when the daemon is not running is a no-op.
