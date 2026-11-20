@@ -254,6 +254,10 @@ Float32 LOutput::scale() const noexcept
 
 void LOutput::repaint() noexcept
 {
+    // Not filtered while (un)initializing or changing the mode (the backend unlocks the thread itself)
+    if (imp()->state == Initialized && !repaintFilter())
+        return;
+
     if (m_backend->repaint())
     {
         // Frame latency instrumentation: keep the time of the first request of the pending frame

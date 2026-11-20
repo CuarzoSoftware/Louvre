@@ -40,19 +40,19 @@
  * By default, all outputs are uninitialized. To initialize an output, use LCompositor::addOutput(), as done in the default implementation of
  * LCompositor::initialized() and LSeat::outputPlugged().
  *
- * When an output is successfully initialized, it is added to LCompositor::outputs() and a new output-specific rendering thread and shared OpenGL context
- * are created, triggering the initializeGL() event.
+ * When an output is successfully initialized, it is added to LCompositor::outputs() and a rendering thread is created for it,
+ * which triggers the initializeGL() event.
  *
  * @section Uninitialization
  *
- * To uninitialize an output, use LCompositor::removeOutput(). This will invoke the uninitializeGL() event, destroy the rendering thread and OpenGL context
- * and remove the output from LCompositor::outputs().\n
+ * To uninitialize an output, use LCompositor::removeOutput(). This invokes the uninitializeGL() event, destroys the rendering thread
+ * and removes the output from LCompositor::outputs().
  *
  * @note Outputs are also automatically uninitialized following an LSeat::outputUnplugged() event.
  *
  * @section Rendering
  *
- * The rendering thread loop remains blocked until repaint() is called, which unlocks the thread and asynchronously triggers the paintGL() event.
+ * The rendering thread remains blocked until repaint() is called, which unlocks it and asynchronously triggers the paintGL() event.
  *
  * All painting operations must occur exclusively within a paintGL() event, as rendering elsewhere will not be visible on the screen.
  *
@@ -65,17 +65,29 @@
  *
  * You may be wondering why the need to use rendering threads then?
  *
- * The answer is that calling rendering functions (in this case OpenGL functions) takes almost no time (except for **glFinish()**). Rendering commands are queued
- * and processed later together with a page flip. For instance, if your monitor has a 60 Hz refresh rate (approximately 16 ms period), a paintGL() call may take
+ * The answer is that submitting rendering commands takes almost no time: they are queued and processed by the GPU later, together with a page flip.
+ * For instance, if your monitor has a 60 Hz refresh rate (approximately 16 ms period), a paintGL() call may take
  * 1 ms to be processed while the presentation on screen could take up to 15 ms (with V-Sync on). However, during those 15 ms, the main thread or other rendering
  * threads can continue working. This allows Louvre compositors to maintain a constant high refresh rate compared to single-threaded designs.
  *
  * @section Painting
  *
- * Each output has its own OpenGL context and its own instance of LPainter, accessible via painter().
+ * During paintGL(), image() is the image to paint into. Rendering is done with [Ream](@ref module_ream): wrap the image in an RSurface,
+ * map its geometry to the output and begin a pass, as the default implementation of paintGL() does:
  *
- * You can use LPainter methods to render colored rectangles or textures, use OpenGL directly with your own shaders/programs, or rely on the LScene class.\n
- * LScene can render views optimally by considering surface damage, opaque regions, and other factors to significantly improve performance.
+ * @code
+ * auto surface { RSurface::WrapImage(image()) };
+ * surface->setGeometry({
+ *     .viewport = SkRect::Make(rect()),        // Compositor-global coordinates
+ *     .dst = SkRect::Make(image()->size()),    // Pixels of the image
+ *     .transform = transform() });
+ * auto pass { surface->beginPass(RPassCap_Painter) };
+ * RPainter *painter { pass->getPainter() };
+ * // Draw with painter...
+ * @endcode
+ *
+ * Instead of drawing everything each frame, a scene (e.g. [Kay](@ref module_kay)'s AKScene) can repaint only what changed, using imageAge()
+ * and reporting what was repainted in #damage.
  *
  * @section Modes
  *
@@ -156,7 +168,7 @@
  * For this reason, Louvre offers the option to render using oversampling, where all the screen content is rendered into a larger buffer, and then that rendered buffer is scaled down to the actual screen framebuffer.
  * This method almost completely eliminates aliasing but has the disadvantage of consuming more computational power, potentially decreasing performance.
  * Without oversampling the content is directly rendered on the screen, making it efficient but retaining aliasing artifacts.\n
- * Louvre allows you to toggle oversampling on and off instantly at any time using enableFractionalOversampling().
+ * Louvre allows you to toggle oversampling on and off instantly at any time using enableOversampling().
  * For example, you could enable it when displaying a desktop with floating windows and disable it when displaying a fullscreen window.
  *
  * @note Oversampling is not required and is always disabled when using non-fractional scales. Therefore, as a recommendation, if your monitor supports multiple modes() with various resolutions,
@@ -183,17 +195,16 @@
  * height, and the height becomes the width).
  * The compositor-global coordiante space is structured in such a way that you can continue rendering in the same manner
  * as if the screens were in their normal transform state. Therefore, there's no need to worry about rotating or flipping the elements you draw unless you decide not to
- * use LPainter or LScene for rendering.
+ * set the RSurface geometry to the output's transform() when painting (see @ref Painting).
  *
  * @section VSync
  *
- * All outputs have VSync enabled by default. Disabling VSync may not always be supported, refer to hasVSyncControlSupport().
+ * All outputs have VSync enabled by default. Disabling VSync may not always be supported, refer to canDisableVSync().
  *
- * VSync can be toggled using enableVSync(). When VSync is disabled, Louvre limits the frame rate to double the refresh rate of
- * the currentMode() by default. This setting can be changed with setRefreshRateLimit().
+ * VSync can be toggled using enableVSync().
  *
  * Clients using the Tearing Protocol can indicate their preference for each individual surface.\n
- * See LSurface::preferVSync() and LSurface::preferVSyncChanged() for more details.
+ * See LSurface::prefersVSync() and LSurface::prefersVSyncChanged() for more details.
  *
  * @section drm_leasing DRM Leasing
  *
@@ -219,6 +230,7 @@ public:
 
     struct Params;
 
+    /// Type of the factory object, see LCompositor::createObjectRequest().
     static constexpr LFactoryObject::Type FactoryObjectType = LFactoryObject::Type::LOutput;
 
     /**
@@ -264,15 +276,18 @@ public:
      *
      * This method returns the age of the buffer as specified in the
      * [EGL_EXT_buffer_age](https://registry.khronos.org/EGL/extensions/EXT/EGL_EXT_buffer_age.txt)
-     * extension specification.
+     * extension specification: 0 if its content is undefined (it must be fully repainted), otherwise the
+     * number of frames since it was last painted.
      *
      * While oversampling (see oversamplingEnabled()), it's the age of the oversampled image (osImage()):
      * 1 while it keeps its content from the previous frame, 0 when it was just (re)created.
+     *
+     * Always 0 while needsFullRepaint() is `true`.
      */
     UInt32 imageAge() const noexcept;
 
     /**
-     * @brief Returns the index of the backendImage().
+     * @brief Returns the index of the backendImage() within images().
      *
      * @note For damage tracking, use imageAge() instead.
      */
@@ -295,11 +310,17 @@ public:
 
     /**
      * @brief Returns the oversampled image used for painting when oversampling is enabled.
+     *
+     * It's only created while a fractional scale is used with oversampling enabled (see oversamplingEnabled()),
+     * otherwise `nullptr`.
      */
     std::shared_ptr<RImage> osImage() const noexcept;
 
     /**
      * @brief Backend images.
+     *
+     * The images the backend presents on screen, typically used in rotation. backendImage() is the
+     * one to paint in the current frame.
      */
     const std::vector<std::shared_ptr<RImage>> &images() const noexcept { return m_backend->images(); }
 
@@ -322,6 +343,8 @@ public:
 
     /**
      * @brief Toggles VSync.
+     *
+     * @return `true` on success, `false` if the change isn't supported (see canDisableVSync()).
      */
     bool enableVSync(bool enabled) noexcept { return backend()->enableVSync(enabled); }
 
@@ -338,12 +361,21 @@ public:
      * @note This method can only be called while the output is initialized.
      *       Louvre automatically sets a linear gamma table when the output is initialized.
      *
-     * @param gamma A pointer to the LGammaTable with a size matching gammaSize().
+     * If a client set the current table (see setGammaRequest()), its gamma control is revoked, so
+     * the client is told that its table is no longer applied.
+     *
+     * @param gamma The gamma LUT, with a size matching gammaSize().
      *              Passing `nullptr` restores the default table (linear).
      *
      * @return `true` if the gamma correction table was successfully set, `false` otherwise.
      */
     bool setGammaLUT(std::shared_ptr<const RGammaLUT> gamma) noexcept;
+
+    /**
+     * @brief Gets the current gamma LUT.
+     *
+     * @return The table set with setGammaLUT(), or `nullptr` if the default (linear) table is used.
+     */
     std::shared_ptr<const RGammaLUT> gammaLUT() const noexcept { return backend()->gammaLUT(); }
 
     /**
@@ -371,6 +403,14 @@ public:
      * @brief Sets the output mode.
      *
      * If the mode changes and the output is already initialized the resizeGL() event is triggered.
+     *
+     * @note It can't be called from a rendering thread, e.g. from paintGL().
+     *
+     * @param mode One of the modes().
+     *
+     * @return `1` on success (also if it's already the currentMode()), `0` if the mode is invalid, it was called from
+     *         a rendering thread or the backend failed and kept the previous mode, `-1` if the backend failed and
+     *         the output can no longer be used.
      */
     int setMode(std::shared_ptr<LOutputMode> mode) noexcept;
 
@@ -380,15 +420,15 @@ public:
     State state() const noexcept;
 
     /**
-     * @brief The device this output belongs.
+     * @brief The device (GPU) this output belongs to.
      */
     RDevice *device() const noexcept { return m_backend->device(); };
 
     /**
      * @brief Session Lock Surface
      *
-     * When a client requests to lock the user session (see LSessionLockManager), it creates an LSessionLockRole surface for each initialized output whith
-     * a size equals to the output size().
+     * When a client requests to lock the user session (see LSessionLockManager), it creates an LSessionLockRole surface for each initialized output with
+     * a size equal to the output size().
      *
      * If the session is locked and there is no LSessionLockRole assigned to this output, the compositor should still avoid rendering any user-related content.
      *
@@ -404,7 +444,7 @@ public:
      * the order affects their predominance: zones listed later adjust their space to
      * avoid occluding those listed earlier.
      *
-     * @return A list of pointers to LExclusiveZone objects.
+     * @return A copy of the list of LExclusiveZone objects.
      * @see LExclusiveZone::setOutput()
      */
     const std::list<LExclusiveZone*> exclusiveZones() const noexcept;
@@ -454,9 +494,12 @@ public:
     /**
      * @brief Sets the output scale factor.
      *
-     * LCompositor::initialized() assigns the default value based on the dpi() e.g. setting it to 2 is often suitable for high-definition displays (when dpi() >= 200).
+     * The default implementations of LCompositor::initialized() and LSeat::outputPlugged() assign it based on the dpi():
+     * 2 when dpi() >= 200, 1 otherwise.
      *
-     * Supported range: [0.25, inf]
+     * A fractional value (e.g. 1.5) enables fractional scaling, see @ref Scaling.
+     *
+     * Supported range: [0.25, inf], smaller values are clamped to 0.25.
      */
     void setScale(Float32 scale) noexcept;
 
@@ -471,6 +514,8 @@ public:
 
     /**
      * @brief Gets the scale factor set with setScale().
+     *
+     * Unlike scale(), it isn't rounded up.
      */
     Float32 fractionalScale() const noexcept;
 
@@ -496,6 +541,10 @@ public:
 
     /**
      * @brief Toggles oversampling.
+     *
+     * Takes effect on the next frame, which is scheduled (see repaint()) if a fractional scale is in use.
+     *
+     * @see oversamplingEnabled()
      */
     void enableOversampling(bool enabled) noexcept;
 
@@ -513,8 +562,7 @@ public:
      *
      * This hint from the graphic backend suggests that the entire output should be repainted,
      * possibly because it doesn't support damage tracking or for other reasons.
-     *
-     * @note This is automatically managed by LScene.
+     * While `true`, imageAge() returns 0.
      */
     bool needsFullRepaint() const noexcept;
 
@@ -522,7 +570,9 @@ public:
      * @brief Gets the dots per inch (DPI) of the output.
      *
      * This method calculates and returns the dots per inch (DPI) of the output, considering its physical
-     * dimensions and the resolution provided by its current mode.
+     * dimensions (mmSize()) and the resolution provided by its current mode.
+     *
+     * @return The DPI, or 96 if the physical size is unknown (e.g. virtual machines).
      */
     Int32 dpi() noexcept;
 
@@ -545,7 +595,9 @@ public:
      * @brief Set the position of the output.
      *
      * This method allows you to assign the position of the output in compositor-global coordinates, with the upper-left corner as the origin.
-     * If the position changes while the output is initialized, the moveGL() event is triggered.
+     * If the position changes while the output is initialized, the moveGL() event is triggered before the next paintGL().
+     *
+     * @note It doesn't schedule a repaint by itself, call repaint() to update the screen.
      *
      * @param pos The new position of the output in compositor-global coordinates.
      */
@@ -567,14 +619,13 @@ public:
     SkISize sizeB() const noexcept;
 
     /**
-     * @brief Retrieves the real destination buffer size.
+     * @brief Retrieves the size in pixels of the screen.
      *
-     * This method returns the size in pixels of the destination framebuffer during a paintGL() event.\n
-     * Unlike sizeB(), the width and height are not swapped if transform() includes a 90° rotation.\n
-     * Additionally, when using oversampling and a fractional scale, it returns the actual size of the
-     * intermediary "oversampled" framebuffer, rather than the "fake" buffer size provided by sizeB().
+     * This is the size of the currentMode(), i.e. of backendImage(). Unlike sizeB(), the width and height are not
+     * swapped if transform() includes a 90° rotation, and it's not affected by a fractional scale.
      *
-     * @note This method is only useful if you are not using LPainter or LScene for rendering.
+     * @note While oversampling, paintGL() paints into a larger image, use `image()->size()` for the size of
+     *       the image being painted.
      */
     SkISize realBufferSize() const noexcept;
 
@@ -717,17 +768,22 @@ public:
      *
      * The serial number can be used to uniquely identify an output even after reboots.
      *
-     * @return `nullptr` if the backend doesn't provide it.
+     * @return An empty string if the backend doesn't provide it.
      */
     const std::string &serialNumber() const noexcept { return m_backend->serial(); }
 
     /**
      * @brief Gets the ID of the rendering thread.
      *
-     * This method retrieves the ID of the output rendering thread.
+     * This method retrieves the ID of the output rendering thread. Only valid while the output is initialized.
      */
     const std::thread::id &threadId() const noexcept;
 
+    /**
+     * @brief The graphic backend's counterpart of this output.
+     *
+     * Used internally, most of its information is exposed by LOutput itself.
+     */
     LBackendOutput *backend() const noexcept { return m_backend.get(); }
 
     /**
@@ -738,7 +794,7 @@ public:
     /**
      * @brief Initialize Event.
      *
-     * The initializeGL() event is invoked after the output is properly initialized.\n
+     * The initializeGL() event is invoked from the output's rendering thread after the output is properly initialized.
      *
      * @note Avoid performing painting operations here, as they won't be visible on the screen. See the paintGL() event.
      *
@@ -761,7 +817,8 @@ public:
     /**
      * @brief Resize Event.
      *
-     * The resizeGL() event is invoked when the output scale or mode changes.
+     * The resizeGL() event is invoked when the output size() changes, e.g. after a mode, scale or transform change.
+     * It's invoked before the next paintGL().
      *
      * @note Avoid performing painting operations here, as they won't be visible on the screen. See the paintGL() event.
      *
@@ -773,7 +830,7 @@ public:
     /**
      * @brief Move Event.
      *
-     * This event is triggered when the output's position changes, see setPos().\n
+     * This event is triggered before the next paintGL() when the output's position changes, see setPos().
      *
      * @note Avoid performing painting operations here, as they won't be visible on the screen. See the paintGL() event.
      *
@@ -788,7 +845,7 @@ public:
      * The uninitializeGL() event is invoked after the output is removed from the compositor with LCompositor::removeOutput()
      * or when the output is unplugged, see LSeat::outputUnplugged().\n
      *
-     * Here you should free your shaders, programs, textures, etc.
+     * Here you should free the resources created for this output (images, surfaces, scenes, etc.).
      *
      * @note Avoid performing painting operations here, as they won't be visible on the screen. See the paintGL() event.
      *
@@ -797,6 +854,15 @@ public:
      */
     virtual void uninitializeGL();
 
+    /**
+     * @brief Presentation event.
+     *
+     * Notifies that a frame painted in paintGL() was presented on screen or discarded (`e.discarded`).
+     *
+     * The default implementation sends the presentation feedback (time, refresh period, sequence) to clients using the
+     * [Presentation Time](https://wayland.app/protocols/presentation-time) protocol, if overridden it should be called
+     * to keep it working.
+     */
     virtual void presentationEvent(const CZPresentationEvent &e) noexcept;
 
     /**
@@ -807,10 +873,10 @@ public:
      *
      * @warning For security reasons, it is advisable to permit only authorized clients to perform such actions. See LCompositor::globalsFilter().
      *
-     * The gamma table (when is not `nullptr`) always have a size equal to gammaSize(), hence, it is not necessary to validate that.
+     * The gamma table (when it's not `nullptr`) always has a size equal to gammaSize(), hence, it is not necessary to validate that.
      *
      * @param client Pointer to the client making the request.
-     * @param gamma Pointer to the LGammaTable object containing the requested gamma table or `nullptr` to restore the default table.
+     * @param gamma The requested gamma table or `nullptr` to restore the default table.
      *
      * #### Default Implementation
      * @snippet LOutputDefault.cpp setGammaRequest
@@ -854,6 +920,8 @@ public:
      */
     virtual bool repaintFilter();
 
+///@}
+
     /**
      * @brief Region to repaint for the software cursor during a paintGL() event.
      *
@@ -877,14 +945,20 @@ public:
      *
      * Indicates the area updated during paintGL(), helping the graphics backend reduce
      * the amount of pixels to copy (useful with the raster backend, oversampling, or hybrid GPU setups).
+     * It's also the damage reported to screen capture clients.
      *
      * Defined in output-local coordinates. Reset to full damage ((0, 0), LOutput::size()) before each paintGL() call.
+     * After paintGL() Louvre converts it to buffer coordinates, so it should only be read or modified during paintGL().
      */
     SkRegion damage;
 
+    /**
+     * @brief Handles events sent to the output.
+     *
+     * Presentation events (CZPresentationEvent) are dispatched to presentationEvent(), others are handled by LFactoryObject::event().
+     */
     bool event(const CZEvent &e) noexcept override;
 
-///@}
     LPRIVATE_IMP_UNIQUE(LOutput)
     std::shared_ptr<LBackendOutput> m_backend;
 };
