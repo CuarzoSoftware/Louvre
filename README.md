@@ -10,6 +10,8 @@
   </a>
 </p>
 
+> This project is part of the [Cuarzo Framework](https://github.com/CuarzoSoftware/Cuarzo). Follow the instructions there to build and install it.
+
 Louvre is a C++ library for building Wayland compositors. It uses the Factory Method pattern to provide default implementations for all major functionality and protocols, which you can gradually override.
 This approach lets you see results from day one, potentially easing the learning curve while still giving you full control to create a unique, custom compositor.
 
