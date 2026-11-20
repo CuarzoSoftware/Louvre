@@ -234,7 +234,7 @@ public:
      *
      * @see LSurfaceLayer
      *
-     * @example compositor()->layers()[LLayerMiddle]
+     * Example: `compositor()->layers()[LLayerMiddle]`
      */
     const std::array<std::list<LSurface*>, LLayerOverlay + 1> &layers() const noexcept;
 

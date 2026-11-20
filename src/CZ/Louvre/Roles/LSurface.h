@@ -91,7 +91,6 @@ namespace CZ
  *
  * @note The default implementation of LOutput::paintGL() does not take into account the damage of surfaces, and therefore it renders in an inefficient way.
  *       It's recommended to use the LScene and LView system for rendering, which efficiently repaints only what is necessary during each frame.
- *       If you want to see an example of efficient rendering, check the [louvre-views](#louvre-views-example) or [louvre-weston-clone](#louvre-weston-clone-example) examples.
  *
  * @section Stacking Order
  *
@@ -396,7 +395,7 @@ public:
      * This information can be used, for example, to adapt the compositor behavior and to optimize the functioning
      * of hardware displays when assigned to outputs through LOutput::setContentType().
      *
-     * The default value is @ref LContentTypeNone.
+     * The default value is @ref RContentType::None.
      *
      * @see LOutput::setContentType() and LSurface::contentTypeChanged()
      */
@@ -764,7 +763,6 @@ public:
      *
      * During the execution of this method, the surface is always **unmapped**.
      *
-     * @param prevRole Handle to the previous role, or `nullptr` if no role was assigned.
      * The current role is always obtained via `role()`.
      *
      * #### Default Implementation

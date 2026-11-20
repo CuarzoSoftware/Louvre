@@ -149,7 +149,7 @@ public:
     /**
      * @brief Sends a pointer move event to the currently focused surface.
      *
-     * @note To specify the position within the surface modify the mutable @ref CZPointerMoveEvent::localPos property.
+     * @note To specify the position within the surface modify the mutable @ref CZPointerMoveEvent::pos property (in surface-local coordinates).
      */
     void sendMoveEvent(const CZPointerMoveEvent &event);
 

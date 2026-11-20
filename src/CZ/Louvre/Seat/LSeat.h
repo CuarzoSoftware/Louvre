@@ -132,7 +132,7 @@ public:
     /**
      * @brief Active toplevel surface.
      *
-     * This method returns the current LToplevelRole being configured with the @ref LToplevelRole::State::Activated flag.\n
+     * This method returns the current LToplevelRole being configured with the CZWinActivated flag.\n
      * Only one toplevel surface can be active at a time, Louvre automatically deactivates other toplevels when one is activated.
      *
      * @return The currently active LToplevelRole instance or `nullptr` if no toplevel is active.
@@ -342,7 +342,7 @@ public:
      * @brief New available input device.
      *
      * #### Default Implementation
-     * @snippet LSeatDefault.cpp inputDevicePlugged
+     * @snippet LSeatDefault.cpp inputDevicePluggedEvent
      */
     virtual void inputDevicePlugged(std::shared_ptr<CZInputDevice> dev);
 
@@ -350,7 +350,7 @@ public:
      * @brief Disconnected input device.
      *
      * #### Default Implementation
-     * @snippet LSeatDefault.cpp inputDeviceUnplugged
+     * @snippet LSeatDefault.cpp inputDeviceUnpluggedEvent
      */
     virtual void inputDeviceUnplugged(std::shared_ptr<CZInputDevice> dev);
 

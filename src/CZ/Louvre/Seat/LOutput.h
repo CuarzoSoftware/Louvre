@@ -599,7 +599,7 @@ public:
      * For example, if the @ref RContentType::Game flag is set, a TV connected through an HDMI port may adapt
      * to reduce latency.
      *
-     * The default value is @ref LContentTypeNone.
+     * The default value is @ref RContentType::None.
      *
      * Clients using the Content Type Hint protocol can also specify the type of content a given LSurface is displaying.
      *

@@ -308,7 +308,7 @@ public:
      * This event is triggered each time one or more of the atoms() change.
      *
      * @param changes Flags indicating which properties in atoms() have changed.
-     * @param prevAtoms Structure containing the previous values of atoms().
+     * @param prev Structure containing the previous values of state().
      *
      * #### Default Implementation
      * @snippet LPopupRoleDefault.cpp atomsChanged

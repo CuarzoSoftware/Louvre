@@ -40,7 +40,7 @@
  * The compositor can modify the state and color hint configuration at any time but should always wait for the client’s acknowledgment
  * before applying the changes.
  *
- * Compositors may support different masking capabilities depending on their rendering features. Modify @ref maskingCapabilities to
+ * Compositors may support different masking capabilities depending on their rendering features. Modify @ref MaskCaps to
  * advertise the supported capabilities to clients.
  *
  * @note Both globals are created by default in `LCompositor::createGlobalsRequest()` (except with the
@@ -55,7 +55,7 @@ public:
     /**
      * @brief Flags indicating the masks supported by the compositor.
      *
-     * These flags are used in @ref maskingCapabilities .
+     * These flags are used in @ref MaskCaps .
      */
     enum MaskingCapabilities : UInt32
     {
@@ -198,7 +198,7 @@ public:
          * The rounded rectangle is guaranteed to be valid, but it may extend beyond the surface bounds.
          *
          * If the compositor does not support rounded rectangle masks, it should remove the @ref RoundRectMaskCap
-         * from @ref maskingCapabilities to prevent clients from using it.
+         * from @ref MaskCaps to prevent clients from using it.
          */
         CZRRect roundRectMask;
 
@@ -211,7 +211,7 @@ public:
          * responsibility of the caller to ensure the SVG path is valid.
          *
          * If the compositor does not support SVG path masks, it should remove the @ref SVGPathMaskCap
-         * from @ref maskingCapabilities to prevent clients from using it.
+         * from @ref MaskCaps to prevent clients from using it.
          */
         SkPath svgPathMask;
 

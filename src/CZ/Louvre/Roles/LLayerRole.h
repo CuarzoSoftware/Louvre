@@ -223,10 +223,10 @@ public:
      *
      * Notifies when one or more properties change.
      *
-     * @see @ref Atoms
+     * @see State
      *
      * @param changes Flags indicating which properties have changed.
-     * @param prevAtoms The previous property values.
+     * @param prev The previous property values.
      *
      * #### Default Implementation
      * @snippet LLayerRoleDefault.cpp atomsChanged

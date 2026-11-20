@@ -41,7 +41,7 @@
  *
  * @section toplevel-state-change-requests State Change Requests
  *
- * Depending on the flags set with configureCapabilities(), clients can request to minimize or change the state() of the toplevel to @ref Maximized or @ref Fullscreen through
+ * Depending on the flags set with configureCapabilities(), clients can request to minimize or change the state() of the toplevel to CZWinMaximized or CZWinFullscreen through
  * setMinimizedRequest(), set / unsetMaximizedRequest() and set / unsetFullscreenRequest().
  * The compositor is then expected to minimize or properly configure the state and size, but it's free to ignore the requests if desired.
  *
@@ -402,44 +402,44 @@ public:
     /**
      * @brief Returns the states supported by the toplevel.
      *
-     * - @ref Activated, @ref Maximized , @ref Fullscreen , and @ref Resizing are always supported.
+     * - CZWinActivated, CZWinMaximized , CZWinFullscreen , and CZWinResizing are always supported.
      * - If any of the tiled states is supported, all are supported.
-     * - The @ref Suspended state support is independent of other states.
+     * - The CZWinSuspended state support is independent of other states.
      *
      * @return A bitset representing the supported states.
      */
     CZBitset<CZWindowState> supportedWindowStates() const noexcept { return m_supportedWindowStates; }
 
     /**
-     * @brief Checks if the toplevel state() includes the @ref Activated flag.
+     * @brief Checks if the toplevel state() includes the CZWinActivated flag.
      *
      * @return `true` if the flag is present, `false` otherwise.
      */
     bool isActivated() const noexcept { return windowState().has(CZWinActivated); }
 
     /**
-     * @brief Checks if the toplevel state() includes the @ref Maximized flag.
+     * @brief Checks if the toplevel state() includes the CZWinMaximized flag.
      *
      * @return `true` if the flag is present, `false` otherwise.
      */
     bool isMaximized() const noexcept { return windowState().has(CZWinMaximized); }
 
     /**
-     * @brief Checks if the toplevel state() includes the @ref Fullscreen flag.
+     * @brief Checks if the toplevel state() includes the CZWinFullscreen flag.
      *
      * @return `true` if the flag is present, `false` otherwise.
      */
     bool isFullscreen() const noexcept { return windowState().has(CZWinFullscreen); }
 
     /**
-     * @brief Checks if the toplevel state() includes the @ref Resizing flag.
+     * @brief Checks if the toplevel state() includes the CZWinResizing flag.
      *
      * @return `true` if the flag is present, `false` otherwise.
      */
     bool isResizing() const noexcept { return windowState().has(CZWinResizing); }
 
     /**
-     * @brief Checks if the toplevel state() includes the @ref Suspended flag.
+     * @brief Checks if the toplevel state() includes the CZWinSuspended flag.
      *
      * @return `true` if the flag is present, `false` otherwise.
      */
@@ -496,7 +496,7 @@ public:
      * LOutput::availableGeometry(). See LToplevelMoveSession::setConstraints() and
      * LToplevelResizeSession::setConstraints()
      *
-     * @param includeExtraGeometry If `true`, extraGeometry() is considered.
+     * @param output The output whose available geometry is used. If `nullptr`, all edges are disabled (CZEdgeDisabled).
      */
     LMargins calculateConstraintsFromOutput(LOutput *output) const noexcept;
 
@@ -689,8 +689,6 @@ public:
      */
     SkIRect prevRect { 0, 0, 0, 0 };
 
-    ///@}
-
 /// @name Virtual Methods
 /// @{
     /**
@@ -719,10 +717,10 @@ public:
     /**
      * @brief Notifies a change in atomic properties.
      *
-     * This event is triggered each time one or more of the atoms() change.
+     * This event is triggered each time one or more of the state() properties change.
      *
-     * @param changes Flags indicating which properties in atoms() have changed.
-     * @param prevAtoms Structure containing the previous values of atoms().
+     * @param changes Flags indicating which properties in state() have changed.
+     * @param prev Structure containing the previous values of state().
      *
      * #### Default Implementation
      * @snippet LToplevelRoleDefault.cpp atomsChanged
@@ -733,7 +731,7 @@ public:
      * @brief Client request to initiate an interactive move session.
      *
      * The default implementation utilizes the moveSession() utility to handle
-     * the session, and ignores it if the toplevel is in @ref Fullscreen mode.
+     * the session, and ignores it if the toplevel is in CZWinFullscreen mode.
      *
      * The triggering event helps differentiate whether it is a pointer, touch,
      * or other type of session.
@@ -751,7 +749,7 @@ public:
      * @brief Client request to initiate an interactive resize session.
      *
      * The default implementation utilizes the resizeSession() utility to handle
-     * the session, and ignores it if the toplevel is in @ref Fullscreen mode.
+     * the session, and ignores it if the toplevel is in CZWinFullscreen mode.
      *
      * The triggering event helps differentiate whether it is a pointer, touch,
      * or other type of session.
@@ -769,7 +767,7 @@ public:
     /**
      * @brief Request to activate.
      *
-     * Triggered by a an LActivationTokenManager::token() or requesterController() expecting the compositor to configure the toplevel with the @ref Activated state.
+     * Triggered by a an LActivationTokenManager::token() or requesterController() expecting the compositor to configure the toplevel with the CZWinActivated state.
      *
      * @see configureState(), requesterController() and LForeignToplevelController.
      *
@@ -783,7 +781,7 @@ public:
     /**
      * @brief Request to maximize.
      *
-     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel with the @ref Maximized state. See configureState().
+     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel with the CZWinMaximized state. See configureState().
      *
      * @note This event is only triggered if the @ref MaximizeCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.
@@ -796,7 +794,7 @@ public:
     /**
      * @brief Request to unmaximize.
      *
-     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel without the @ref Maximized state. See configureState().
+     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel without the CZWinMaximized state. See configureState().
      *
      * @note This event is only triggered if the @ref MaximizeCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.
@@ -809,7 +807,7 @@ public:
     /**
      * @brief Request to set fullscreen mode.
      *
-     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel with the @ref Fullscreen state. See configureState().
+     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel with the CZWinFullscreen state. See configureState().
      *
      * @note This event is only triggered if the @ref FullscreenCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.
@@ -824,7 +822,7 @@ public:
     /**
      * @brief Request to unset fullscreen mode.
      *
-     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel without the @ref Fullscreen state. See configureState().
+     * Triggered by the client or a requesterController() expecting the compositor to configure the toplevel without the CZWinFullscreen state. See configureState().
      *
      * @note This event is only triggered if the @ref FullscreenCap is set. See configureCapabilities().
      * @note The compositor is free to ignore this request.

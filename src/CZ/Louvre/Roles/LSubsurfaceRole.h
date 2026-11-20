@@ -19,7 +19,7 @@
  * other sibling surfaces. See placedAbove() and placedBelow(). Louvre automatically updates the LCompositor::surfaces()
  * list, keeping the order and also triggering the LSurface::orderChanged() event.
  *
- * @section Modes
+ * @section subsurface-modes Modes
  *
  * Subsurfaces can operate in two modes:
  *
