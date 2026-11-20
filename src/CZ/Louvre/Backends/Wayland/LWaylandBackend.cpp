@@ -28,6 +28,8 @@
 #include <CZ/Louvre/Seat/LKeyboard.h>
 
 #include <sys/poll.h>
+#include <cstring>
+#include <CZ/Louvre/LCompositor.h>
 #include <wayland-client-core.h>
 
 using namespace CZ;
@@ -36,8 +38,14 @@ static const wl_pointer_listener pointerLis
 {
     .enter = [](void *data, wl_pointer */*pointer*/, UInt32 serial, wl_surface */*surface*/, wl_fixed_t x, wl_fixed_t y)
     {
-        auto &wl { static_cast<LWaylandBackend*>(data)->wl };
+        auto *backend { static_cast<LWaylandBackend*>(data) };
+        auto &wl { backend->wl };
         wl.seat.pointerEnterSerial = serial;
+
+        // The parent forgot our cursor: set it again with the new serial (see updateCursor())
+        for (LOutput *output : backend->outputs())
+            static_cast<LWaylandOutput*>(output->backend())->updateCursor();
+
         auto diff { SkPoint(wl_fixed_to_double(x), wl_fixed_to_double(y)) - cursor()->pos() };
         CZPointerMoveEvent e {};
         e.delta = e.deltaUnaccelerated = diff;
@@ -261,6 +269,10 @@ static const wl_registry_listener registryLis
             wl.xdgWmBase = (xdg_wm_base*)wl_registry_bind(registry, name, &xdg_wm_base_interface, 1);
             xdg_wm_base_add_listener(wl.xdgWmBase, &xdgWmBaseLis, data);
         }
+        else if (!wl.xdgDecorationManager && strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0)
+        {
+            wl.xdgDecorationManager = (zxdg_decoration_manager_v1*)wl_registry_bind(registry, name, &zxdg_decoration_manager_v1_interface, 1);
+        }
         else if (!wl.seat.proxy && strcmp(interface, wl_seat_interface.name) == 0)
         {
             wl.seat.proxy = (wl_seat*)wl_registry_bind(registry, name, &wl_seat_interface, 1);
@@ -293,6 +305,12 @@ void LWaylandBackend::unit() noexcept
     }
 
     m_defaultFeedback.reset();
+
+    if (wl.xdgDecorationManager)
+    {
+        zxdg_decoration_manager_v1_destroy(wl.xdgDecorationManager);
+        wl.xdgDecorationManager = {};
+    }
 
     if (wl.xdgWmBase)
     {
@@ -331,14 +349,7 @@ bool LWaylandBackend::initDisplay() noexcept
         wl_display_get_fd(wl.display),
         EPOLLIN,
         CZOwn::Borrow,
-        [this](int fd, UInt32 events, CZEventSource*){
-
-            pollfd pfd {};
-            pfd.fd = fd;
-            pfd.events = events;
-            if (poll(&pfd, 1, 0) > 0)
-                wl_display_dispatch(wl.display);
-        });
+        [this](int, UInt32, CZEventSource*){ dispatchEvents(); });
 
     wl.registry = wl_display_get_registry(wl.display);
     wl_registry_add_listener(wl.registry, &registryLis, this);
@@ -356,7 +367,44 @@ bool LWaylandBackend::initDisplay() noexcept
         return false;
     }
 
+    if (!wl.xdgDecorationManager)
+        log(CZInfo, "zxdg_decoration_manager_v1 unsupported by the parent compositor: the window has no decorations");
+
     return true;
+}
+
+void LWaylandBackend::dispatchEvents() noexcept
+{
+    if (!wl.display)
+        return;
+
+    // Queued events first (possibly read by another thread): prepare_read() fails until none is left
+    while (wl_display_prepare_read(wl.display) != 0)
+    {
+        if (wl_display_dispatch_pending(wl.display) < 0)
+        {
+            log(CZFatal, CZLN, "Lost the connection to the parent compositor: {}", strerror(wl_display_get_error(wl.display)));
+            compositor()->finish();
+            return;
+        }
+    }
+
+    wl_display_flush(wl.display);
+
+    // Only read if there's data right now (wl_display_dispatch() would wait for it, and another
+    // thread may have taken it since the event source woke us up)
+    pollfd pfd { .fd = wl_display_get_fd(wl.display), .events = POLLIN, .revents = 0 };
+
+    if (poll(&pfd, 1, 0) > 0)
+        wl_display_read_events(wl.display);
+    else
+        wl_display_cancel_read(wl.display);
+
+    if (wl_display_dispatch_pending(wl.display) < 0)
+    {
+        log(CZFatal, CZLN, "Lost the connection to the parent compositor: {}", strerror(wl_display_get_error(wl.display)));
+        compositor()->finish();
+    }
 }
 
 bool LWaylandBackend::initReam() noexcept

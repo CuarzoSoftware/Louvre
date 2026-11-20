@@ -3,6 +3,7 @@
 
 #include <CZ/Louvre/Backends/LBackend.h>
 #include <CZ/Louvre/Backends/Wayland/xdg-shell-client.h>
+#include <CZ/Louvre/Backends/Wayland/xdg-decoration-unstable-v1-client.h>
 #include <CZ/Louvre/LLog.h>
 
 class CZ::LWaylandBackend : public LBackend
@@ -28,6 +29,8 @@ public:
         xdg_wm_base *xdgWmBase;
         xdg_surface *xdgSurface;
         xdg_toplevel *xdgToplevel;
+        zxdg_decoration_manager_v1 *xdgDecorationManager; // Optional: server-side decorations
+        zxdg_toplevel_decoration_v1 *xdgToplevelDecoration;
         wl_compositor *compositor;
         wl_callback *callback;
         WLSeat seat;
@@ -54,6 +57,15 @@ public:
     std::shared_ptr<LDMAFeedback> defaultFeedback() const noexcept override { return m_defaultFeedback; };
     clockid_t presentationClock() const noexcept override { return CLOCK_MONOTONIC; };
     std::shared_ptr<SRMLease> createLease(const std::unordered_set<LOutput*> &) noexcept override { return {}; };
+
+    /**
+     * @brief Dispatches the parent compositor's events without ever blocking (main thread).
+     *
+     * Another thread may read the socket too (e.g. Mesa's EGL waiting for a buffer release, on
+     * the render thread): events it read for the default queue are dispatched here even though the
+     * socket isn't readable anymore, and a read never waits for data another thread took.
+     */
+    void dispatchEvents() noexcept;
 
     WL wl {};
 protected:

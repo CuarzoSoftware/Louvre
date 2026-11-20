@@ -4,8 +4,11 @@
 #include <CZ/Louvre/Backends/Wayland/xdg-shell-client.h>
 #include <CZ/Ream/WL/RWLSwapchain.h>
 #include <CZ/Louvre/Backends/LBackendOutput.h>
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
 #include <future>
-#include <semaphore>
+#include <mutex>
 
 namespace CZ
 {
@@ -66,7 +69,19 @@ public:
     bool hasCursor() const noexcept override;
     bool setCursor(UInt8 *pixels) noexcept override;
     bool setCursorPos(SkIPoint pos) noexcept override;
+
+    /**
+     * @brief Applies the cursor to the parent compositor's pointer (main thread).
+     *
+     * The parent draws and moves it: the image is only redrawn when it, its size or the scale
+     * changed, and wl_pointer.set_cursor only sent when that or the hotspot changed, or the pointer
+     * re-entered (new serial). Never on mere motion.
+     */
     void updateCursor() noexcept;
+
+    /// No frame callback for this long (e.g. the window hidden: the parent stops sending them):
+    /// presented anyway, so painting (and clients' frame callbacks) goes on, slowly.
+    static constexpr UInt32 FrameTimeoutMs { 1000 };
 
 protected:
     friend class LWaylandBackend;
@@ -78,7 +93,18 @@ protected:
     static void handle_xdg_toplevel_close(void *data, xdg_toplevel *toplevel) noexcept;
     static void handle_callback_done(void *data, wl_callback *callback, UInt32 ms) noexcept;
 
-    std::binary_semaphore m_semaphore { 0 };
+    /// The frame was shown (frame callback, or FrameTimeoutMs without one). Compositor lock held.
+    void framePresented(const CZPresentationTime &info) noexcept;
+
+    /// Wakes the render thread (see repaint(), unit()).
+    void wake() noexcept;
+
+    // The render thread sleeps until woken, or until m_frameDeadline while a frame callback is pending
+    std::mutex m_wakeMutex;
+    std::condition_variable m_wakeCond;
+    bool m_wake { false };
+    bool m_waitingFrame { false };
+    std::chrono::steady_clock::time_point m_frameDeadline;
     CZWeak<LWaylandBackend> m_backend;
     std::vector<std::shared_ptr<RImage>> m_images { {} };
     std::optional<SkRegion> m_damage;
@@ -89,11 +115,20 @@ protected:
     Int32 m_scale { 1 };
     SkISize m_size { 1200, 800 };
     bool m_configured { false };
-    bool m_pendingRepaint { false };
+    std::atomic<bool> m_pendingRepaint { false };
 
     std::shared_ptr<RImage> m_cursorImage;
     SkIPoint m_cursorHotspot {};
     std::shared_ptr<RWLSwapchain> m_cursorSwapchain;
+
+    // What the parent compositor was last given (see updateCursor())
+    std::shared_ptr<RImage> m_cursorDrawnImage;
+    SkISize m_cursorDrawnSize {};
+    SkIPoint m_cursorSentHotspot {};
+    UInt32 m_cursorSentSerial { 0 };
+    bool m_cursorSent { false };     // A cursor image (not none) set
+    bool m_cursorRedraw { true };    // setCursor() since: the image's content may have changed
+    std::atomic<bool> m_cursorScaleChanged { false }; // Set by the render thread, applied on the main one
 
     std::optional<std::promise<bool>> m_unitPromise;
 };

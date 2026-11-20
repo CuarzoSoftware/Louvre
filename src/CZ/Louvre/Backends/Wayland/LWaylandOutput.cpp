@@ -11,6 +11,7 @@
 #include <CZ/Ream/RCore.h>
 #include <CZ/Core/CZPresentationTime.h>
 #include <CZ/Core/CZCore.h>
+#include <ctime>
 
 using namespace CZ;
 
@@ -18,6 +19,16 @@ static wl_surface_listener surfaceLis {};
 static xdg_surface_listener xdgSurfaceLis {};
 static xdg_toplevel_listener xdgToplevelLis {};
 static wl_callback_listener callbackLis {};
+
+// The parent compositor's choice (it may refuse server-side decorations): nothing to draw either way
+static const zxdg_toplevel_decoration_v1_listener xdgToplevelDecorationLis
+{
+    .configure = [](void */*data*/, zxdg_toplevel_decoration_v1 */*decoration*/, UInt32 mode)
+    {
+        LLog(CZDebug, "[Wayland Backend] Window decorations: {}",
+             mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE ? "server-side" : "client-side (none drawn)");
+    }
+};
 
 void LWaylandOutput::handle_preferred_buffer_scale(void *data, wl_surface */*surface*/, Int32 factor) noexcept
 {
@@ -63,16 +74,35 @@ void LWaylandOutput::handle_callback_done(void *data, wl_callback *callback, UIn
     timeInfo.time.tv_sec = ms / 1000;
     timeInfo.time.tv_nsec = (ms % 1000) * 1000000;
 
-    o->output()->imp()->backendPresented(timeInfo);
-
     wl_callback_destroy(callback);
     o->m_backend->wl.callback = nullptr;
+    o->framePresented(timeInfo);
+}
 
-    if (o->m_unitPromise.has_value())
+void LWaylandOutput::framePresented(const CZPresentationTime &info) noexcept
+{
+    output()->imp()->backendPresented(info);
+
+    {
+        std::lock_guard wakeLock { m_wakeMutex };
+        m_waitingFrame = false;
+    }
+
+    if (m_unitPromise.has_value())
         return;
 
-    if (o->m_pendingRepaint)
-        o->repaint();
+    if (m_pendingRepaint)
+        wake();
+}
+
+void LWaylandOutput::wake() noexcept
+{
+    {
+        std::lock_guard wakeLock { m_wakeMutex };
+        m_wake = true;
+    }
+
+    m_wakeCond.notify_one();
 }
 
 LOutput *LWaylandOutput::Make(LWaylandBackend *backend) noexcept
@@ -97,8 +127,20 @@ LOutput *LWaylandOutput::Make(LWaylandBackend *backend) noexcept
     wl.xdgToplevel = xdg_surface_get_toplevel(wl.xdgSurface);
     xdg_toplevel_add_listener(wl.xdgToplevel, &xdgToplevelLis, o);
 
+    // Named after the compositor's executable (e.g. in the parent's title bar and task switcher)
+    xdg_toplevel_set_title(wl.xdgToplevel, program_invocation_short_name);
+    xdg_toplevel_set_app_id(wl.xdgToplevel, program_invocation_short_name);
+
+    // Decorated by the parent compositor if it can (before the first commit, see init())
+    if (wl.xdgDecorationManager)
+    {
+        wl.xdgToplevelDecoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wl.xdgDecorationManager, wl.xdgToplevel);
+        zxdg_toplevel_decoration_v1_add_listener(wl.xdgToplevelDecoration, &xdgToplevelDecorationLis, o);
+        zxdg_toplevel_decoration_v1_set_mode(wl.xdgToplevelDecoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+    }
+
     wl.cursorSurface = wl_compositor_create_surface(wl.compositor);
-    o->m_cursorSwapchain = RWLSwapchain::Make(wl.cursorSurface, {64, 64});
+    o->m_cursorSwapchain = RWLSwapchain::Make(wl.cursorSurface, {64, 64}, true); // Paced: never blocks the main thread
 
     LOutput::Params params {};
     params.backend.reset(o);
@@ -108,6 +150,13 @@ LOutput *LWaylandOutput::Make(LWaylandBackend *backend) noexcept
 LWaylandOutput::~LWaylandOutput() noexcept
 {
     auto &wl { m_backend->wl };
+
+    // Before its toplevel (protocol requirement)
+    if (wl.xdgToplevelDecoration)
+    {
+        zxdg_toplevel_decoration_v1_destroy(wl.xdgToplevelDecoration);
+        wl.xdgToplevelDecoration = nullptr;
+    }
 
     xdg_toplevel_destroy(wl.xdgToplevel);
     wl.xdgToplevel = nullptr;
@@ -136,6 +185,8 @@ bool LWaylandOutput::init() noexcept
     m_unitPromise.reset();
     m_pendingRepaint = false;
     m_configured = false;
+    m_wake = false;
+    m_waitingFrame = false;
     xdg_toplevel_set_maximized(m_backend->wl.xdgToplevel);
     wl_surface_attach(m_backend->wl.surface, NULL, 0, 0);
     wl_surface_commit(m_backend->wl.surface);
@@ -150,48 +201,106 @@ bool LWaylandOutput::init() noexcept
 
         while (true)
         {
-            m_semaphore.acquire();
+            // Until woken (repaint(), a frame callback, unit()) or, while a frame is pending, its deadline
+            std::chrono::steady_clock::time_point deadline;
 
-            LLockGuard lock {};
-
-            if (m_unitPromise.has_value())
             {
-                m_unitPromise->set_value(true);
-                break;
+                std::unique_lock wakeLock { m_wakeMutex };
+                const auto woken = [this]{ return m_wake; };
+
+                if (m_waitingFrame)
+                    m_wakeCond.wait_until(wakeLock, m_frameDeadline, woken);
+                else
+                    m_wakeCond.wait(wakeLock, woken);
+
+                m_wake = false;
+                deadline = m_frameDeadline;
             }
 
-            if (wl.callback || !m_configured)
-                continue;
+            std::optional<RSwapchainImage> image;
+            std::optional<SkRegion> damage;
 
-            m_paintEventId++;
-
-            const SkISize newSize { m_size.fWidth * m_scale, m_size.fHeight * m_scale };
-
-            wl_surface_set_buffer_scale(wl.surface, m_scale);
-
-            if (!m_swapchain)
-                m_swapchain = RWLSwapchain::Make(wl.surface, newSize);
-
-            if (output()->transform() != CZTransform::Normal || newSize != mode->m_size || output()->scale() != m_scale)
+            // Painted with the compositor locked, presented without it (see below)
             {
-                output()->setTransform(CZTransform::Normal);
-                mode->m_size = newSize;
-                m_swapchain->resize(newSize);
-                output()->setScale(m_scale);
-                output()->imp()->backendResizeGL();
-                updateCursor();
+                LLockGuard lock {};
+
+                if (m_unitPromise.has_value())
+                {
+                    m_unitPromise->set_value(true);
+                    break;
+                }
+
+                if (wl.callback)
+                {
+                    // Not shown yet
+                    if (std::chrono::steady_clock::now() < deadline)
+                        continue;
+
+                    // No frame callback for too long (e.g. the window is hidden): as if presented
+                    wl_callback_destroy(wl.callback);
+                    wl.callback = nullptr;
+                    CZPresentationTime timeInfo {};
+                    timeInfo.seq = timeInfo.paintEventId = m_paintEventId;
+                    clock_gettime(CLOCK_MONOTONIC, &timeInfo.time);
+                    framePresented(timeInfo);
+                }
+
+                if (!m_configured || !m_pendingRepaint)
+                    continue;
+
+                const SkISize newSize { m_size.fWidth * m_scale, m_size.fHeight * m_scale };
+
+                wl_surface_set_buffer_scale(wl.surface, m_scale);
+
+                if (!m_swapchain)
+                    m_swapchain = RWLSwapchain::Make(wl.surface, newSize, true); // Paced by frame callbacks
+
+                if (output()->transform() != CZTransform::Normal || newSize != mode->m_size || output()->scale() != m_scale)
+                {
+                    output()->setTransform(CZTransform::Normal);
+                    mode->m_size = newSize;
+                    m_swapchain->resize(newSize);
+                    output()->setScale(m_scale);
+                    output()->imp()->backendResizeGL();
+                    m_cursorScaleChanged = true; // Applied on the main thread (see event())
+                }
+
+                if (auto acquired { m_swapchain->acquire() })
+                    image.emplace(*acquired);
+
+                // No free buffer (e.g. a Vulkan acquire timeout): tried again soon
+                if (!image)
+                {
+                    std::lock_guard wakeLock { m_wakeMutex };
+                    m_waitingFrame = true;
+                    m_frameDeadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(4);
+                    continue;
+                }
+
+                m_pendingRepaint = false;
+                m_paintEventId++;
+                m_images[0] = image->image;
+                m_age = image->age;
+                output()->imp()->backendPaintGL();
+                wl.callback = wl_surface_frame(wl.surface);
+                wl_callback_add_listener(wl.callback, &callbackLis, this);
+
+                {
+                    std::lock_guard wakeLock { m_wakeMutex };
+                    m_waitingFrame = true;
+                    m_frameDeadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(FrameTimeoutMs);
+                }
+
+                damage = std::move(m_damage);
+                m_damage.reset();
             }
 
-            m_pendingRepaint = false;
+            // Without the compositor lock: it may wait for the parent to release a buffer (e.g.
+            // Mesa's EGL), which must not block input, clients or the main thread meanwhile
+            m_swapchain->present(*image, damage ? &*damage : nullptr);
+            wl_display_flush(wl.display);
 
-            auto image { m_swapchain->acquire() };
-            m_images[0] = image->image;
-            m_age = image->age;
-            output()->imp()->backendPaintGL();
-            wl.callback = wl_surface_frame(wl.surface);
-            wl_callback_add_listener(wl.callback, &callbackLis, this);
-            m_swapchain->present(image.value(), m_damage.has_value() ? &m_damage.value() : nullptr);
-            m_damage.reset();
+            // The main thread dispatches what was read meanwhile (see LWaylandBackend::dispatchEvents())
             core->postEvent(event, *this);
         }
 
@@ -204,15 +313,19 @@ bool LWaylandOutput::init() noexcept
 bool LWaylandOutput::repaint() noexcept
 {
     m_pendingRepaint = true;
-    m_semaphore.release();
+    wake();
     return true;
 }
 
 void LWaylandOutput::unit() noexcept
 {
-    m_unitPromise = std::promise<bool>();
+    {
+        LLockGuard lock {};
+        m_unitPromise = std::promise<bool>();
+    }
+
     auto future { m_unitPromise->get_future() };
-    m_semaphore.release();
+    wake();
     future.get();
 
     auto &wl { m_backend->wl };
@@ -275,12 +388,14 @@ bool LWaylandOutput::setCursorPos(SkIPoint) noexcept
     if (!hasCursor())
         return false;
 
+    // The parent compositor moves it: only the hotspot matters (see updateCursor())
     auto src { cursor()->source() };
 
-    m_cursorHotspot = SkIPoint(
-        (src->hotspot().x() * cursor()->size().width())/SkScalar(src->image()->size().width()),
-        (src->hotspot().y() * cursor()->size().height())/SkScalar(src->image()->size().height())
-    );
+    if (src && src->image() && !src->image()->size().isEmpty())
+        m_cursorHotspot = SkIPoint(
+            (src->hotspot().x() * cursor()->size().width())/SkScalar(src->image()->size().width()),
+            (src->hotspot().y() * cursor()->size().height())/SkScalar(src->image()->size().height())
+        );
 
     updateCursor();
     return true;
@@ -288,14 +403,41 @@ bool LWaylandOutput::setCursorPos(SkIPoint) noexcept
 
 void LWaylandOutput::updateCursor() noexcept
 {
-    if (!m_cursorSwapchain)
+    if (!m_cursorSwapchain || !hasCursor())
         return;
 
-    if (m_cursorImage)
+    auto &wl { m_backend->wl };
+    const UInt32 serial { wl.seat.pointerEnterSerial };
+
+    if (!m_cursorImage)
     {
-        const SkISize size { cursor()->rect().width() * m_scale, cursor()->rect().height() * m_scale };
+        if (m_cursorSent || serial != m_cursorSentSerial)
+        {
+            wl_pointer_set_cursor(wl.seat.pointer, serial, NULL, 0, 0);
+            m_cursorSent = false;
+            m_cursorSentSerial = serial;
+            m_cursorDrawnImage.reset();
+        }
+
+        return;
+    }
+
+    const SkISize size { cursor()->rect().width() * m_scale, cursor()->rect().height() * m_scale };
+
+    if (size.isEmpty())
+        return;
+
+    bool committed { false };
+
+    // Redrawn only when it may look different
+    if (m_cursorRedraw || m_cursorImage != m_cursorDrawnImage || size != m_cursorDrawnSize)
+    {
         m_cursorSwapchain->resize(size);
         auto image { m_cursorSwapchain->acquire() };
+
+        if (!image)
+            return;
+
         auto surface { RSurface::WrapImage(image->image) };
         auto pass { surface->beginPass(RPassCap_Painter) };
         auto *p { pass->getPainter() };
@@ -310,16 +452,25 @@ void LWaylandOutput::updateCursor() noexcept
         p->restore();
         pass.reset();
 
-        wl_surface_set_buffer_scale(m_backend->wl.cursorSurface, m_scale);
+        wl_surface_set_buffer_scale(wl.cursorSurface, m_scale);
         m_cursorSwapchain->present(image.value());
-        wl_pointer_set_cursor(m_backend->wl.seat.pointer,
-                              m_backend->wl.seat.pointerEnterSerial,
-                              m_backend->wl.cursorSurface,
-                              m_cursorHotspot.x(), m_cursorHotspot.y());
+
+        m_cursorRedraw = false;
+        m_cursorDrawnImage = m_cursorImage;
+        m_cursorDrawnSize = size;
+        committed = true;
+
+        // Presenting may have read the parent's events (e.g. Mesa waiting for a buffer): dispatched
+        // from the main loop, not from here (this may run inside a dispatch)
+        CZCore::Get()->postEvent(std::make_shared<CZPresentationEvent>(), *this);
     }
-    else
+
+    if (committed || !m_cursorSent || serial != m_cursorSentSerial || m_cursorHotspot != m_cursorSentHotspot)
     {
-        wl_pointer_set_cursor(m_backend->wl.seat.pointer, m_backend->wl.seat.pointerEnterSerial, NULL, 0, 0);
+        wl_pointer_set_cursor(wl.seat.pointer, serial, wl.cursorSurface, m_cursorHotspot.x(), m_cursorHotspot.y());
+        m_cursorSent = true;
+        m_cursorSentSerial = serial;
+        m_cursorSentHotspot = m_cursorHotspot;
     }
 }
 
@@ -333,6 +484,8 @@ bool LWaylandOutput::setCursor(UInt8 *pixels) noexcept
     else
         m_cursorImage.reset();
 
+    // A new image (or the same one with new content)
+    m_cursorRedraw = true;
     updateCursor();
     return true;
 }
@@ -343,7 +496,11 @@ bool LWaylandOutput::event(const CZEvent &e) noexcept
 {
     if (e.type() == CZEvent::Type::Presentation)
     {
-        wl_display_flush(m_backend->wl.display);
+        // The scale changed on the render thread
+        if (m_cursorScaleChanged.exchange(false))
+            updateCursor();
+
+        m_backend->dispatchEvents();
         return true;
     }
 
