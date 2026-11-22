@@ -38,6 +38,7 @@
 #define LOUVRE_SINGLE_PIXEL_BUFFER_MANAGER_VERSION 1
 #define LOUVRE_CONTENT_TYPE_MANAGER_VERSION 1
 #define LOUVRE_IDLE_NOTIFIER_VERSION 1
+#define LOUVRE_XDG_SYSTEM_BELL_VERSION 1
 #define LOUVRE_IDLE_INHIBIT_MANAGER_VERSION 1
 #define LOUVRE_DRM_LEASE_DEVICE_VERSION 1
 #define LOUVRE_WLR_OUTPUT_MANAGER_VERSION 4
@@ -369,6 +370,11 @@ namespace CZ
             class GWpContentTypeManagerV1;
 
             class RWpContentTypeV1;
+        }
+
+        namespace SystemBell
+        {
+            class GXdgSystemBell;
         }
 
         namespace IdleNotify

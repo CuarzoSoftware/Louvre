@@ -59,6 +59,7 @@ public:
         CZWeak<LGlobal> XdgDecorationManager;
         CZWeak<LGlobal> XdgOutputManager;
         CZWeak<LGlobal> XdgActivation;
+        CZWeak<LGlobal> XdgSystemBell;
         CZWeak<LGlobal> XdgExporterV1;
         CZWeak<LGlobal> XdgExporterV2;
         CZWeak<LGlobal> XdgImporterV1;

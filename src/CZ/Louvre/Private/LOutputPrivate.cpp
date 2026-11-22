@@ -316,6 +316,11 @@ void LOutput::LOutputPrivate::blitFractionalScaleFb() noexcept
     while (osDamageRing.size() > 8)
         osDamageRing.pop_back();
 
+    /* What changed in the backend image is the blit, not just this frame's damage (which output->damage
+     * keeps, e.g. for captures). The backend needs it: on secondary GPUs SRM copies only the damage
+     * into the image scanned out (PRIME/DUMB), which also missed the frames in between. */
+    output->backend()->setDamage(blit);
+
     if (blit.isEmpty())
         return;
 

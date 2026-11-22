@@ -30,6 +30,7 @@
 #include <CZ/Louvre/Protocols/LinuxDMABuf/GZwpLinuxDmaBufV1.h>
 #include <CZ/Louvre/Protocols/DRMSyncObj/GDRMSyncObjManager.h>
 #include <CZ/Louvre/Protocols/IdleNotify/GIdleNotifier.h>
+#include <CZ/Louvre/Protocols/SystemBell/GXdgSystemBell.h>
 #include <CZ/Louvre/Protocols/SvgPath/GSvgPathManager.h>
 #include <CZ/Louvre/Protocols/Viewporter/GViewporter.h>
 #include <CZ/Louvre/Protocols/LayerShell/GLayerShell.h>
@@ -156,6 +157,9 @@ bool LCompositor::createGlobalsRequest()
 
     // Allows clients to activate other client's surfaces
     createGlobal<XdgActivation::GXdgActivation>();
+
+    // Allows clients to ring the system bell (see LSeat::systemBellRequest())
+    createGlobal<SystemBell::GXdgSystemBell>();
 
     // Allows clients to parent toplevels across client boundaries
     createGlobal<XdgForeign::GXdgExporterV2>();

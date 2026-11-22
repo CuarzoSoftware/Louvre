@@ -431,6 +431,20 @@ public:
     virtual bool configureOutputsRequest(LClient* client, const std::vector<OutputConfiguration>& configurations);
 
     /**
+     * @brief A client rang the system bell (xdg-system-bell-v1).
+     *
+     * Usually to alert the user, e.g. when an action can't be done (like pressing backspace in an
+     * empty text field). The compositor decides how: a sound, a visual flash, or nothing.
+     *
+     * @param client The client ringing it.
+     * @param surface The surface it's related to (e.g. to flash its window), or `nullptr` if none.
+     *
+     * #### Default implementation
+     * @snippet LSeatDefault.cpp systemBellRequest
+     */
+    virtual void systemBellRequest(LClient *client, LSurface *surface);
+
+    /**
      * @brief Notifies of any input event.
      *
      * This event is similar to `nativeInputEvent()`, but is only invoked

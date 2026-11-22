@@ -107,6 +107,7 @@ protocols = [
     'SinglePixelBuffer',
     'ContentType',
     'IdleNotify',
+    'SystemBell',
     'IdleInhibit',
     'DRMLease',
     'WlrOutputManagement',

@@ -35,6 +35,15 @@ bool LSeat::configureOutputsRequest(LClient *client, const std::vector<OutputCon
 }
 //! [configureOutputsRequest]
 
+//! [systemBellRequest]
+void LSeat::systemBellRequest(LClient *client, LSurface *surface)
+{
+    // Ignored by default
+    CZ_UNUSED(client)
+    CZ_UNUSED(surface)
+}
+//! [systemBellRequest]
+
 //! [nativeInputEvent]
 void LSeat::nativeInputEvent(void *event)
 {
