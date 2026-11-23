@@ -239,7 +239,7 @@ pid_t LLauncher::startDaemon(const std::string &name)
     // Child
     else if (daemonPID == 0)
     {
-        setenv("CZ_REAM_LOG_LEVEL", "0", 1);
+        setenv("CZ_REAM_LOG_LEVEL", "2", 1); // Launched apps: Ream errors only, even if the compositor logs more
         char *display = getenv("CZ_LOUVRE_WAYLAND_DISPLAY");
 
         if (display)

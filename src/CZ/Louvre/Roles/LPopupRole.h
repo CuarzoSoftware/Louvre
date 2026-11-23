@@ -368,6 +368,7 @@ private:
     LPositioner m_positioner {};
     UInt32 m_repositionToken {};
     CZWeak<LOutput> m_exclusiveOutput;
+    std::shared_ptr<CZEvent> m_pendingGrab; // xdg_popup.grab before it's mapped (as the protocol asks): applied once it is
 
     std::list<LPopupRole*> m_childPopups;
     std::list<LPopupRole*>::iterator m_parentLink;

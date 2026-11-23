@@ -12,6 +12,7 @@ using namespace CZ::Protocols;
 LPRIVATE_CLASS(LKeyboard)
     CZWeak<LSurface> focus;
     CZWeak<LSurface> grab;
+    CZWeak<LSurface> focusBeforeGrab; // Given back when the grabs end (see LSurfacePrivate::setKeyboardGrabToParent())
     std::shared_ptr<CZKeymap> keymap;
     Int32 repeatRate    { 32 };
     Int32 repeatDelay   { 500 };

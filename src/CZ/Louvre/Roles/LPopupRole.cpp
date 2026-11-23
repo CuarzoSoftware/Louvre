@@ -455,10 +455,11 @@ void LPopupRole::dismiss() noexcept
         return;
 
     m_flags.add(Dismissed);
+    m_pendingGrab.reset();
 
     auto *res { static_cast<XdgShell::RXdgPopup*>(resource()) };
     res->popupDone();
-    // TODO: surface()->imp()->setKeyboardGrabToParent();
+    surface()->imp()->setKeyboardGrabToParent();
     surface()->imp()->setMapped(false);
 
 }
@@ -525,7 +526,19 @@ void LPopupRole::applyCommit() noexcept
 
     // Request map
     if (!surface()->mapped() && surface()->hasBuffer() && surface()->parent() && surface()->parent()->mapped())
+    {
         surface()->imp()->setMapped(true);
+
+        // Grab requested before mapping (clients must request it before the first commit)
+        if (m_pendingGrab && surface()->mapped())
+        {
+            const auto event { std::move(m_pendingGrab) };
+            grabKeyboardRequest(*event);
+
+            if (seat()->keyboard()->grab() != surface())
+                dismiss();
+        }
+    }
 }
 
 void LPopupRole::applyState(State *pending) noexcept

@@ -64,6 +64,12 @@ void LKeyboard::setGrab(LSurface *surface) noexcept
     if (imp()->grab == surface)
         return;
 
+    // Where the focus was before the first grab (a chain of popups grabs one after another)
+    if (!surface)
+        imp()->focusBeforeGrab.reset();
+    else if (!imp()->grab && imp()->focus != surface)
+        imp()->focusBeforeGrab.reset(imp()->focus);
+
     if (imp()->focus == surface)
         imp()->focus.reset();
 

@@ -370,24 +370,30 @@ bool LSurface::LSurfacePrivate::hasBufferOrPendingBuffer() noexcept
 
 void LSurface::LSurfacePrivate::setKeyboardGrabToParent()
 {
-    /* TODO:
-    if (seat()->keyboard()->grab() == surfaceResource->surface())
+    LSurface *surface { surfaceResource->surface() };
+    LKeyboard *keyboard { seat()->keyboard() };
+
+    if (keyboard->grab() != surface)
+        return;
+
+    // A nested popup: back to its parent popup's grab
+    LSurface *parent { surface->parent() };
+
+    if (parent && parent != surface && parent->popup() && parent->mapped())
     {
-        if (surfaceResource->surface()->parent())
-        {
-            if (surfaceResource->surface()->parent()->popup())
-                seat()->keyboard()->setGrab(surfaceResource->surface()->parent());
-            else
-            {
-                seat()->keyboard()->imp()->grab.reset();
-                seat()->keyboard()->imp()->focus.reset();
-                seat()->keyboard()->setFocus(surfaceResource->surface()->parent());
-            }
-        }
-        else
-            seat()->keyboard()->setGrab(nullptr);
+        keyboard->setGrab(parent);
+        return;
     }
-    */
+
+    // The grabs ended: the focus goes back to where it was before them
+    CZWeak<LSurface> restore { keyboard->imp()->focusBeforeGrab };
+    keyboard->imp()->focusBeforeGrab.reset();
+    keyboard->imp()->grab.reset();
+
+    if (restore && restore.get() != surface && restore->mapped())
+        keyboard->setFocus(restore);
+    else
+        keyboard->setFocus(nullptr);
 }
 
 void LSurface::LSurfacePrivate::updateDamage(Uncommitted &pending) noexcept

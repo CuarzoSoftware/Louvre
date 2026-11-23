@@ -88,7 +88,7 @@ void RXdgPopup::grab(wl_client */*client*/, wl_resource *resource, wl_resource *
 {
     auto &res { *static_cast<RXdgPopup*>(wl_resource_get_user_data(resource)) };
 
-    if (!res.popupRole()->surface()->mapped() || res.popupRole()->m_flags.has(LPopupRole::Dismissed))
+    if (res.popupRole()->m_flags.has(LPopupRole::Dismissed))
         return;
 
     const CZEvent *triggeringEvent { res.client()->findEventBySerial(serial) };
@@ -97,6 +97,13 @@ void RXdgPopup::grab(wl_client */*client*/, wl_resource *resource, wl_resource *
     {
         LLog(CZWarning, CZLN, "Grab request without valid event serial. Ignoring it...");
         res.popupRole()->dismiss();
+        return;
+    }
+
+    // Requested before its first commit (as the protocol asks): granted (or not) once mapped
+    if (!res.popupRole()->surface()->mapped())
+    {
+        res.popupRole()->m_pendingGrab = triggeringEvent->copy();
         return;
     }
 
