@@ -120,6 +120,12 @@ void LKeyboard::setFocus(LSurface *surface)
     if (imp()->grab)
         return;
 
+    // Subsurfaces never get it, their closest ancestor that isn't one does (like other compositors).
+    // Clients expect it: e.g. Chrome's omnibox suggestions are a subsurface, if clicking one moved the
+    // focus there the omnibox would lose it and close them before the click is handled.
+    while (surface && surface->subsurface() && surface->parent())
+        surface = surface->parent();
+
     CZWeak<LSurface> prev { focus() };
 
     if (surface)

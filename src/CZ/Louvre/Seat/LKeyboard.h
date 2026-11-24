@@ -51,7 +51,8 @@ public:
      *
      * This method assigns keyboard focus to the specified surface.
      * Only one surface can have keyboard focus at a time, and this method automatically removes focus from any previously focused surface.\n
-     * To remove focus from all surfaces, pass `nullptr` as the argument.
+     * To remove focus from all surfaces, pass `nullptr` as the argument.\n
+     * Subsurfaces never get it: passing one focuses its closest ancestor that isn't a subsurface.
      *
      * @note Calling this method while there is a surface grabbing the keyboard is a no-op.
      */
