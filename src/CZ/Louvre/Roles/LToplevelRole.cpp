@@ -509,7 +509,9 @@ void LToplevelRole::applyState(State *pending) noexcept
 
             if (stateChanges.has(CZWinActivated) && pending->windowState.has(CZWinActivated))
             {
-                if (seat()->activeToplevel() && seat()->activeToplevel() != this)
+                // A minimized one keeps its state (compositors may keep minimized windows activated,
+                // e.g. so their thumbnails look like they did; see minimizedChanged())
+                if (seat()->activeToplevel() && seat()->activeToplevel() != this && !seat()->activeToplevel()->isMinimized())
                 {
                     seat()->activeToplevel()->m_flags.add(ForceRemoveActivatedFlag);
                     seat()->activeToplevel()->configureState(seat()->activeToplevel()->pendingConfiguration().windowState & ~CZWinActivated);
