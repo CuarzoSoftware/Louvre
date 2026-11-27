@@ -484,6 +484,7 @@ void LToplevelRole::applyCommit() noexcept
 void LToplevelRole::applyState(State *pending) noexcept
 {
     CZBitset<Changes> changesToNotify;
+    bool staleActivation { false };
 
     if (m_current.maxSize != pending->maxSize)
         changesToNotify.add(MaxSizeChanged);
@@ -500,6 +501,19 @@ void LToplevelRole::applyState(State *pending) noexcept
 
         if (m_current.capabilities != pending->capabilities)
             changesToNotify.add(CapabilitiesChanged);
+
+        /* Activated all along, but another toplevel became the active one meanwhile: e.g. it was
+         * minimized (compositors may keep minimized windows activated, see below), then restored
+         * and activated again (the configurations that deactivated and activated it sent as one).
+         * Its state didn't change, but it's an activation like any other: it becomes the active
+         * toplevel and stateChanged() is notified as if it hadn't been activated (see prev below).
+         * Not if the compositor no longer wants it activated (an older configuration acked late). */
+        staleActivation = m_current.windowState.has(CZWinActivated) && pending->windowState.has(CZWinActivated) &&
+                          pendingConfiguration().windowState.has(CZWinActivated) &&
+                          !isMinimized() && seat()->activeToplevel() != this;
+
+        if (staleActivation)
+            m_current.windowState.remove(CZWinActivated);
 
         if (m_current.windowState != pending->windowState)
         {
